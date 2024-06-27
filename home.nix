@@ -124,10 +124,10 @@
     ".config/zsh/.zshrc".source = dotfiles/zsh/.zshrc; # THIS PROBABLY OVERWRITES THE CONFIG IN programs.zsh = {...
     ".config/zsh/p10k.zsh".source = dotfiles/zsh/.p10k.zsh;
     ".config/zsh/plugins".source = dotfiles/zsh/plugins;
-    # ".config/wezterm".source = dotfiles/wezterm;
-    # ".config/alacritty".source = dotfiles/alacritty;
-    # ".config/tmux".source = dotfiles/tmux;
-    # ".config/zellij".source = dotfiles/zellij;
+    ".config/wezterm".source = dotfiles/wezterm;
+    ".config/alacritty".source = dotfiles/alacritty;
+    ".config/tmux".source = dotfiles/tmux;
+    ".config/zellij".source = dotfiles/zellij;
 
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
