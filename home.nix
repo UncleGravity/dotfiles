@@ -32,8 +32,10 @@
     bat # better cat
     eza # better ls/tree
     fd # better find
+    yazi
 
     alacritty
+    wezterm
 
     pipx
 
@@ -70,48 +72,6 @@
     # enableCompletion = true;
     # autosuggestion.enable = true;
     # syntaxHighlighting.enable = true;
-    #historySubstringSearch.enable = true;
-    # historySubstringSearch = {
-    #   enable = true;
-    #   searchUpKey = [
-    #     "^[[A"
-    #     "^[OA"
-    #   ];
-    #   searchDownKey = [
-    #     "^[[B"
-    #     "^[OB"
-    #   ];
-    # };
-    # enableVteIntegration = true;
-    
-    # initExtraFirst = '' 
-    #   source ~/.config/zsh/plugins/you-should-use.plugin.zsh
-
-    #   # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-    #   source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-    #   [[ ! -f ~/.config/zsh/p10k.zsh ]] || source ~/.config/zsh/p10k.zsh
-    # '';
-    # initExtra = ''
-    #   #bindkey '^[OA' history-search-backward
-    #   #bindkey '^[[A' history-search-backward
-    #   #bindkey '^[OB' history-search-forward
-    #   #bindkey '^[[B' history-search-forward
-
-    #   bindkey "^[b" backward-word
-    #   bindkey "^[[1;3D" backward-word
-    #   bindkey "^[f" forward-word
-    #   bindkey "^[[1;3C" forward-word
-    #   bindkey "^[^?" backward-kill-word
-    # '';
-
-    #shellAliases = {
-    #  ll = "ls -l";
-    #  update = "sudo nixos-rebuild switch";
-    #};
-    #history = {
-    #  size = 10000;
-    #  path = "${config.xdg.dataHome}/zsh/history";
-    #};
   };
 
   programs.fzf = {
@@ -150,7 +110,7 @@
     };
   };
 
-  # VSCode Server
+  # VSCode Server (NixOS)
   imports = [
     inputs.vscode-server.homeModules.default
   ];
@@ -164,8 +124,10 @@
     ".config/zsh/.zshrc".source = dotfiles/zsh/.zshrc; # THIS PROBABLY OVERWRITES THE CONFIG IN programs.zsh = {...
     ".config/zsh/p10k.zsh".source = dotfiles/zsh/.p10k.zsh;
     ".config/zsh/plugins".source = dotfiles/zsh/plugins;
-    #".config/oh-my-posh/config.json".source = dotfiles/oh-my-posh/config.json;
-    #".config/starship.toml".source = dotfiles/starship/starship.toml;
+    # ".config/wezterm".source = dotfiles/wezterm;
+    # ".config/alacritty".source = dotfiles/alacritty;
+    # ".config/tmux".source = dotfiles/tmux;
+    # ".config/zellij".source = dotfiles/zellij;
 
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
