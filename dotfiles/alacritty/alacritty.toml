@@ -1,0 +1,19 @@
+live_config_reload = true
+
+[ env ]
+TERM = "xterm-256color"
+# TERM = "alacritty"
+WINIT_X11_SCALE_FACTOR = "1"
+
+[window]
+padding.x = 10
+padding.y = 10
+opacity = 0.8
+blur = true
+option_as_alt = "Both"
+decorations = "Buttonless"
+
+
+[font]
+normal.family = "MesloLGS NF"
+size = 13
