@@ -126,15 +126,40 @@
     };
     ".config/wezterm".source = ./dotfiles/wezterm;
     ".config/alacritty".source = ./dotfiles/alacritty;
-    ".config/tmux/tmux.conf".source = ./dotfiles/tmux/tmux.conf;
-    ".config/tmux/plugins" = {
-      source = ./dotfiles/tmux/plugins;
+    ".config/tmux" = {
+      source = ./dotfiles/tmux;
       recursive = true;
-      # executable = true;
+      executable = true;
     };
+    # ".config/tmux/tmux.conf".source = ./dotfiles/tmux/tmux.conf;
+    # ".config/tmux/plugins" = {
+    #   source = ./dotfiles/tmux/plugins;
+    #   recursive = true;
+    #   # executable = true;
+    # };
     # ".config/tmux/plugins/tpm".source = ./dotfiles/tmux/plugins/tpm;
     ".config/zellij".source = ./dotfiles/zellij;
   };
+
+  # Add this section to your configuration
+  # home.activation = {
+  #   postActivation = ''
+  #     if [ -f "${config.home.homeDirectory}/.config/tmux/plugins/tpm/tpm" ]; then
+  #       ${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins
+  #     else
+  #       echo "TPM (Tmux Plugin Manager) not found. Skipping plugin installation."
+  #     fi
+  #   '';
+  # };
+
+  # home.activation = {
+  #   # Add a post-activation script to run `C-b I` for tmux
+  #   postActivation = ''
+  #     if [ -f "${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins" ]; then
+  #       ${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins
+  #     fi
+  #   '';
+  # };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
@@ -159,4 +184,3 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 }
-
