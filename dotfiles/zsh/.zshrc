@@ -15,7 +15,7 @@ fi
 # Get the prompt
 # source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme # MACOS
 source source-p10k # THE NIX WAY
-source ${HOME}/.config/zsh/p10k.zsh
+source ${HOME}/.config/zsh/.p10k.zsh
 
 # ==================================================================================================
 # Plugins

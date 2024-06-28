@@ -109,7 +109,7 @@
     };
   };
  
-  environment.shells = with pkgs; [bash zsh];
+  # environment.shells = with pkgs; [bash zsh];
   environment.pathsToLink = [ "/share/zsh" ]; # get zsh completions for system packages (eg. systemd)
   programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
   users.defaultUserShell = pkgs.zsh;
