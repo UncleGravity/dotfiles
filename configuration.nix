@@ -120,7 +120,7 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
   
-  # Enable parallels tools?
+  # Enable parallels tools
   hardware.parallels.enable = true;
 
   # List packages installed in system profile. To search, run:

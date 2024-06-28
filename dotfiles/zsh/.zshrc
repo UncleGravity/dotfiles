@@ -88,9 +88,8 @@ alias zj="zellij"
 alias zjc="zellij --layout compact"
 
 alias ls="eza"
-alias l="eza -lh --git --hyperlink"
-alias la="eza -lah --git --hyperlink"
-alias ll="eza -1"
+alias l="eza -alh --git --hyperlink"
+alias ll="eza -lh --git --hyperlink"
 alias tree="eza -T"
 # alias ..='cd ..'
 # alias ...='cd ../..'

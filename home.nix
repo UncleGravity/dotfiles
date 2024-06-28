@@ -80,11 +80,6 @@
     enableZshIntegration = true;
   };
 
-  # programs.zellij = {
-  #   enable = true;
-  #   # enableZshIntegration = true;
-  # };
-
   programs.wezterm = {
     enable = true;
     enableZshIntegration = true;
@@ -128,38 +123,11 @@
     ".config/alacritty".source = ./dotfiles/alacritty;
     ".config/tmux" = {
       source = ./dotfiles/tmux;
-      recursive = true;
-      executable = true;
+      recursive = true; # This allows the directory to be writable, since tpm will create files in it
+      executable = true; # Not sure if necessary w/e
     };
-    # ".config/tmux/tmux.conf".source = ./dotfiles/tmux/tmux.conf;
-    # ".config/tmux/plugins" = {
-    #   source = ./dotfiles/tmux/plugins;
-    #   recursive = true;
-    #   # executable = true;
-    # };
-    # ".config/tmux/plugins/tpm".source = ./dotfiles/tmux/plugins/tpm;
     ".config/zellij".source = ./dotfiles/zellij;
   };
-
-  # Add this section to your configuration
-  # home.activation = {
-  #   postActivation = ''
-  #     if [ -f "${config.home.homeDirectory}/.config/tmux/plugins/tpm/tpm" ]; then
-  #       ${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins
-  #     else
-  #       echo "TPM (Tmux Plugin Manager) not found. Skipping plugin installation."
-  #     fi
-  #   '';
-  # };
-
-  # home.activation = {
-  #   # Add a post-activation script to run `C-b I` for tmux
-  #   postActivation = ''
-  #     if [ -f "${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins" ]; then
-  #       ${config.home.homeDirectory}/.config/tmux/plugins/tpm/bin/install_plugins
-  #     fi
-  #   '';
-  # };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
