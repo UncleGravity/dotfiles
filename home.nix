@@ -124,18 +124,13 @@
       source = ./dotfiles/zsh;
       recursive = true;
     };
-    # ".config/zsh/.zshrc".source = ./dotfiles/zsh/.zshrc;
-    # ".config/zsh/p10k.zsh".source = ./dotfiles/zsh/.p10k.zsh;
-    # ".config/zsh/plugins".source = ./dotfiles/zsh/plugins;
     ".config/wezterm".source = ./dotfiles/wezterm;
     ".config/alacritty".source = ./dotfiles/alacritty;
-    ".config/tmux/tmux.conf" = {
-      source = ./dotfiles/tmux/tmux.conf;
-      # recursive = true;
-    };
-    ".config/tmux/plugins/tpm" = {
-      source = ./dotfiles/tmux/plugins/tpm;
-      # recursive = true;
+    ".config/tmux/tmux.conf".source = ./dotfiles/tmux/tmux.conf;
+    ".config/tmux/plugins" = {
+      source = ./dotfiles/tmux/plugins;
+      recursive = true;
+      # executable = true;
     };
     # ".config/tmux/plugins/tpm".source = ./dotfiles/tmux/plugins/tpm;
     ".config/zellij".source = ./dotfiles/zellij;
