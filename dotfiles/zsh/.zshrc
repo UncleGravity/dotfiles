@@ -30,7 +30,7 @@ source $HOME/.config/zsh/plugins/you-should-use.plugin.zsh
 # ==================================================================================================
 # Enable command history
 # HISTORY. Run man zshoptions
-HISTFILE=$HOME/.zsh_history
+HISTFILE=$HOME/.config/zsh/.zsh_history
 HISTSIZE=1000000
 SAVEHIST=$HISTSIZE
 setopt EXTENDED_HISTORY          # Write the history file in the ':start:elapsed;command' format.
@@ -84,13 +84,14 @@ source <(fzf --zsh)
 
 
 # Aliases
+alias zj="zellij"
+alias zjc="zellij --layout compact"
+
 alias ls="eza"
-alias l="eza -alh"
-alias ll"eza -1"
+alias l="eza -lh --git --hyperlink"
+alias la="eza -lah --git --hyperlink"
+alias ll="eza -1"
 alias tree="eza -T"
-#alias l="ls -alh"
-#alias ll='ls -lh'
-#alias la='ls -lAh'
 # alias ..='cd ..'
 # alias ...='cd ../..'
 
