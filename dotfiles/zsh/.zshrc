@@ -1,26 +1,46 @@
+# ==================================================================================================
+# Powerlevel10k Instant Prompt
+# ==================================================================================================
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ==================================================================================================
+# Zinit
+# ==================================================================================================
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+[ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
+[ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+source "${ZINIT_HOME}/zinit.zsh"
+
+# Load Powerlevel10k theme
+zinit ice depth=1 lucid
+zinit light romkatv/powerlevel10k
+[[ -f ${HOME}/.config/zsh/.p10k.zsh ]] && source ${HOME}/.config/zsh/.p10k.zsh
+
+# Load other plugins with Turbo mode
+zinit wait lucid for \
+    Aloxaf/fzf-tab \
+    MichaelAquilina/zsh-you-should-use \
+    zsh-users/zsh-syntax-highlighting \
+    atload"_zsh_autosuggest_start" \
+        zsh-users/zsh-autosuggestions \
+    zsh-users/zsh-completions \
+
+# Get the prompt
+# source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme # MACOS
+# source source-p10k # THE NIX WAY
+# [[ -f ${HOME}/.config/zsh/.p10k.zsh ]] && source ${HOME}/.config/zsh/.p10k.zsh
+
 # emacs style keybindings
 bindkey -e
 # vim style keybindings
 # bindkey -v
 
 # ==================================================================================================
-# Powerlevel10k
+# Plugins (manual)
 # ==================================================================================================
-
-# Instant prompt
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
-# Get the prompt
-# source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme # MACOS
-source source-p10k # THE NIX WAY
-source ${HOME}/.config/zsh/.p10k.zsh
-
-# ==================================================================================================
-# Plugins
-# ==================================================================================================
-source $HOME/.config/zsh/plugins/you-should-use.plugin.zsh
+# source $HOME/.config/zsh/plugins/you-should-use.plugin.zsh
 # source ${HOME}/.config/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # source ${HOME}/.config/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 
@@ -28,8 +48,6 @@ source $HOME/.config/zsh/plugins/you-should-use.plugin.zsh
 # ==================================================================================================
 # History
 # ==================================================================================================
-# Enable command history
-# HISTORY. Run man zshoptions
 HISTFILE=$HOME/.config/zsh/.zsh_history
 HISTSIZE=1000000
 SAVEHIST=$HISTSIZE
@@ -42,13 +60,6 @@ setopt HIST_IGNORE_SPACE         # Do not record an event starting with a space.
 setopt HIST_SAVE_NO_DUPS         # Do not write a duplicate event to the history file.
 setopt SHARE_HISTORY             # Share history between all sessions.
 setopt HIST_VERIFY               # When retrieving a command from history, show the command but do not execute it until the Enter key is pressed again
-
-# ==================================================================================================
-# Completions
-# ==================================================================================================
-[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # if the directory does not exist, create it
-compinit -d "$HOME/.cache/zsh/zcompdump" # Set custom zcompdump location
-autoload -Uz compinit && compinit # Enable completions
 
 # ==================================================================================================
 # Keybindings
@@ -66,6 +77,8 @@ bindkey "^[f" forward-word
 bindkey "^[[1;3C" forward-word
 bindkey "^[^?" backward-kill-word
 
+bindkey '^[' autosuggest-clear
+
 # ==================================================================================================
 # Options
 # ==================================================================================================
@@ -76,12 +89,10 @@ setopt nomatch            # Do not display an error message if a pattern for fil
 setopt menu_complete       # Show completion menu on successive tab press
 setopt interactivecomments # Allow comments to be entered in interactive mode
 
-
 # Enable fzf key bindings and completion
 # [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
-
 
 # Aliases
 alias zj="zellij"
@@ -98,26 +109,48 @@ alias please='sudo'
 alias zshconfig="sudo nvim /etc/nixos/dotfiles/zsh/.zshrc"
 alias zshrst='source $HOME/.config/zsh/.zshrc'
 alias homeconfig="sudo nvim /etc/nixos/home.nix"
+
+alias ya="yazi"
+
 # case "$(uname -s)" in
-
-# Darwin)
-# 	# echo 'Mac OS X'
-# 	alias ls='ls -G'
-# 	;;
-
-# Linux)
-# 	alias ls='ls --color=auto'
-# 	;;
-
-# CYGWIN* | MINGW32* | MSYS* | MINGW*)
-# 	# echo 'MS Windows':
-# 	;;
-# *)
-# 	# echo 'Other OS'
-# 	;;
+#   Darwin)
+#     # echo 'Mac OS X'
+#     eval "$(/opt/homebrew/bin/brew shellenv)"
+#     ;;
+#   Linux)
+#     #
+#     ;;
+#   CYGWIN* | MINGW32* | MSYS* | MINGW*)
+#     # echo 'MS Windows'
+#     ;;
+#   *)
+#     # echo 'Other OS'
+#     ;;
 # esac
 
 
 # ENV Variables
 export ANTHROPIC_API_KEY="nonono"
 export OPENAI_API_KEY="nonono"
+
+# ==================================================================================================
+# Completions
+# ==================================================================================================
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*' # case insensitive matching
+zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`
+zstyle ':completion:*:descriptions' format '[%d]' # set descriptions format to enable group support
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # colorize the completion list
+zstyle ':completion:*' menu no # disable menu so that we can use fzf instead
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
+zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
+zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
+
+[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # if the directory does not exist, create it
+# Move these to the end of the file
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+    compinit -d "$HOME/.cache/zsh/zcompdump";
+else
+    compinit -C -d "$HOME/.cache/zsh/zcompdump";
+fi;
+zinit cdreplay -q # recommended by zinit

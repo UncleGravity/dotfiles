@@ -8,7 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      inputs.home-manager.nixosModules.default
+      # inputs.home-manager.nixosModules.default
     ];
 
   # Enable Flakes
@@ -122,6 +122,13 @@
   
   # Enable parallels tools
   hardware.parallels.enable = true;
+
+  # Run unpatched binaries
+  # Why? Because I tried to run a make file that required bash and NixOS doesn't have /bin/bash
+  # So to avoid having to patch the make file, I just symlinked bash to /bin/bash
+  # sudo ln -s /run/current-system/sw/bin/bash /bin/bash
+  # But apparently there's a whole solution for this:
+  # services.envfs.enable = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget

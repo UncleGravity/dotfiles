@@ -1,6 +1,11 @@
 { config, pkgs, inputs, ... }:
 
 {
+
+  imports = [
+    ./vscode-server.nix
+  ];
+
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "angel";
@@ -85,8 +90,14 @@
     enableZshIntegration = true;
   };
 
+  programs.yazi = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
   programs.neovim = {
     enable = true;
+    defaultEditor = true;
     extraConfig = ''
       set number relativenumber
     '';
@@ -106,12 +117,12 @@
     };
   };
 
-  # VSCode Server (NixOS)
-  imports = [
-    inputs.vscode-server.homeModules.default
-  ];
+  # # VSCode Server (NixOS)
+  # imports = [
+  #   inputs.vscode-server.homeModules.default
+  # ];
 
-  services.vscode-server.enable = true;
+  # services.vscode-server.enable = true;
 
   # DOTFILES
   home.file = {
