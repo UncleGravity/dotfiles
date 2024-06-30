@@ -25,24 +25,12 @@ zinit wait lucid for \
     zsh-users/zsh-syntax-highlighting \
     atload"_zsh_autosuggest_start" \
         zsh-users/zsh-autosuggestions \
-    zsh-users/zsh-completions \
-
-# Get the prompt
-# source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme # MACOS
-# source source-p10k # THE NIX WAY
-# [[ -f ${HOME}/.config/zsh/.p10k.zsh ]] && source ${HOME}/.config/zsh/.p10k.zsh
+    zsh-users/zsh-completions
 
 # emacs style keybindings
 bindkey -e
 # vim style keybindings
 # bindkey -v
-
-# ==================================================================================================
-# Plugins (manual)
-# ==================================================================================================
-# source $HOME/.config/zsh/plugins/you-should-use.plugin.zsh
-# source ${HOME}/.config/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-# source ${HOME}/.config/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 
 # ==================================================================================================
@@ -71,13 +59,14 @@ bindkey '^[[A' history-search-backward
 bindkey '^[OB' history-search-forward
 bindkey '^[[B' history-search-forward
 
-bindkey "^[b" backward-word
-bindkey "^[[1;3D" backward-word
-bindkey "^[f" forward-word
-bindkey "^[[1;3C" forward-word
-bindkey "^[^?" backward-kill-word
+# Option/Alt behavior
+# bindkey "^[b" backward-word # Alt+b
+bindkey "^[[1;3D" backward-word # Alt+Left
+# bindkey "^[f" forward-word # Alt+f
+bindkey "^[[1;3C" forward-word # Alt+Right
+bindkey "^[^?" backward-kill-word # Alt+Backspace
 
-bindkey '^[' autosuggest-clear
+bindkey '^[' autosuggest-clear # Esc
 
 # ==================================================================================================
 # Options
@@ -89,8 +78,6 @@ setopt nomatch            # Do not display an error message if a pattern for fil
 setopt menu_complete       # Show completion menu on successive tab press
 setopt interactivecomments # Allow comments to be entered in interactive mode
 
-# Enable fzf key bindings and completion
-# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
@@ -102,8 +89,8 @@ alias ls="eza"
 alias l="eza -alh --git --hyperlink"
 alias ll="eza -lh --git --hyperlink"
 alias tree="eza -T"
-# alias ..='cd ..'
-# alias ...='cd ../..'
+alias ..='cd ..'
+alias ...='cd ../..'
 
 alias please='sudo'
 alias zshconfig="sudo nvim /etc/nixos/dotfiles/zsh/.zshrc"
@@ -112,21 +99,21 @@ alias homeconfig="sudo nvim /etc/nixos/home.nix"
 
 alias ya="yazi"
 
-# case "$(uname -s)" in
-#   Darwin)
-#     # echo 'Mac OS X'
-#     eval "$(/opt/homebrew/bin/brew shellenv)"
-#     ;;
-#   Linux)
-#     #
-#     ;;
-#   CYGWIN* | MINGW32* | MSYS* | MINGW*)
-#     # echo 'MS Windows'
-#     ;;
-#   *)
-#     # echo 'Other OS'
-#     ;;
-# esac
+case "$(uname -s)" in
+  Darwin)
+    # echo 'Mac OS X'
+    [ -f "${0:a:h}/.macos.zsh" ] && source "${0:a:h}/.macos.zsh"
+    ;;
+  Linux)
+    #
+    ;;
+  CYGWIN* | MINGW32* | MSYS* | MINGW*)
+    # echo 'MS Windows'
+    ;;
+  *)
+    # echo 'Other OS'
+    ;;
+esac
 
 
 # ENV Variables
@@ -134,7 +121,7 @@ export ANTHROPIC_API_KEY="nonono"
 export OPENAI_API_KEY="nonono"
 
 # ==================================================================================================
-# Completions
+# Completions (LAST SECTION)
 # ==================================================================================================
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*' # case insensitive matching
 zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`
@@ -145,12 +132,20 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # 
 zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
 
-[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # if the directory does not exist, create it
-# Move these to the end of the file
-autoload -Uz compinit
-if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-    compinit -d "$HOME/.cache/zsh/zcompdump";
-else
-    compinit -C -d "$HOME/.cache/zsh/zcompdump";
-fi;
+# Keep this at the end of the file
+# This block ensures that the completion cache is properly set up and updated
+[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # Create zsh cache dir
+autoload -Uz compinit # Load the completion system
+
+# Check if the completion dump file is older than 24 hours
+# If so, regenerate it; otherwise, use the existing one
+# We don't need to do this, but it speeds up zsh startup time
+# if [[ -n ${HOME}/.cache/zsh/zcompdump(#qN.mh+24) ]]; then
+#     compinit -d "$HOME/.cache/zsh/zcompdump"
+# else
+#     compinit -C -d "$HOME/.cache/zsh/zcompdump"
+# fi;
+
+compinit -d "$HOME/.cache/zsh/zcompdump"
+
 zinit cdreplay -q # recommended by zinit
