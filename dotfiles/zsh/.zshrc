@@ -82,9 +82,6 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 source <(fzf --zsh)
 
 # Aliases
-alias zj="zellij"
-alias zjc="zellij --layout compact"
-
 alias ls="eza"
 alias l="eza -alh --git --hyperlink"
 alias ll="eza -lh --git --hyperlink"
@@ -93,11 +90,16 @@ alias ..='cd ..'
 alias ...='cd ../..'
 
 alias please='sudo'
+alias homeconfig="sudo nvim /etc/nixos/home.nix"
 alias zshconfig="sudo nvim /etc/nixos/dotfiles/zsh/.zshrc"
 alias zshrst='source $HOME/.config/zsh/.zshrc'
-alias homeconfig="sudo nvim /etc/nixos/home.nix"
 
 alias ya="yazi"
+
+alias zj="zellij"
+alias zjc="zellij --layout compact"
+
+alias dbox="distrobox"
 
 case "$(uname -s)" in
   Darwin)

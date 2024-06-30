@@ -11,23 +11,74 @@ alias vmrestart='prlctl restart ubuntu-2204'
 # alias vmcode='code --remote ssh-remote+parallels@uvm.local --new-window'
 # alias vmcode='code --folder-uri vscode-remote://ssh-remote+parallels@uvm.local/media/psf/useradmin/Documents/ios/healthscraper --new-window'
 
-function get_remote_path() {
-  local current_local_path="$(pwd)"
-  local default_remote_path="~/"
-  local common_path_start="/Users/useradmin"
-  local remote_base_path="/media/psf/Home"
+function vmshell() {
+  local vm_name="$1"
+  local remote_path=$(get_remote_path)
   
-  if [[ $current_local_path == "$common_path_start"* ]]; then
-    echo "${remote_base_path}${current_local_path/$common_path_start/}"
-  else
-    echo "$default_remote_path"
-  fi
+  case "$vm_name" in
+    nixos)
+      ssh -t angel@nixos-gnome "cd $remote_path && exec \$SHELL -l"
+      ;;
+    ubuntu)
+      ssh -t parallels@uvm.local "cd $remote_path && exec \$SHELL -l"
+      ;;
+    *)
+      echo "Usage: vmshell [nixos|ubuntu]"
+      return 1
+      ;;
+  esac
 }
 
-alias remote_path='echo $(get_remote_path)'
-alias vmcode='code --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$(get_remote_path) --new-window'
-alias vmcursor='cursor --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$(get_remote_path) --new-window'
-alias vmshell='ssh -t parallels@uvm.local "cd $(get_remote_path) && exec \$SHELL -l"'
-alias vmnix='ssh -t angel@nixos-gnome "cd $(get_remote_path) && exec \$SHELL -l"'
-alias code-insiders="/Applications/Visual\ Studio\ Code\ -\ Insiders.app/Contents/Resources/app/bin/code"
-alias vmcode-insiders='code-insiders --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$(get_remote_path) --new-window'
+function vmcode() {
+  local vm_name="$1"
+  local remote_path=$(get_remote_path)
+  local dotfiles_path="/home/angel/.dotfiles"
+  
+  case "$vm_name" in
+    nixos)
+      if [[ "$2" == "-d" ]]; then
+        code --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$dotfiles_path --new-window
+      else
+        code --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$remote_path --new-window
+      fi
+      ;;
+    ubuntu)
+      if [[ "$2" == "-d" ]]; then
+        code --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$dotfiles_path --new-window
+      else
+        code --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$remote_path --new-window
+      fi
+      ;;
+    *)
+      echo "Usage: vmcode [nixos|ubuntu] [-d]"
+      return 1
+      ;;
+  esac
+}
+
+function vmcursor() {
+  local vm_name="$1"
+  local remote_path=$(get_remote_path)
+  local dotfiles_path="/home/angel/.dotfiles"
+  
+  case "$vm_name" in
+    nixos)
+      if [[ "$2" == "-d" ]]; then
+        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$dotfiles_path --new-window
+      else
+        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$remote_path --new-window
+      fi
+      ;;
+    ubuntu)
+      if [[ "$2" == "-d" ]]; then
+        cursor --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$dotfiles_path --new-window
+      else
+        cursor --folder-uri vscode-remote://ssh-remote+parallels@uvm.local$remote_path --new-window
+      fi
+      ;;
+    *)
+      echo "Usage: vmcursor [nixos|ubuntu] [-d]"
+      return 1
+      ;;
+  esac
+}

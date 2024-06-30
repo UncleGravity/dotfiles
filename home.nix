@@ -25,7 +25,8 @@
   home.packages = with pkgs; [
     gnumake
     cmake
-    wget
+    gcc
+    # wget
     git
 
     tmux

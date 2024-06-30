@@ -123,24 +123,28 @@
   # Enable parallels tools
   hardware.parallels.enable = true;
 
-  # Run unpatched binaries
+  # -----------------------------------------------------
+  # Nix escape hatches
+  # -----------------------------------------------------
   # Why? Because I tried to run a make file that required bash and NixOS doesn't have /bin/bash
   # So to avoid having to patch the make file, I just symlinked bash to /bin/bash
   # sudo ln -s /run/current-system/sw/bin/bash /bin/bash
   # But apparently there's a whole solution for this:
-  # services.envfs.enable = true;
+  services.envfs.enable = true; # Dynamically populates contents of /bin and /usr/bin/ so that it contains all executables from the PATH of the requesting process (eg. /bin/bash)
+
+  # Run unpatched binaries
+  # Why? Because vscode-server doesn't work without it.
+  programs.nix-ld.enable = true; # Needed for vscode-server
+  programs.nix-ld.package = pkgs.nix-ld-rs; # Latest version of nix-ld
+  # -----------------------------------------------------
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default. 
-    #wget
+    wget
     distrobox
     podman
-    #cyme # Fancy lsusb
-    #usbutils
-   # hackrf
-    #tree
   ];
 
   
@@ -165,9 +169,6 @@
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{idProduct}=="6089", GROUP="plugdev", MODE="0666"
   '';
-
-  # VSCODE Config
-  programs.nix-ld.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
