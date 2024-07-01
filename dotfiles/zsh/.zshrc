@@ -133,20 +133,12 @@ zstyle ':completion:*' menu no # disable menu so that we can use fzf instead
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
 zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
+zstyle ':completion:*' rehash true 
 
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 [[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # Create zsh cache dir
 autoload -Uz compinit # Load the completion system
-
-# Check if the completion dump file is older than 24 hours
-# If so, regenerate it; otherwise, use the existing one
-# We don't need to do this, but it speeds up zsh startup time
-# if [[ -n ${HOME}/.cache/zsh/zcompdump(#qN.mh+24) ]]; then
-#     compinit -d "$HOME/.cache/zsh/zcompdump"
-# else
-#     compinit -C -d "$HOME/.cache/zsh/zcompdump"
-# fi;
 
 compinit -d "$HOME/.cache/zsh/zcompdump"
 
