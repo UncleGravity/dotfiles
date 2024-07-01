@@ -23,17 +23,20 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
+    # Dev
     gnumake
     cmake
     gcc
-    # wget
     git
+    just
+    nodejs
 
     tmux
     zellij
     tree
 
     # goodies
+    fastfetch
     btop
     ripgrep # better grep
     bat # better cat
@@ -52,12 +55,9 @@
 
     # Zsh stuff
     meslo-lgs-nf # Nerd Font for powerlevel10k
-    zsh-powerlevel10k
-    (pkgs.writeShellScriptBin "source-p10k" ''
-      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-    '')
 
     llm # https://github.com/simonw/llm
+
 
     # # It is sometimes useful to fine-tune packages, for example, by applying
     # # overrides. You can do that directly here, just don't forget the
@@ -128,8 +128,8 @@
   # DOTFILES
   home.file = {
     ".config/zsh" = {
-      source = ./dotfiles/zsh;
-      recursive = true;
+      source = ./dotfiles/zsh; 
+      recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
     ".config/wezterm".source = ./dotfiles/wezterm;
     ".config/alacritty".source = ./dotfiles/alacritty;

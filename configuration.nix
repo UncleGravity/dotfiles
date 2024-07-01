@@ -136,6 +136,24 @@
   # Why? Because vscode-server doesn't work without it.
   programs.nix-ld.enable = true; # Needed for vscode-server
   programs.nix-ld.package = pkgs.nix-ld-rs; # Latest version of nix-ld
+  # programs.nix-ld.libraries = with pkgs; [
+  #     # -- Default Values from https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/programs/nix-ld.nix
+  #     zlib
+  #     zstd
+  #     stdenv.cc.cc
+  #     curl
+  #     openssl
+  #     attr
+  #     libssh
+  #     bzip2
+  #     libxml2
+  #     acl
+  #     libsodium
+  #     util-linux
+  #     xz
+  #     systemd
+  #     # -- End Default Values
+  #   ];
   # -----------------------------------------------------
 
   # List packages installed in system profile. To search, run:
@@ -145,6 +163,7 @@
     wget
     distrobox
     podman
+    chromium
   ];
 
   
@@ -198,3 +217,4 @@
   system.stateVersion = "24.05"; # Did you read the comment?
 
 }
+
