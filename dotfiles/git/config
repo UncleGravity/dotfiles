@@ -1,0 +1,9 @@
+[user]
+    name = "UncleGravity"
+    email = "viera.tech@gmail.com"
+
+[init]
+    defaultBranch = main
+
+[color]
+    ui = auto

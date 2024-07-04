@@ -1,5 +1,8 @@
 { config, pkgs, inputs, ... }:
 
+let
+  DOTFILES_DIR = ./../dotfiles;
+in
 {
 
   imports = [
@@ -30,6 +33,7 @@
     git
     just
     nodejs
+    python3
 
     tmux
     zellij
@@ -128,17 +132,23 @@
   # DOTFILES
   home.file = {
     ".config/zsh" = {
-      source = ./dotfiles/zsh; 
+      source = "${DOTFILES_DIR}/zsh"; 
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
-    ".config/wezterm".source = ./dotfiles/wezterm;
-    ".config/alacritty".source = ./dotfiles/alacritty;
+    ".config/wezterm" = {
+      source = "${DOTFILES_DIR}/wezterm";
+    };
+    ".config/alacritty" = {
+      source = "${DOTFILES_DIR}/alacritty";
+    };
     ".config/tmux" = {
-      source = ./dotfiles/tmux;
+      source = "${DOTFILES_DIR}/tmux";
       recursive = true; # This allows the directory to be writable, since tpm will create files in it
       executable = true; # Not sure if necessary w/e
     };
-    ".config/zellij".source = ./dotfiles/zellij;
+    ".config/zellij" = {
+      source = "${DOTFILES_DIR}/zellij";
+    };
   };
 
   # Home Manager can also manage your environment variables through
