@@ -34,6 +34,11 @@ in
     just
     nodejs
     python3
+    devenv
+    devbox
+    direnv
+    nixd # nix language server (lsp)
+
 
     tmux
     zellij
@@ -44,6 +49,9 @@ in
     btop
     ripgrep # better grep
     bat # better cat
+    bat-extras.batman # syntax highlighting for man
+    bat-extras.batgrep # syntax highlighting for ripgrep
+    bat-extras.batdiff
     eza # better ls/tree
     fd # better find
     yazi
@@ -80,9 +88,6 @@ in
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
-    # enableCompletion = true;
-    # autosuggestion.enable = true;
-    # syntaxHighlighting.enable = true;
   };
 
   programs.fzf = {

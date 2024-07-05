@@ -2,12 +2,13 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, options, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./escape-hatch.nix
       # inputs.home-manager.nixosModules.default
     ];
 
@@ -102,15 +103,16 @@
   users.users.angel = {
     isNormalUser = true;
     description = "Angel";
-    extraGroups = [ "networkmanager" "wheel" "plugdev" ];
+    extraGroups = [ "networkmanager" "wheel" "plugdev" ]; # plugdev is for hackrf
     packages = with pkgs; [
     #  cowsay
     #  thunderbird
     ];
   };
- 
-  # environment.shells = with pkgs; [bash zsh];
-  environment.pathsToLink = [ "/share/zsh" ]; # get zsh completions for system packages (eg. systemd)
+
+  nix.settings.trusted-users = [ "root" "angel" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
+  environment.shells = with pkgs; [bash zsh];
+  environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
   programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
   users.defaultUserShell = pkgs.zsh;
 
@@ -122,40 +124,7 @@
   
   # Enable parallels tools
   hardware.parallels.enable = true;
-
-  # -----------------------------------------------------
-  # Nix escape hatches
-  # -----------------------------------------------------
-  # Why? Because I tried to run a make file that required bash and NixOS doesn't have /bin/bash
-  # So to avoid having to patch the make file, I just symlinked bash to /bin/bash
-  # sudo ln -s /run/current-system/sw/bin/bash /bin/bash
-  # But apparently there's a whole solution for this:
-  services.envfs.enable = true; # Dynamically populates contents of /bin and /usr/bin/ so that it contains all executables from the PATH of the requesting process (eg. /bin/bash)
-
-  # Run unpatched binaries
-  # Why? Because vscode-server doesn't work without it.
-  programs.nix-ld.enable = true; # Needed for vscode-server
-  programs.nix-ld.package = pkgs.nix-ld-rs; # Latest version of nix-ld
-  # programs.nix-ld.libraries = with pkgs; [
-  #     # -- Default Values from https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/programs/nix-ld.nix
-  #     zlib
-  #     zstd
-  #     stdenv.cc.cc
-  #     curl
-  #     openssl
-  #     attr
-  #     libssh
-  #     bzip2
-  #     libxml2
-  #     acl
-  #     libsodium
-  #     util-linux
-  #     xz
-  #     systemd
-  #     # -- End Default Values
-  #   ];
-  # -----------------------------------------------------
-
+  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
