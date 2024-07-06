@@ -81,7 +81,11 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
+# ==================================================================================================
 # Aliases
+# ==================================================================================================
+export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
+
 alias ls="eza"
 alias l="eza -alh --git --hyperlink"
 alias ll="eza -lh --git --hyperlink"
@@ -91,7 +95,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-export BAT_PAGER="less -RFX --mouse"
 
 alias please='sudo'
 alias homeconfig="sudo nvim /etc/nixos/home.nix"
@@ -105,6 +108,9 @@ alias zjc="zellij --layout compact"
 
 alias dbox="distrobox"
 
+# ==================================================================================================
+# OS Specific
+# ==================================================================================================
 case "$(uname -s)" in
   Darwin)
     # echo 'Mac OS X'
@@ -121,13 +127,14 @@ case "$(uname -s)" in
     ;;
 esac
 
-
-# ENV Variables
+# ==================================================================================================
+# ENV Variables TODO: move to keychain
+# ==================================================================================================
 export ANTHROPIC_API_KEY="nonono"
 export OPENAI_API_KEY="nonono"
 
 # ==================================================================================================
-# Completions (LAST SECTION)
+# Completions (KEEP AT THE END OF FILE)
 # ==================================================================================================
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*' # case insensitive matching
 zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`
