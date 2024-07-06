@@ -88,6 +88,10 @@ alias ll="eza -lh --git --hyperlink"
 alias tree="eza -T"
 alias ..='cd ..'
 alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+
+export BAT_PAGER="less -RFX --mouse"
 
 alias please='sudo'
 alias homeconfig="sudo nvim /etc/nixos/home.nix"
