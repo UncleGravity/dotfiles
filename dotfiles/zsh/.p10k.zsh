@@ -100,6 +100,7 @@
     taskwarrior             # taskwarrior task count (https://taskwarrior.org/)
     per_directory_history   # Oh My Zsh per-directory-history local/global indicator
     # cpu_arch              # CPU architecture
+    fhs_message             # FHS=1 on NixOS (https://ryantm.github.io/nixpkgs/builders/special/fhs-environments/)
     time                    # current time
     # ip                    # ip address and bandwidth usage for a specified network interface
     # public_ip             # public IP address
@@ -1681,6 +1682,10 @@
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
   }
 
+  function prompt_fhs_message() {
+  [[ -n "${FHS}" && "${FHS}" == "1" ]] || return
+    p10k segment -f 208 -i $'\uf313' -t 'FHS'
+  }
   # User-defined prompt segments may optionally provide an instant_prompt_* function. Its job
   # is to generate the prompt segment for display in instant prompt. See
   # https://github.com/romkatv/powerlevel10k/blob/master/README.md#instant-prompt.

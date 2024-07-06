@@ -32,12 +32,17 @@ in
     gcc
     git
     just
-    nodejs
-    python3
+    # nodejs
+    # python3
     devenv
     devbox
     direnv
     nixd # nix language server (lsp)
+
+    # (pkgs.writeShellScriptBin "node" ''
+    #   export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+    #   exec ${pkgs.nodejs}/bin/node "$@"
+    # '')
 
 
     tmux
