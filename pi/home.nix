@@ -105,17 +105,17 @@ in
   # ---------------------------------------------
   home.file = {
     ".config/zsh" = {
-      source = ${DOTFILES_DIR}/zsh; 
+      source = "${DOTFILES_DIR}/zsh"; 
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
-    ".config/wezterm".source = ${DOTFILES_DIR}/wezterm;
-    ".config/alacritty".source = ${DOTFILES_DIR}/alacritty;
+    ".config/wezterm".source = "${DOTFILES_DIR}/wezterm";
+    ".config/alacritty".source = "${DOTFILES_DIR}/alacritty";
     ".config/tmux" = {
-      source = ${DOTFILES_DIR}/tmux;
+      source = "${DOTFILES_DIR}/tmux";
       recursive = true; # This allows the directory to be writable, since tpm will create files in it
       executable = true; # Not sure if necessary w/e
     };
-    ".config/zellij".source = ${DOTFILES_DIR}/zellij;
+    ".config/zellij".source = "${DOTFILES_DIR}/zellij";
   };
 
   home.sessionVariables = {
