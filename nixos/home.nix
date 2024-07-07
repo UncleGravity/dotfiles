@@ -38,6 +38,7 @@ in
     devbox
     direnv
     nixd # nix language server (lsp)
+    pipx
 
     # (pkgs.writeShellScriptBin "node" ''
     #   export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
@@ -52,19 +53,15 @@ in
     # goodies
     fastfetch
     btop
+    eza # better ls/tree
     ripgrep # better grep
     bat # better cat
-    bat-extras.batman # syntax highlighting for man
-    bat-extras.batgrep # syntax highlighting for ripgrep
-    bat-extras.batdiff
-    eza # better ls/tree
+    delta # better diff
     fd # better find
     yazi
 
     alacritty
     wezterm
-
-    pipx
 
     # USB Stuff
     cyme
@@ -121,16 +118,16 @@ in
     #extraConfig = lib.fileContents ../path/to/your/init.vim;
   };
 
-  programs.git = {
-    enable = true;
+  # programs.git = {
+  #   enable = true;
     
-    # Set Git global configurations
-    userName = "UncleGravity";
-    userEmail = "viera.tech@gmail.com";
-    extraConfig = {
-      init.defaultBranch = "main";
-    };
-  };
+  #   # Set Git global configurations
+  #   userName = "UncleGravity";
+  #   userEmail = "viera.tech@gmail.com";
+  #   extraConfig = {
+  #     init.defaultBranch = "main";
+  #   };
+  # };
 
   # # VSCode Server (NixOS)
   # imports = [
@@ -144,6 +141,9 @@ in
     ".config/zsh" = {
       source = "${DOTFILES_DIR}/zsh"; 
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
+    };
+    ".config/git" = {
+      source = "${DOTFILES_DIR}/git";
     };
     ".config/wezterm" = {
       source = "${DOTFILES_DIR}/wezterm";

@@ -49,6 +49,13 @@ setopt HIST_SAVE_NO_DUPS         # Do not write a duplicate event to the history
 setopt SHARE_HISTORY             # Share history between all sessions.
 setopt HIST_VERIFY               # When retrieving a command from history, show the command but do not execute it until the Enter key is pressed again
 
+# Function to trim leading spaces and add to history
+# function zshaddhistory() {
+#     setopt local_options extended_glob
+#     print -Sr -- ${1%%[[:space:]]##}
+#     return 1  # suppress default behavior
+# }
+
 # ==================================================================================================
 # Keybindings
 # ==================================================================================================
@@ -84,29 +91,58 @@ source <(fzf --zsh)
 # ==================================================================================================
 # Aliases
 # ==================================================================================================
-export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
 
+# USEFUL COMMANDS
+# ctrl + r : search through command history (with fzf).
+# Option + c : search folders/subfolders (with fzf). Press enter to cd into it.
+# fd <query> : display FILES/FOLDERS that match the given query
+# rg <query> : search for a <query> INSIDE file CONTENTS (will recursively search all files)
+# rg <query> -g '<glob>' : same as previous, but only search in FILES matching the given <glob>
+# rg <query> -l : list all files that contain the given <query>
+# rg <query> --json | delta : add syntax highlighting to the output of the given <query> (for code searching)
+# tree : display recursive tree view starting from current directory
+
+# ------------ ls -> eza ------------
 alias ls="eza"
-alias l="eza -alh --git --hyperlink"
-alias ll="eza -lh --git --hyperlink"
+alias l="eza -alh --git"
+alias ll="eza -lh --git"
 alias tree="eza -T"
+
+# ------------ grep -> ripgrep ------------
+alias grep="rg"
+
+# ------------ cat -> bat ------------
+export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
+export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Colorize man pages (with bat)
+export MANROFFOPT="-c" # Fix man page formatting issue
+alias cat="bat --paging=never"
+alias -g -- --help='--help 2>&1 | bat --language=help --style=plain --paging=never' # Syntax highlighting for all help commands (e.g. `ls --help`)
+
+# ------------ diff -> delta ------------ (smells like BLOAT)
+export DELTA_PAGER="less -RFX --mouse" # Fix "delta" issue where mouse scroll doesn't work in tmux
+alias diff="delta"
+
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-
-alias please='sudo'
-alias homeconfig="sudo nvim /etc/nixos/home.nix"
 alias zshconfig="sudo nvim /etc/nixos/dotfiles/zsh/.zshrc"
 alias zshrst='source $HOME/.config/zsh/.zshrc'
 
+# yazi
 alias ya="yazi"
+
+# Tmux aliases
+alias tn="tmux new -s"        # Create a new tmux session
+alias ta="tmux attach -t"     # Attach to an existing tmux session
+alias tl="tmux list-sessions" # List all tmux sessions
+alias tk="tmux kill-session -t" # Kill a specific tmux session
+alias ts="tmux switch -t"     # Switch to a specific tmux session
+alias tks="tmux kill-server"  # Kill the tmux server and all sessions
 
 alias zj="zellij"
 alias zjc="zellij --layout compact"
-
-alias dbox="distrobox"
 
 # ==================================================================================================
 # OS Specific
@@ -117,7 +153,7 @@ case "$(uname -s)" in
     [ -f "${0:a:h}/.macos.zsh" ] && source "${0:a:h}/.macos.zsh"
     ;;
   Linux)
-    #
+    alias dbox="distrobox"
     ;;
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     # echo 'MS Windows'
