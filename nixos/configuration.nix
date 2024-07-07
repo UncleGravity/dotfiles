@@ -12,13 +12,6 @@
       # inputs.home-manager.nixosModules.default
     ];
 
-  home-manager = {
-  extraSpecialArgs = { inherit inputs; };
-  users = {
-      "angel" = import ./home.nix;
-    };
-  };
-
   # Enable Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

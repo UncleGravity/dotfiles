@@ -17,14 +17,23 @@
       system = "aarch64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
+
+    # NixOS VM (nixos + home-manager)
     nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-      specialArgs = {inherit inputs;};
+      specialArgs = {inherit inputs;};  
       modules = [
         ./nixos/configuration.nix
-        inputs.home-manager.nixosModules.default
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.extraSpecialArgs = { inherit inputs; };
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.users.angel = import ./nixos/home.nix;
+        }
       ];
     };
 
+    # Raspberry Pi (home-manager only)
     homeConfigurations = {
       "pi" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -32,5 +41,6 @@
         # Add any extra special args if needed
       };
     };
+
   };
 }
