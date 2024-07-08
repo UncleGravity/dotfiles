@@ -1,5 +1,5 @@
-## If you want home manager to "see" a git submodule
-sudo nixos-rebuild switch --flake ".?submodules=1#default" -v
+## If you want home manager to "see" a git submodule (tbh don't do this)
+sudo nixos-rebuild switch --flake ".?submodules=1#nixos" -v
 
 # For the Raspberry Pi
 1. Install Nix (Determinate Installer)

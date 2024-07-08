@@ -13,13 +13,10 @@
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
-    let
-      system = "aarch64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-
+    {
     # NixOS VM (nixos + home-manager)
-    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      system = "aarch64-linux";
       specialArgs = {inherit inputs;};  
       modules = [
         ./nixos/configuration.nix
@@ -34,12 +31,10 @@
     };
 
     # Raspberry Pi (home-manager only)
-    homeConfigurations = {
-      "pi" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [ ./pi/home.nix ];
-        # Add any extra special args if needed
-      };
+    homeConfigurations.pi =home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages."aarch64-linux";
+      modules = [ ./pi/home.nix ];
+      # Add any extra special args if needed
     };
 
   };
