@@ -60,20 +60,32 @@ setopt HIST_VERIFY               # When retrieving a command from history, show 
 # Keybindings
 # ==================================================================================================
 
-# completion using arrow keys (based on history)
-bindkey '^[OA' history-search-backward
-bindkey '^[[A' history-search-backward
-bindkey '^[OB' history-search-forward
-bindkey '^[[B' history-search-forward
+# Word delimiters
+# This section configures how Zsh treats word boundaries, which affects navigation and text manipulation
+autoload -U select-word-style
+select-word-style bash  # Use Bash-style word definitions
+zstyle ':zle:*' word-chars " _-./;@"  # Define additional characters to be treated as part of words
+zstyle ':zle:*' word-style unspecified
 
-# Option/Alt behavior
-# bindkey "^[b" backward-word # Alt+b
-bindkey "^[[1;3D" backward-word # Alt+Left
-# bindkey "^[f" forward-word # Alt+f
-bindkey "^[[1;3C" forward-word # Alt+Right
-bindkey "^[^?" backward-kill-word # Alt+Backspace
+# History search
+# These bindings allow searching through command history using arrow keys
+bindkey '^[OA' history-search-backward  # Up arrow (some terminals)
+bindkey '^[[A' history-search-backward  # Up arrow (other terminals)
+bindkey '^[OB' history-search-forward   # Down arrow (some terminals)
+bindkey '^[[B' history-search-forward   # Down arrow (other terminals)
 
-bindkey '^[' autosuggest-clear # Esc
+# Option/Alt key navigation
+# These keybindings enhance text navigation using Option/Alt key combinations
+bindkey "^[[1;3D" backward-word         # Alt+Left: Move cursor to previous word
+bindkey "^[[1;3C" forward-word          # Alt+Right: Move cursor to next word
+bindkey "^[^?" backward-kill-word       # Alt+Backspace: Delete previous word
+
+# Misc
+bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
+
+# Note: Some keybindings are commented out but kept for reference
+# bindkey "^[b" backward-word           # Alt+b (alternative for backward-word)
+# bindkey "^[f" forward-word            # Alt+f (alternative for forward-word)
 
 # ==================================================================================================
 # Options
@@ -134,6 +146,7 @@ alias zshrst='source $HOME/.config/zsh/.zshrc'
 alias ya="yazi"
 
 # Tmux aliases
+# alias t="tmux new-session -A -s $(basename $(pwd))"
 alias t="tmux"
 alias tn="tmux new-session -A -s"   # Create a new tmux session
 alias ta="tmux attach -t"           # Attach to an existing tmux session

@@ -38,6 +38,7 @@ in
 
 
     tmux
+    twm
     zellij
     tree
 
@@ -146,6 +147,9 @@ in
       source = "${DOTFILES_DIR}/tmux";
       recursive = true; # This allows the directory to be writable, since tpm will create files in it
       executable = true; # Not sure if necessary w/e
+    };
+    ".config/twm" = {
+      source = "${DOTFILES_DIR}/twm";
     };
     ".config/zellij" = {
       source = "${DOTFILES_DIR}/zellij";
