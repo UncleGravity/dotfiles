@@ -6,7 +6,8 @@ in
 {
 
   imports = [
-    ./vscode-server.nix # I would normally install this as a system package, but it's easier with home-manager https://github.com/nix-community/nixos-vscode-server?tab=readme-ov-file#home-manager
+    ./vscode-server.nix # NIXOS ONLY: I would normally install this as a system package, but it's easier with home-manager https://github.com/nix-community/nixos-vscode-server?tab=readme-ov-file#home-manager
+    # ./zsh.nix
   ];
 
   # Home Manager needs a bit of information about you and the paths it should
@@ -26,7 +27,6 @@ in
     # nodejs
     # python3
     devenv
-    devbox
     direnv
     nixd # nix language server (lsp)
     pipx
@@ -36,13 +36,11 @@ in
     #   exec ${pkgs.nodejs}/bin/node "$@"
     # '')
 
-
+    # goodies
     tmux
     twm
     zellij
     tree
-
-    # goodies
     fastfetch
     btop
     eza # better ls/tree
@@ -63,7 +61,6 @@ in
     meslo-lgs-nf # Nerd Font for powerlevel10k
 
     llm # https://github.com/simonw/llm
-
 
     # # It is sometimes useful to fine-tune packages, for example, by applying
     # # overrides. You can do that directly here, just don't forget the
@@ -109,24 +106,6 @@ in
     # OR
     #extraConfig = lib.fileContents ../path/to/your/init.vim;
   };
-
-  # programs.git = {
-  #   enable = true;
-    
-  #   # Set Git global configurations
-  #   userName = "UncleGravity";
-  #   userEmail = "viera.tech@gmail.com";
-  #   extraConfig = {
-  #     init.defaultBranch = "main";
-  #   };
-  # };
-
-  # # VSCode Server (NixOS)
-  # imports = [
-  #   inputs.vscode-server.homeModules.default
-  # ];
-
-  # services.vscode-server.enable = true;
 
   # DOTFILES
   home.file = {
