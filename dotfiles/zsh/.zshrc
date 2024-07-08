@@ -37,7 +37,7 @@ bindkey -e
 # History
 # ==================================================================================================
 HISTFILE=$HOME/.config/zsh/.zsh_history
-HISTSIZE=1000000
+HISTSIZE=1_000_000
 SAVEHIST=$HISTSIZE
 setopt EXTENDED_HISTORY          # Write the history file in the ':start:elapsed;command' format.
 setopt HIST_EXPIRE_DUPS_FIRST    # Expire a duplicate event first when trimming history.
@@ -134,15 +134,18 @@ alias zshrst='source $HOME/.config/zsh/.zshrc'
 alias ya="yazi"
 
 # Tmux aliases
-alias tn="tmux new -s"        # Create a new tmux session
-alias ta="tmux attach -t"     # Attach to an existing tmux session
-alias tl="tmux list-sessions" # List all tmux sessions
-alias tk="tmux kill-session -t" # Kill a specific tmux session
-alias ts="tmux switch -t"     # Switch to a specific tmux session
-alias tks="tmux kill-server"  # Kill the tmux server and all sessions
+alias t="tmux"
+alias tn="tmux new-session -A -s"   # Create a new tmux session
+alias ta="tmux attach -t"           # Attach to an existing tmux session
+alias tl="tmux list-sessions"       # List all tmux sessions
+alias tk="tmux kill-session -t"     # Kill a specific tmux session
+alias ts="tmux switch-client -t"    # Switch to a specific tmux session
+alias tks="tmux kill-server"        # Kill the tmux server and all sessions
 
 alias zj="zellij"
 alias zjc="zellij --layout compact"
+
+alias ff="fastfetch"
 
 # ==================================================================================================
 # OS Specific

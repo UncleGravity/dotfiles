@@ -9,16 +9,19 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./escape-hatch.nix
-      # inputs.home-manager.nixosModules.default
+      ./hackrf.nix
     ];
 
   # Enable Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # ---------------------------------------------------------------------------
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+
+  # ---------------------------------------------------------------------------
   # Networking
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -31,6 +34,8 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
+
+  # ---------------------------------------------------------------------------
   # Set your time zone.
   time.timeZone = "Asia/Taipei";
 
@@ -49,6 +54,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+  # ---------------------------------------------------------------------------
+  # X11
   services.xserver.enable = true;
    
   # Enable the GNOME Desktop Environment.
@@ -69,9 +76,11 @@
     
   services.xserver.exportConfiguration = true;
 
+  # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
+  # ---------------------------------------------------------------------------
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -88,36 +97,47 @@
     #media-session.enable = true;
   };
 
+  # ---------------------------------------------------------------------------
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.groups.plugdev = {}; # Required by hackrf
-  users.users.angel = {
-    isNormalUser = true;
-    description = "Angel";
-    extraGroups = [ "networkmanager" "wheel" "plugdev" ]; # plugdev is for hackrf
-    packages = with pkgs; [
-    #  cowsay
-    #  thunderbird
-    ];
+  users =  {
+    users.angel = {
+      isNormalUser = true;
+      description = "Angel";
+      extraGroups = [ "networkmanager" "wheel" ]; # plugdev is for hackrf
+      packages = with pkgs; [];
+    };
+    defaultUserShell = pkgs.zsh;
   };
 
+  # hardware.hackrf.enable = true; # doesn't work for some reason, maybe send pull request
+  # https://github.com/NixOS/nixpkgs/blob/d1b9c95fdfe16e551737edc6e0b9646cfb9a6850/nixos/modules/hardware/hackrf.nix
+  # users.groups = {
+  #   plugdev = {}; # Required by hackrf
+  # };
+  # services.udev.extraRules = ''
+  #   SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{idProduct}=="6089", GROUP="plugdev", MODE="0666"
+  # '';
+
   nix.settings.trusted-users = [ "root" "angel" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
+
+  # ---------------------------------------------------------------------------
+  # SHELLS
   environment.shells = with pkgs; [bash zsh];
-  environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
   programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
-  users.defaultUserShell = pkgs.zsh;
+  environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
 
-  # Install firefox.
-  programs.firefox.enable = true;
-
+  # ---------------------------------------------------------------------------
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
   
   # Enable parallels tools
   hardware.parallels.enable = true;
   
+  # ---------------------------------------------------------------------------
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -126,9 +146,11 @@
     distrobox
     podman
     chromium
+    # hackrf
   ];
 
   
+  # ---------------------------------------------------------------------------
   # PODMAN CONFIG
     environment.etc."containers/policy.json".text = ''
       {
@@ -144,12 +166,6 @@
         }
       }
     '';
-  
-  # HACKRF CONFIG
-  #services.udev.packages = [ pkgs.hackrf ];
-  services.udev.extraRules = ''
-    SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{idProduct}=="6089", GROUP="plugdev", MODE="0666"
-  '';
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
