@@ -79,6 +79,8 @@ bindkey '^[[B' history-search-forward   # Down arrow (other terminals)
 bindkey "^[[1;3D" backward-word         # Alt+Left: Move cursor to previous word
 bindkey "^[[1;3C" forward-word          # Alt+Right: Move cursor to next word
 bindkey "^[^?" backward-kill-word       # Alt+Backspace: Delete previous word
+bindkey "^[[1;3A" up-line-or-history    # Alt+Up: Move to previous line or history entry
+bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history entry
 
 # Misc
 bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
