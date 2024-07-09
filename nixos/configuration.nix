@@ -149,23 +149,27 @@
     # hackrf
   ];
 
+  # (pkgs.writeShellScriptBin "node" ''
+  #   export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+  #   exec ${pkgs.nodejs}/bin/node "$@"
+  # '')
   
   # ---------------------------------------------------------------------------
   # PODMAN CONFIG
-    environment.etc."containers/policy.json".text = ''
-      {
-        "default": [
-          {
-            "type": "insecureAcceptAnything"
-          }
-        ],
-        "transports": {
-          "docker-daemon": {
-            "": [{"type":"insecureAcceptAnything"}]
-          }
+  environment.etc."containers/policy.json".text = ''
+    {
+      "default": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "transports": {
+        "docker-daemon": {
+          "": [{"type":"insecureAcceptAnything"}]
         }
       }
-    '';
+    }
+  '';
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

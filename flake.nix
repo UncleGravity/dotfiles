@@ -19,13 +19,16 @@
       system = "aarch64-linux";
       specialArgs = {inherit inputs;};  
       modules = [
-        ./nixos/configuration.nix
+        ./nixos/configuration.nix # System Config (nixos)
         home-manager.nixosModules.home-manager
         {
-          home-manager.extraSpecialArgs = { inherit inputs; };
+          home-manager.extraSpecialArgs = { 
+            inherit inputs;
+            username = "angel";
+          };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.angel = import ./nixos/home.nix;
+          home-manager.users.angel = import ./nixos/home.nix; # User Config (home-manager)
         }
       ];
     };
@@ -33,8 +36,11 @@
     # Raspberry Pi (home-manager only)
     homeConfigurations.pi =home-manager.lib.homeManagerConfiguration {
       pkgs = nixpkgs.legacyPackages."aarch64-linux";
-      modules = [ ./pi/home.nix ];
-      # Add any extra special args if needed
+      extraSpecialArgs = { 
+        inherit inputs; 
+        username = "pi";
+      };
+      modules = [ ./pi/home.nix ]; # User Config (home-manager)
     };
 
   };
