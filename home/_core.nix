@@ -26,6 +26,7 @@ in
     direnv
     nixd # nix language server (lsp)
     pipx
+    jq
 
     # goodies
     tmux
