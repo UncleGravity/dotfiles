@@ -5,9 +5,41 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Set up fzf key bindings and fuzzy completion
+export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
+source <(fzf --zsh)
+
+
+# ==================================================================================================
+# Distrobox
+# ==================================================================================================
+# command_not_found_handle() {
+#   # don't run if not in a container
+#   if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ]; then
+#     exit 127
+#   fi
+  
+#   echo "Command not found. Do you want to run it on the host system? (y/N)"
+#   read -q response
+#   echo
+#   if [[ $response =~ ^[Yy]$ ]]; then
+#     distrobox-host-exec "${@}"
+#   else
+#     echo "Command not executed."
+#   fi
+# }
+
+# if [ -n "${ZSH_VERSION-}" ]; then
+#   command_not_found_handler() {
+#     command_not_found_handle "$@"
+#   }
+# fi
+
 # ==================================================================================================
 # Zinit
 # ==================================================================================================
+# Run "zinit update --all" and "zinit self-update" every once in a while to update all plugins
+
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 [ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
 [ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
@@ -20,18 +52,12 @@ zinit light romkatv/powerlevel10k
 
 # Load other plugins with Turbo mode
 zinit wait lucid for \
-    Aloxaf/fzf-tab \
     MichaelAquilina/zsh-you-should-use \
     zsh-users/zsh-syntax-highlighting \
     atload"_zsh_autosuggest_start" \
         zsh-users/zsh-autosuggestions \
-    zsh-users/zsh-completions
-
-# emacs style keybindings
-bindkey -e
-# vim style keybindings
-# bindkey -v
-
+    zsh-users/zsh-completions \
+    Aloxaf/fzf-tab
 
 # ==================================================================================================
 # History
@@ -49,16 +75,14 @@ setopt HIST_SAVE_NO_DUPS         # Do not write a duplicate event to the history
 setopt SHARE_HISTORY             # Share history between all sessions.
 setopt HIST_VERIFY               # When retrieving a command from history, show the command but do not execute it until the Enter key is pressed again
 
-# Function to trim leading spaces and add to history
-# function zshaddhistory() {
-#     setopt local_options extended_glob
-#     print -Sr -- ${1%%[[:space:]]##}
-#     return 1  # suppress default behavior
-# }
-
 # ==================================================================================================
 # Keybindings
 # ==================================================================================================
+
+# emacs style keybindings
+bindkey -e
+# vim style keybindings
+# bindkey -v
 
 # Word delimiters
 # This section configures how Zsh treats word boundaries, which affects navigation and text manipulation
@@ -85,10 +109,6 @@ bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history
 # Misc
 bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 
-# Note: Some keybindings are commented out but kept for reference
-# bindkey "^[b" backward-word           # Alt+b (alternative for backward-word)
-# bindkey "^[f" forward-word            # Alt+f (alternative for forward-word)
-
 # ==================================================================================================
 # Options
 # ==================================================================================================
@@ -98,9 +118,6 @@ setopt autocd             # Automatically change to a directory just by typing i
 setopt nomatch            # Do not display an error message if a pattern for filename matching has no matches
 setopt menu_complete       # Show completion menu on successive tab press
 setopt interactivecomments # Allow comments to be entered in interactive mode
-
-# Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
 
 # ==================================================================================================
 # Aliases
@@ -125,12 +142,47 @@ alias tree="eza -T"
 # ------------ grep -> ripgrep ------------
 alias grep="rg"
 
+# in progress
+# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
+function rgsearch() {
+    local selected=$(rg --hidden --color=always --line-number --no-heading --smart-case "${*:-}" |
+    fzf --ansi \
+        --tmux 80% \
+        --color "hl:-1:underline,hl+:-1:underline:reverse" \
+        --delimiter : \
+        --preview 'bat --color=always {1} --highlight-line {2}' \
+        --preview-window 'right:66%,border-left,+{2}+3/3,~3')
+
+    if [[ -n $selected ]]; then
+        local file=$(echo $selected | cut -d':' -f1)
+        local line=$(echo $selected | cut -d':' -f2)
+        local editor=$(echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --layout=reverse --border)
+        case $editor in
+            nvim)
+                nvim +$line $file
+                ;;
+            code)
+                code -g $file:$line
+                ;;
+            cursor)
+                cursor -g $file:$line
+                ;;
+            *)
+                echo "No editor selected"
+                ;;
+        esac
+    fi
+}
+
+# Bind rgsearch to Ctrl+F
+bindkey -s '^F' 'rgsearch\n'
+
 # ------------ cat -> bat ------------
 export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
 export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Colorize man pages (with bat)
 export MANROFFOPT="-c" # Fix man page formatting issue
 alias cat="bat --paging=never"
-alias -g -- --help='--help 2>&1 | bat --language=help --style=plain --paging=never' # Syntax highlighting for all help commands (e.g. `ls --help`)
+alias -g -- --help='--help | bat --language=help --style=plain --paging=never' # Syntax highlighting for all help commands (e.g. `ls --help`)
 
 # ------------ diff -> delta ------------ (smells like BLOAT)
 export DELTA_PAGER="less -RFX --mouse" # Fix "delta" issue where mouse scroll doesn't work in tmux
@@ -196,21 +248,60 @@ export OPENAI_API_KEY="nonono"
 # ==================================================================================================
 # Completions (KEEP AT THE END OF FILE)
 # ==================================================================================================
+# ie. what happens when you press <TAB>
+
+# Completions Formatting
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*' # case insensitive matching
 zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`
-zstyle ':completion:*:descriptions' format '[%d]' # set descriptions format to enable group support
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # colorize the completion list
-zstyle ':completion:*' menu no # disable menu so that we can use fzf instead
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
+zstyle ':completion:*' menu no # disable default menu so that we can use fzf instead
+
+# fzf-tab - general
+zstyle ':completion:*:descriptions' format '[%d]' # group completions by type
 zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
-zstyle ':completion:*' rehash true 
+
+# fzf-tab - minimum size
+zstyle ':fzf-tab:*' popup-min-size 200 200 # apply to all commands
+# zstyle ':fzf-tab:complete:diff:*' popup-min-size 80 12 # only apply to 'diff' (for example)
+
+# PREVIEWS
+## Show a preview of the selected item
+# -------------------------------------------------------------------------------------------------
+
+### cd
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
+
+### environment variables
+zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
+	fzf-preview 'echo ${(P)word}'
+
+### systemd
+zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
+
+### kill
+# give a preview of commandline arguments when completing `kill`
+zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
+zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
+  '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
+zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=down:3:wrap
+
+### code
+zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-preview 'bat --color=always --style=numbers $realpath'
+
+# -------------------------------------------------------------------------------------------------
+
+zstyle ':completion:*' rehash true # automatically update cache (keep completions up to date)
 
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 [[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # Create zsh cache dir
 autoload -Uz compinit # Load the completion system
+compinit -d "$HOME/.cache/zsh/zcompdump" # Initialize completion system with custom dump file location
 
-compinit -d "$HOME/.cache/zsh/zcompdump"
+## Additional completions for commands that don't have them
+## This generates completions using the commands help page
+compdef _gnu_generic fzf # Completions for the fzf command: https://github.com/junegunn/fzf/issues/3349
+# compdef _gnu_generic SOME_OTHER_COMMAND
 
 zinit cdreplay -q # recommended by zinit
