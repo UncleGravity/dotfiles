@@ -6,7 +6,7 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
-config.front_end = "WebGpu"
+-- config.front_end = "WebGpu"
 
 -- THEME
 -- config.color_scheme = "Catppuccin Mocha"
@@ -14,7 +14,7 @@ config.front_end = "WebGpu"
 config.color_scheme = 'Apple System Colors'
 
 -- FONT
-config.font = wezterm.font("MesloLGS NF")
+config.font = wezterm.font("MesloLGS Nerd Font")
 config.font_size = 13
 -- config.freetype_load_target = "Light"
 -- config.freetype_render_target = "HorizontalLcd"

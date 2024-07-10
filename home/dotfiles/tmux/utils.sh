@@ -63,6 +63,11 @@ get_program() {
                 full_command=$(ps -t "$pane_tty" -o args= | tail -n 1)
             fi
             
+            # Strip the path if the command starts with a slash
+            if [[ "$full_command" == /* ]]; then
+                full_command=$(echo "$full_command" | sed 's|^.*/||')
+            fi
+            
             echo "${full_command}"
             ;;
     esac
