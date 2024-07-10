@@ -156,21 +156,23 @@
   
   # ---------------------------------------------------------------------------
   # PODMAN CONFIG
-  environment.etc."containers/policy.json".text = ''
-    {
-      "default": [
-        {
-          "type": "insecureAcceptAnything"
-        }
-      ],
-      "transports": {
-        "docker-daemon": {
-          "": [{"type":"insecureAcceptAnything"}]
-        }
-      }
-    }
-  '';
+  
+  # Enable common container config files in /etc/containers
+  virtualisation.containers.enable = true;
+  virtualisation = {
+    podman = {
+      enable = true;
 
+      # Create a `docker` alias for podman, to use it as a drop-in replacement
+      dockerCompat = true;
+
+      # Required for containers under podman-compose to be able to talk to each other.
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
+
+  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
+  
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
