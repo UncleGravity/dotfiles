@@ -106,6 +106,26 @@ bindkey "^[^?" backward-kill-word       # Alt+Backspace: Delete previous word
 bindkey "^[[1;3A" up-line-or-history    # Alt+Up: Move to previous line or history entry
 bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history entry
 
+# fzf
+
+## Directory Search
+## Same as default, but with preview
+export FZF_ALT_C_OPTS="
+  --preview 'eza -T --color=always --level=2 {}'
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## File Search
+## Same as default, but with preview
+export FZF_CTRL_T_OPTS="
+  --preview 'bat --style=numbers --color=always --line-range :500 {}'
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## History Search
+## Same as default, but bigger
+export FZF_CTRL_R_OPTS="--tmux 80%"
+
 # Misc
 bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 
@@ -125,6 +145,7 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 
 # USEFUL COMMANDS
 # ctrl + r : search through command history (with fzf).
+# ctrl + t : search through files/folders in current directory (with fzf).
 # Option + c : search folders/subfolders (with fzf). Press enter to cd into it.
 # fd <query> : display FILES/FOLDERS that match the given query
 # rg <query> : search for a <query> INSIDE file CONTENTS (will recursively search all files)
@@ -135,8 +156,10 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 
 # ------------ ls -> eza ------------
 alias ls="eza"
-alias l="eza -alh --git"
-alias ll="eza -lh --git"
+alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize"
+alias la="eza --all --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize"
+alias ll="eza --long --header --git"
+alias lla="eza --all --long --header --git"
 alias tree="eza -T"
 
 # ------------ grep -> ripgrep ------------
@@ -144,39 +167,7 @@ alias grep="rg"
 
 # in progress
 # goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
-function fzrg() {
-    local selected=$(rg --hidden --color=always --line-number --no-heading --smart-case "${*:-}" |
-    fzf --ansi \
-        --tmux 80% \
-        --color "hl:-1:underline,hl+:-1:underline:reverse" \
-        --delimiter : \
-        --preview 'bat --color=always {1} --highlight-line {2}' \
-        --preview-window 'right:66%,border-left,+{2}+3/3,~3')
-
-    if [[ -n $selected ]]; then
-        local file=$(echo $selected | cut -d':' -f1)
-        local line=$(echo $selected | cut -d':' -f2)
-        local editor=$(echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --layout=reverse --border)
-        case $editor in
-            nvim)
-                nvim +$line $file
-                ;;
-            code)
-                code -g $file:$line
-                ;;
-            cursor)
-                cursor -g $file:$line
-                ;;
-            *)
-                echo "No editor selected"
-                ;;
-        esac
-    fi
-}
-
-# Bind fzrg to Ctrl+F
-zle -N fzrg-widget fzrg # Create a widget from the fzrg function
-bindkey '^F' fzrg-widget # Bind the widget to Ctrl+F
+[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
 
 # ------------ cat -> bat ------------
 export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
@@ -285,10 +276,19 @@ zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl
 zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
   '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
-zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=down:3:wrap
+zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags \
+  --preview-window=down:3:wrap \
+  --multi \
+  --bind='ctrl-a:toggle-all' \
+  --bind='tab:toggle+down' 
 
 ### code
-zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-preview 'bat --color=always --style=numbers $realpath'
+zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' \
+  fzf-preview 'bat --color=always --style=numbers $realpath'
+zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-flags \
+  --multi \
+  --bind='ctrl-a:toggle-all' \
+  --bind='tab:toggle+down'
 
 # -------------------------------------------------------------------------------------------------
 
