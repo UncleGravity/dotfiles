@@ -144,7 +144,7 @@ alias grep="rg"
 
 # in progress
 # goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
-function rgsearch() {
+function fzrg() {
     local selected=$(rg --hidden --color=always --line-number --no-heading --smart-case "${*:-}" |
     fzf --ansi \
         --tmux 80% \
@@ -174,8 +174,9 @@ function rgsearch() {
     fi
 }
 
-# Bind rgsearch to Ctrl+F
-bindkey -s '^F' 'rgsearch\n'
+# Bind fzrg to Ctrl+F
+zle -N fzrg-widget fzrg # Create a widget from the fzrg function
+bindkey '^F' fzrg-widget # Bind the widget to Ctrl+F
 
 # ------------ cat -> bat ------------
 export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
