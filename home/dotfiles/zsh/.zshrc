@@ -9,7 +9,6 @@ fi
 export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
 source <(fzf --zsh)
 
-
 # ==================================================================================================
 # Distrobox
 # ==================================================================================================
@@ -216,6 +215,7 @@ case "$(uname -s)" in
     ;;
   Linux)
     alias dbox="distrobox"
+    # fpath+=(/run/current-system/sw/share/zsh/site-functions)
     ;;
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     # echo 'MS Windows'
@@ -248,18 +248,18 @@ zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing 
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # colorize the completion list
 zstyle ':completion:*' menu no # disable default menu so that we can use fzf instead
 
-# fzf-tab - general
+# FZF-TAB
+## Show a preview of the selected item
+# -------------------------------------------------------------------------------------------------
+
+# general:
 zstyle ':completion:*:descriptions' format '[%d]' # group completions by type
 zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
 
-# fzf-tab - minimum size
-zstyle ':fzf-tab:*' popup-min-size 200 200 # apply to all commands
+### Formatting:
+zstyle ':fzf-tab:*' popup-min-size 200 200 # minimum size, apply to all commands
 # zstyle ':fzf-tab:complete:diff:*' popup-min-size 80 12 # only apply to 'diff' (for example)
-
-# PREVIEWS
-## Show a preview of the selected item
-# -------------------------------------------------------------------------------------------------
 
 ### cd
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
