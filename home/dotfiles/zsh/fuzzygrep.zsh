@@ -1,10 +1,10 @@
 # Helper functions
 _fzf_select_mode() {
-    echo -e "files\ndirectories\ngrep" | fzf --prompt="Select search mode: " --height=~50% --tmux 80% --layout=reverse --border
+    echo -e "files\ndirectories\ngrep" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
 }
 
 _fzf_files() {
-    fd --type f --hidden --follow --exclude .git | 
+    fd --type f --hidden --follow --exclude .git --exclude node_modules --exclude dist --exclude build | 
         fzf --ansi \
             --height=80% \
             --tmux 80% \
@@ -13,7 +13,7 @@ _fzf_files() {
 }
 
 _fzf_directories() {
-    fd --type d --hidden --follow --exclude .git | 
+    fd --type d --hidden --follow --exclude .git --exclude node_modules --exclude dist --exclude build | 
         fzf --ansi \
             --height=80% \
             --tmux 80% \
