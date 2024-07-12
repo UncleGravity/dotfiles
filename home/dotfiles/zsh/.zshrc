@@ -1,11 +1,3 @@
-# Necessary apps:
-# fzf
-# bat
-# rg
-# delta
-# eza
-# tmux
-
 # ==================================================================================================
 # Powerlevel10k Instant Prompt
 # ==================================================================================================
@@ -62,6 +54,8 @@ zinit wait lucid for \
     zsh-users/zsh-syntax-highlighting \
     zsh-users/zsh-completions \
     Aloxaf/fzf-tab
+
+# zinit pack for fzf
 
 # ==================================================================================================
 # History

@@ -18,9 +18,11 @@ in
     cmake
     gcc
     git
+    file
     just
     # nodejs
     # python3
+    # go
     devenv
     direnv
     nixd # nix language server (lsp)
