@@ -5,6 +5,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+# export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
+
 # ==================================================================================================
 # Distrobox
 # ==================================================================================================
@@ -41,19 +45,19 @@ ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 source "${ZINIT_HOME}/zinit.zsh"
 
 # Load Powerlevel10k theme
-zinit ice depth=1 lucid
-zinit light romkatv/powerlevel10k
-[[ -f ${HOME}/.config/zsh/.p10k.zsh ]] && source ${HOME}/.config/zsh/.p10k.zsh
+# zinit ice depth=1 lucid
+zinit for \
+  depth=1 \
+  lucid \
+  atload="[[ -f \${HOME}/.config/zsh/.p10k.zsh ]] && source \${HOME}/.config/zsh/.p10k.zsh" \
+  romkatv/powerlevel10k
 
 # Load other plugins with Turbo mode
-zinit ice wait lucid atload'_zsh_autosuggest_start'
+# zinit light MichaelAquilina/zsh-you-should-use
+zinit light Aloxaf/fzf-tab
+zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
-
-zinit wait lucid for \
-    MichaelAquilina/zsh-you-should-use \
-    zsh-users/zsh-syntax-highlighting \
-    zsh-users/zsh-completions \
-    Aloxaf/fzf-tab
+zinit light zsh-users/zsh-syntax-highlighting
 
 # zinit pack for fzf
 
@@ -106,14 +110,10 @@ bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history
 
 # fzf
 
-# Set up fzf key bindings and fuzzy completion
-export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
-source <(fzf --zsh)
-
 ## Directory Search
 ## Same as default, but with preview
 export FZF_ALT_C_OPTS="
-  --preview 'eza -T --color=always --level=2 {}'
+  --preview 'eza -T --color=always --level=3 {}'
   --tmux 80%
   --bind 'ctrl-/:change-preview-window(down|hidden|)'"
 
@@ -297,7 +297,12 @@ zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-flags \
 
 zstyle ':completion:*' rehash true # automatically update cache (keep completions up to date)
 
-# Custom completions
+# Load missing completions for ubuntu! (what about darwin?)
+[[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
+[[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
+[[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
+
+# Load custom completions
 fpath=(~/.config/zsh/completions $fpath)
 
 # Keep this at the end of the file
@@ -307,7 +312,7 @@ autoload -Uz compinit;  # Load the completion system
 compinit -d "$HOME/.cache/zsh/zcompdump" # Initialize completion system with custom dump file location
 
 ## Additional completions for commands that don't have them
-## This generates completions using the commands help page
+## This generates completions using the fzf help page
 compdef _gnu_generic fzf # Completions for the fzf command: https://github.com/junegunn/fzf/issues/3349
 # compdef _gnu_generic SOME_OTHER_COMMAND
 
