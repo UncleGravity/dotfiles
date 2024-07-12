@@ -1,13 +1,17 @@
+# Necessary apps:
+# fzf
+# bat
+# rg
+# delta
+# eza
+# tmux
+
 # ==================================================================================================
 # Powerlevel10k Instant Prompt
 # ==================================================================================================
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
-
-# Set up fzf key bindings and fuzzy completion
-export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
-source <(fzf --zsh)
 
 # ==================================================================================================
 # Distrobox
@@ -50,11 +54,12 @@ zinit light romkatv/powerlevel10k
 [[ -f ${HOME}/.config/zsh/.p10k.zsh ]] && source ${HOME}/.config/zsh/.p10k.zsh
 
 # Load other plugins with Turbo mode
+zinit ice wait lucid atload'_zsh_autosuggest_start'
+zinit light zsh-users/zsh-autosuggestions
+
 zinit wait lucid for \
     MichaelAquilina/zsh-you-should-use \
     zsh-users/zsh-syntax-highlighting \
-    atload"_zsh_autosuggest_start" \
-        zsh-users/zsh-autosuggestions \
     zsh-users/zsh-completions \
     Aloxaf/fzf-tab
 
@@ -107,6 +112,10 @@ bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history
 
 # fzf
 
+# Set up fzf key bindings and fuzzy completion
+export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
+source <(fzf --zsh)
+
 ## Directory Search
 ## Same as default, but with preview
 export FZF_ALT_C_OPTS="
@@ -155,8 +164,8 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 
 # ------------ ls -> eza ------------
 alias ls="eza"
-alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize"
-alias la="eza --all --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize"
+alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"
+alias la="eza --all --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"
 alias ll="eza --long --header --git"
 alias lla="eza --all --long --header --git"
 alias tree="eza -T"
@@ -294,10 +303,13 @@ zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-flags \
 
 zstyle ':completion:*' rehash true # automatically update cache (keep completions up to date)
 
+# Custom completions
+fpath=(~/.config/zsh/completions $fpath)
+
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 [[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # Create zsh cache dir
-autoload -Uz compinit # Load the completion system
+autoload -Uz compinit;  # Load the completion system
 compinit -d "$HOME/.cache/zsh/zcompdump" # Initialize completion system with custom dump file location
 
 ## Additional completions for commands that don't have them

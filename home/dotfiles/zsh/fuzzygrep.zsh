@@ -1,12 +1,13 @@
 # Helper functions
 _fzf_select_mode() {
-    echo -e "files\ndirectories\ngrep" | fzf --prompt="Select search mode: " --height=~50% --layout=reverse --border
+    echo -e "files\ndirectories\ngrep" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
 }
 
 _fzf_files() {
     fd --type f --hidden --follow --exclude .git | 
         fzf --ansi \
             --height=80% \
+            --tmux \
             --preview 'bat --color=always --style=numbers {}' \
             --preview-window 'right:66%,border-left'
 }
@@ -15,6 +16,7 @@ _fzf_directories() {
     fd --type d --hidden --follow --exclude .git | 
         fzf --ansi \
             --height=80% \
+            --tmux \
             --preview 'eza -1 --color=always {}' \
             --preview-window 'right:66%,border-left'
 }
@@ -25,6 +27,7 @@ _fzf_grep() {
         --glob '!*.{lock,min.js}' |
         fzf --ansi \
             --height=80% \
+            --tmux \
             --color "hl:-1:underline,hl+:-1:underline:reverse" \
             --delimiter : \
             --preview 'bat --color=always {1} --highlight-line {2}' \
@@ -32,7 +35,7 @@ _fzf_grep() {
 }
 
 _select_editor() {
-    echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --layout=reverse --border
+    echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --tmux --layout=reverse --border
 }
 
 # Main function

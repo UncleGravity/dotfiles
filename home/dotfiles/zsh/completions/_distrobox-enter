@@ -1,0 +1,15 @@
+#compdef distrobox-enter
+
+_distrobox_containers() {
+  local -a containers
+  containers=(${(f)"$(distrobox list --no-color | tail -n +2 | cut -d'|' -f2 | tr -d ' ')"})
+  _describe 'container name' containers
+}
+
+_arguments \
+  '(--name -n)'{-n,--name}'[name for the distrobox]:container name:_distrobox_containers' \
+  '(--root -r)'{-r,--root}'[launch podman/docker/lilipod with root privileges]' \
+  '(--help -h)'{-h,--help}'[show this message]' \
+  '(--verbose -v)'{-v,--verbose}'[show more verbosity]' \
+  '(--version -V)'{-V,--version}'[show version]' \
+  '*:container name:_distrobox_containers'
