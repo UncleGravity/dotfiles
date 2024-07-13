@@ -6,40 +6,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # ==================================================================================================
-# FZF
-# ==================================================================================================
-
-# Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
-# export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
-
-# Source fzf-git.sh if available
-[[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
-
-# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
-[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
-
-## Directory Search
-## Same as default, but with preview
-export FZF_ALT_C_OPTS="
-  --preview 'eza -T --color=always --level=3 {}'
-  --walker-skip .git,node_modules,target
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-
-## File Search
-## Same as default, but with preview
-export FZF_CTRL_T_OPTS="
-  --preview 'bat --number --color=always --line-range :500 {}'
-  --walker-skip .git,node_modules,dist,build
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-
-## History Search
-## Same as default, but bigger
-export FZF_CTRL_R_OPTS="--tmux 80%"
-
-# ==================================================================================================
 # Zinit
 # ==================================================================================================
 # Run "zinit update --all" and "zinit self-update" every once in a while to update all plugins
@@ -115,6 +81,40 @@ bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history
 
 # Misc
 bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
+
+# ==================================================================================================
+# FZF
+# ==================================================================================================
+
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+# export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
+
+# Source fzf-git.sh if available
+[[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
+
+# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
+[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
+
+## Directory Search
+## Same as default, but with preview
+export FZF_ALT_C_OPTS="
+  --preview 'eza -T --color=always --level=3 {}'
+  --walker-skip .git,node_modules,target
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## File Search
+## Same as default, but with preview
+export FZF_CTRL_T_OPTS="
+  --preview 'bat --number --color=always --line-range :500 {}'
+  --walker-skip .git,node_modules,dist,build
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## History Search
+## Same as default, but bigger
+export FZF_CTRL_R_OPTS="--tmux 80%"
 
 # ==================================================================================================
 # Options
