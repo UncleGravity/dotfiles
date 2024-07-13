@@ -5,34 +5,39 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# ==================================================================================================
+# FZF
+# ==================================================================================================
+
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 # export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
 
-# ==================================================================================================
-# Distrobox
-# ==================================================================================================
-# command_not_found_handle() {
-#   # don't run if not in a container
-#   if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ]; then
-#     exit 127
-#   fi
-  
-#   echo "Command not found. Do you want to run it on the host system? (y/N)"
-#   read -q response
-#   echo
-#   if [[ $response =~ ^[Yy]$ ]]; then
-#     distrobox-host-exec "${@}"
-#   else
-#     echo "Command not executed."
-#   fi
-# }
+# Source fzf-git.sh if available
+[[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
 
-# if [ -n "${ZSH_VERSION-}" ]; then
-#   command_not_found_handler() {
-#     command_not_found_handle "$@"
-#   }
-# fi
+# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
+[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
+
+## Directory Search
+## Same as default, but with preview
+export FZF_ALT_C_OPTS="
+  --preview 'eza -T --color=always --level=3 {}'
+  --walker-skip .git,node_modules,target
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## File Search
+## Same as default, but with preview
+export FZF_CTRL_T_OPTS="
+  --preview 'bat --number --color=always --line-range :500 {}'
+  --walker-skip .git,node_modules,dist,build
+  --tmux 80%
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+## History Search
+## Same as default, but bigger
+export FZF_CTRL_R_OPTS="--tmux 80%"
 
 # ==================================================================================================
 # Zinit
@@ -108,26 +113,6 @@ bindkey "^[^?" backward-kill-word       # Alt+Backspace: Delete previous word
 bindkey "^[[1;3A" up-line-or-history    # Alt+Up: Move to previous line or history entry
 bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history entry
 
-# fzf
-
-## Directory Search
-## Same as default, but with preview
-export FZF_ALT_C_OPTS="
-  --preview 'eza -T --color=always --level=3 {}'
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-
-## File Search
-## Same as default, but with preview
-export FZF_CTRL_T_OPTS="
-  --preview 'bat --style=numbers --color=always --line-range :500 {}'
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-
-## History Search
-## Same as default, but bigger
-export FZF_CTRL_R_OPTS="--tmux 80%"
-
 # Misc
 bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 
@@ -166,10 +151,6 @@ alias tree="eza -T"
 
 # ------------ grep -> ripgrep ------------
 alias grep="rg"
-
-# in progress
-# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
-[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
 
 # ------------ cat -> bat ------------
 export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
@@ -255,7 +236,7 @@ zstyle ':completion:*' menu no # disable default menu so that we can use fzf ins
 ## Show a preview of the selected item
 # -------------------------------------------------------------------------------------------------
 
-# general:
+### general:
 zstyle ':completion:*:descriptions' format '[%d]' # group completions by type
 zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
