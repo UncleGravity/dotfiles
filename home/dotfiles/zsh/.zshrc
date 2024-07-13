@@ -88,51 +88,15 @@ bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
-# export FZF_DEFAULT_OPTS='--tmux' # I think this is causing issues
+# export FZF_DEFAULT_OPTS='--tmux' # I think this is causing issue
+ 
+# MY FZF CONFIG 
+# -------------------------------------------------------------------------------------
+[ -f "$HOME/.config/zsh/fzf.zsh" ] && source "$HOME/.config/zsh/fzf.zsh"
 
-# Replace find with fd (MUCH faster)
-export _FZF_BASE_COMMAND="fd --strip-cwd-prefix --follow --exclude .git"
-export FZF_DEFAULT_COMMAND="${_FZF_BASE_COMMAND} --hidden"
-export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND} --type=file"
-export FZF_ALT_C_COMMAND="${FZF_DEFAULT_COMMAND} --type=directory"
-
-## Directory Search
-## Same as default, but with preview
-export FZF_ALT_C_OPTS="
-  --prompt '.Directories> '
-  --preview 'eza --tree --all --color=always --icons=always --level=2 --ignore-glob .git {}'
-  --walker-skip .git,node_modules,target
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'
-  --header 'CTRL-H: Hide hidden files'
-  --bind 'ctrl-h:transform:[[ ! \$FZF_PROMPT =~ .Directories ]] &&
-          echo \"change-prompt(.Directories> )+reload(${_FZF_BASE_COMMAND} --type directory --hidden)+change-header(CTRL-H: Hide hidden files)\" ||
-          echo \"change-prompt(Directories> )+reload(${_FZF_BASE_COMMAND} --type directory)+change-header(CTRL-H: Show hidden files)\"'
-"
-
-## File Search
-## Same as default, but with preview
-export FZF_CTRL_T_OPTS="
-  --prompt '.Files> '
-  --preview 'bat --number --color=always --line-range :500 {}'
-  --walker-skip .git,node_modules,dist,build
-  --tmux 80%
-  --bind 'ctrl-/:change-preview-window(down|hidden|)'
-  --header 'CTRL-H: Hide hidden files'
-  --bind 'ctrl-h:transform:[[ ! \$FZF_PROMPT =~ .Files ]] &&
-          echo \"change-prompt(.Files> )+reload(${_FZF_BASE_COMMAND} --type file --hidden)+change-header(CTRL-H: Hide hidden files)\" ||
-          echo \"change-prompt(Files> )+reload(${_FZF_BASE_COMMAND} --type file)+change-header(CTRL-H: Show hidden files)\"'
-"
-
-## History Search
-## Same as default, but bigger
-export FZF_CTRL_R_OPTS="--tmux 80%"
-
-# goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
-[ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
-
+# fzf-git.sh 
+# ----------------------------------------------------------------------------------------
 # Source fzf-git.sh if available
-# [[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
 zinit snippet https://raw.githubusercontent.com/junegunn/fzf-git.sh/main/fzf-git.sh
 
 # Redefine this function from fzf-git.sh to make the tmux popup bigger.
