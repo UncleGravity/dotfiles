@@ -88,13 +88,24 @@ bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
-# export FZF_DEFAULT_OPTS='--tmux' # Use tmux popup if in tmux, always display relatively large
-
-# Source fzf-git.sh if available
-[[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
+# export FZF_DEFAULT_OPTS='--tmux' # I think this is causing issues
 
 # goal: fuzzy search in file contents, with syntax highlighting + highlighting the line of the match
 [ -f "$HOME/.config/zsh/fuzzygrep.zsh" ] && source "$HOME/.config/zsh/fuzzygrep.zsh"
+
+# Source fzf-git.sh if available
+# [[ -f "$HOME/.config/zsh/fzf-git.sh" ]] && source "$HOME/.config/zsh/fzf-git.sh"
+zinit snippet https://raw.githubusercontent.com/junegunn/fzf-git.sh/main/fzf-git.sh
+
+# Redefine this function from fzf-git.sh to make the tmux popup bigger.
+_fzf_git_fzf() {
+  fzf-tmux -p90%,90% -- \
+    --layout=reverse --multi --height=50% --min-height=20 --border \
+    --border-label-pos=2 \
+    --color='header:italic:underline,label:blue' \
+    --preview-window='right,50%,border-left' \
+    --bind='ctrl-/:change-preview-window(down,50%,border-top|hidden|)' "$@"
+}
 
 ## Directory Search
 ## Same as default, but with preview
