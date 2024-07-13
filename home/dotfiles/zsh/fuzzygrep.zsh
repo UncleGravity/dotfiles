@@ -1,26 +1,6 @@
 # Helper functions
 _fzf_select_mode() {
-    echo -e "files\ndirectories\ngrep" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
-}
-
-_fzf_files() {
-    fd --type f --hidden --follow --exclude .git --exclude node_modules --exclude dist --exclude build | 
-        fzf --ansi \
-            --height=80% \
-            --tmux 80% \
-            --preview 'bat --color=always --style=numbers {}' \
-            --preview-window 'right:66%,border-left' \
-            --bind 'ctrl-/:change-preview-window(down|hidden|)'
-}
-
-_fzf_directories() {
-    fd --type d --hidden --follow --exclude .git --exclude node_modules --exclude dist --exclude build | 
-        fzf --ansi \
-            --height=80% \
-            --tmux 80% \
-            --preview 'eza -1 --color=always {}' \
-            --preview-window 'right:66%,border-left' \
-            --bind 'ctrl-/:change-preview-window(down|hidden|)'
+    echo -e "files\ndirectories\ngrep\ntmux" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
 }
 
 # Fuzzy
@@ -38,22 +18,34 @@ _fzf_grep() {
             --bind 'ctrl-/:change-preview-window(down|hidden|)'
 }
 
-# Not fuzzy, but more efficient. Uses ripgrep for filtering, not fzf.
-# _fzf_grep() {
-#     local RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case \
-#     --hidden --glob '!{.git,node_modules,dist,build}/**'"
-    
-#     local INITIAL_QUERY="${*:-}"
-#     fzf --ansi --disabled --query "$INITIAL_QUERY" \
-#         --bind "start:reload:$RG_PREFIX {q}" \
-#         --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
-#         --delimiter : \
-#         --preview 'bat --color=always {1} --highlight-line {2}' \
-#         --preview-window 'right:66%,border-left,+{2}+3/3,~3' \
-#         --height=80% \
-#         --tmux 80% \
-#         --bind 'enter:become(echo {1}:{2})'
-# }
+_fzf_tmux() {
+    local tmux_mode=$(echo -e "commands\nkeybindings" | fzf --prompt="Select tmux mode: " --height=~50% --tmux --layout=reverse --border)
+    [[ -z "$tmux_mode" ]] && return
+
+    case $tmux_mode in
+        commands)
+            tmux list-commands | 
+                fzf --ansi \
+                    --height=80% \
+                    --tmux 80% \
+                    --preview 'tmux list-commands {1} | bat --color=always --language=sh' \
+                    --preview-window 'right:50%,border-left' \
+                    --bind 'ctrl-/:change-preview-window(down|hidden|)' |
+                cut -d' ' -f1
+            ;;
+        keybindings)
+            tmux list-keys |
+                awk '{$1=""; $2=""; print $0}' |
+                sed 's/^  *//' |
+                fzf --ansi \
+                    --height=80% \
+                    --tmux 80% \
+                    --preview 'echo {} | bat --color=always --language=sh' \
+                    --preview-window 'right:50%,border-left' \
+                    --bind 'ctrl-/:change-preview-window(down|hidden|)'
+            ;;
+    esac
+}
 
 _select_editor() {
     echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --tmux 80% --layout=reverse --border
@@ -66,8 +58,8 @@ fuzzy-files() {
 
     local result=""
     case $mode in
-        files)      result=$(_fzf_files) ;;
-        directories) result=$(_fzf_directories) ;;
+        files)      result=$(fzf-file-widget) ;;
+        directories) result=$(fzf-cd-widget) ;;
         grep)
             local selected=$(_fzf_grep)
             if [[ -n $selected ]]; then
@@ -82,6 +74,9 @@ fuzzy-files() {
                     cursor) result="cursor -g $file:$line" ;;
                 esac
             fi
+            ;;
+        tmux)
+            result=$(_fzf_tmux) 
             ;;
     esac
 
