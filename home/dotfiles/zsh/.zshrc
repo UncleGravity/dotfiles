@@ -138,8 +138,8 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 alias ls="eza"
 alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"
 alias la="eza --all --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"
-alias ll="eza --long --header --git"
-alias lla="eza --all --long --header --git"
+alias ll="eza --long --header --git --icons=always"
+alias lla="eza --all --long --header --git --icons=always"
 alias tree="eza -T"
 
 # ------------ grep -> ripgrep ------------

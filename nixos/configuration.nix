@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, options, ... }:
+{ config, pkgs, inputs, options, username, hostname, ... }:
 
 {
   imports =
@@ -23,7 +23,7 @@
 
   # ---------------------------------------------------------------------------
   # Networking
-  networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = hostname; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   services.openssh.enable = true;
 
@@ -104,7 +104,7 @@
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users =  {
-    users.angel = {
+    users.${username} = {
       isNormalUser = true;
       description = "Angel";
       extraGroups = [ "networkmanager" "wheel" ]; # plugdev is for hackrf
@@ -122,7 +122,7 @@
   #   SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{idProduct}=="6089", GROUP="plugdev", MODE="0666"
   # '';
 
-  nix.settings.trusted-users = [ "root" "angel" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
+  nix.settings.trusted-users = [ "root" "${username}" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
 
   # ---------------------------------------------------------------------------
   # SHELLS
