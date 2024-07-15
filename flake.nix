@@ -46,7 +46,7 @@
           };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.angel = import ./nixos/home.nix; # User Config (home-manager)
+          home-manager.users.${nixosUser} = import ./nixos/home.nix; # User Config (home-manager)
         }
       ];
     };
@@ -59,7 +59,19 @@
         username = darwinUser;
         hostname = darwinHostname;
       };
-      modules = [ ./darwin/configuration.nix ];
+      modules = [
+        ./darwin/configuration.nix
+        home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            username = darwinUser;
+          };
+          home-manager.users.${darwinUser} = import ./darwin/home.nix;
+        }
+      ];
     };
 
     # Raspberry Pi (home-manager only)

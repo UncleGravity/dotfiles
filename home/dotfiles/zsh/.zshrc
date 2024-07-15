@@ -187,8 +187,12 @@ alias ff="fastfetch"
 # ==================================================================================================
 case "$(uname -s)" in
   Darwin)
-    # echo 'Mac OS X'
-    [ -f "${0:a:h}/.macos.zsh" ] && source "${0:a:h}/.macos.zsh"
+    export XDG_CONFIG_HOME="$HOME/.config"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    
+    # export NIX_PATH=$NIX_PATH:nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs
+    [ -f "${HOME}/.config/zsh/macos/vm-utils.zsh" ] && source "${HOME}/.config/zsh/macos/vm-utils.zsh"
+    [ -f "${HOME}/.config/zsh/macos/dev.zsh" ] && source "${HOME}/.config/zsh/macos/dev.zsh"
     ;;
   Linux)
     alias dbox="distrobox"
@@ -203,11 +207,9 @@ case "$(uname -s)" in
 esac
 
 # ==================================================================================================
-# ENV Variables TODO: move to keychain
+# SECRETS
 # ==================================================================================================
-export ANTHROPIC_API_KEY="nonono"
-export OPENAI_API_KEY="nonono"
-
+[ -f "$HOME/.config/zsh/secrets/_decrypt.sh" ] && source "$HOME/.config/zsh/secrets/_decrypt.sh"
 
 # ==================================================================================================
 # DEV
@@ -271,7 +273,13 @@ zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-flags \
 
 zstyle ':completion:*' rehash true # automatically update cache (keep completions up to date)
 
-# Load missing completions for ubuntu! (what about darwin?)
+# Load missing completions for macOS
+if [[ "$(uname)" == "Darwin" ]]; then
+  # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
+  # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
+fi
+
+# Load missing completions for ubuntu!
 [[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
 [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
 [[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions

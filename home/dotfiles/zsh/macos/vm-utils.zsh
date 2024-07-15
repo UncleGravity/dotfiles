@@ -1,7 +1,3 @@
-export XDG_CONFIG_HOME="$HOME/.config"
-
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
 alias vm='prlctl'
 alias vmls='prlctl list -a'
 alias vmstart='prlctl start ubuntu-2204'
@@ -13,13 +9,26 @@ alias vmrestart='prlctl restart ubuntu-2204'
 # alias vmcode='code --remote ssh-remote+parallels@uvm.local --new-window'
 # alias vmcode='code --folder-uri vscode-remote://ssh-remote+parallels@uvm.local/media/psf/useradmin/Documents/ios/healthscraper --new-window'
 
+function get_remote_path() {
+  local current_local_path="$(pwd)"
+  local default_remote_path="~/"
+  local common_path_start="/Users/useradmin"
+  local remote_base_path="/media/psf/Home"
+  
+  if [[ $current_local_path == "$common_path_start"* ]]; then
+    echo "${remote_base_path}${current_local_path/$common_path_start/}"
+  else
+    echo "$default_remote_path"
+  fi
+}
+
 function vmshell() {
   local vm_name="$1"
   local remote_path=$(get_remote_path)
   
   case "$vm_name" in
     nixos)
-      ssh -t angel@nixos-gnome "cd $remote_path && exec \$SHELL -l"
+      ssh -t angel@nixos "cd $remote_path && exec \$SHELL -l"
       ;;
     ubuntu)
       ssh -t parallels@uvm.local "cd $remote_path && exec \$SHELL -l"
@@ -39,9 +48,9 @@ function vmcode() {
   case "$vm_name" in
     nixos)
       if [[ "$2" == "-d" ]]; then
-        code --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$dotfiles_path --new-window
+        code --folder-uri vscode-remote://ssh-remote+angel@nixos$dotfiles_path --new-window
       else
-        code --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$remote_path --new-window
+        code --folder-uri vscode-remote://ssh-remote+angel@nixos$remote_path --new-window
       fi
       ;;
     ubuntu)
@@ -66,9 +75,9 @@ function vmcursor() {
   case "$vm_name" in
     nixos)
       if [[ "$2" == "-d" ]]; then
-        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$dotfiles_path --new-window
+        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos$dotfiles_path --new-window
       else
-        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos-gnome$remote_path --new-window
+        cursor --folder-uri vscode-remote://ssh-remote+angel@nixos$remote_path --new-window
       fi
       ;;
     ubuntu)

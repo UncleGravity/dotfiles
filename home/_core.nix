@@ -26,8 +26,13 @@ in
     devenv
     direnv
     nixd # nix language server (lsp)
+    nixpkgs-fmt
+    alejandra
     pipx
     jq
+
+    # Security
+    age
 
     # goodies
     tmux
@@ -43,12 +48,12 @@ in
     fd # better find
     yazi
 
-    alacritty
-    wezterm
+    # alacritty
+    # wezterm
 
     # USB Stuff
     cyme
-    usbutils
+    # usbutils
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
@@ -68,7 +73,7 @@ in
     #   echo "Hello, ${config.home.username}!"
     # '')
   ];
-  
+
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
@@ -109,7 +114,7 @@ in
   # DOTFILES
   home.file = {
     ".config/zsh" = {
-      source = "${DOTFILES_DIR}/zsh"; 
+      source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
     ".config/git" = {

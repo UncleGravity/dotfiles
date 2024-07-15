@@ -1,5 +1,7 @@
 local wezterm = require("wezterm")
+local mux = wezterm.mux
 local theme_switcher = require("theme_switcher")
+-- local special_window = require("special_window")
 local config = {}
 
 if wezterm.config_builder then
@@ -10,8 +12,8 @@ end
 
 -- THEME
 -- config.color_scheme = "Catppuccin Mocha"
--- config.color_scheme = 'Dracula (Official)'
-config.color_scheme = 'Apple System Colors'
+-- config.color_scheme = 'Gruvbox Dark (Gogh)'
+config.color_scheme = 'Gruvbox Dark (Gogh)'
 
 -- FONT
 config.font = wezterm.font("MesloLGS Nerd Font")
@@ -29,25 +31,44 @@ config.macos_window_background_blur = 90
 
 -- Bind a key to trigger the theme switcher
 config.keys = {
-  {key="t", mods="CTRL|SHIFT", action=wezterm.action_callback(function(window, pane)
+  {
+	  key="t", mods="CTRL|SHIFT", action=wezterm.action_callback(function(window, pane)
     theme_switcher.theme_switcher(window, pane)
-  end)},
+  end)
+  },
+  -- {
+  --   key="t",mods="CMD|SHIFT",
+  --   action=wezterm.action_callback(function(window, pane)
+  --     special_window.toggle_special_window(window) 
+  --     window:set_inner_size(1000, 500)
+  --   end)
+  -- },
 }
 
--- ??
-wezterm.on('update-right-status', function(window, pane)
-  -- "Wed Mar 3 08:14"
-  local date = wezterm.strftime '%a %b %-d %H:%M '
+-- wezterm.on('gui-startup', function(cmd)
+--   local screen = wezterm.gui.screens().active
+--   print("Screen:", screen)
+--   local width = math.floor(screen.width / 2)
+--   local height = screen.height
 
-  local bat = ''
-  for _, b in ipairs(wezterm.battery_info()) do
-    bat = '🔋 ' .. string.format('%.0f%%', b.state_of_charge * 100)
-  end
+--   local tab, pane, window = mux.spawn_window(cmd or {
+--     -- x = screen.x,
+--     -- y = screen.y,
+--     -- origin = {Named=screen.name}
+--   })
 
-  window:set_right_status(wezterm.format {
-    { Text = bat .. '   ' .. date },
-  })
-end)
+--   -- wezterm.sleep_ms(1000)
+
+--   print("Window", window)
+--   if window:get_workspace() == "caquita" then
+--     -- wezterm.sleep_ms(1000)  -- Delay to ensure the window is ready
+--     local gui_window = window:gui_window()
+--     wezterm.sleep_ms(50)
+--     gui_window:set_inner_size(width, height)
+--     gui_window:set_position(screen.x, -screen.y*2)  -- X = lower is more left, Y = lower is more up
+--     -- pane:send_text 'fastfetch\n'
+--   end
+-- end)
 
 -- and finally, return the configuration to wezterm
 return config

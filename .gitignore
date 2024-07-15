@@ -1,0 +1,23 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Sensitive information
+.env
+*.key
+*.pem
+secrets.sh
+
+# Temporary files
+*.log
+*.tmp
+
+# Backup files
+*.bak
+*.backup
