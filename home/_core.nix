@@ -30,6 +30,7 @@ in
     alejandra
     pipx
     jq
+    lazygit
 
     # Security
     age
