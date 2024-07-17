@@ -55,19 +55,20 @@
   #############################################################
   nix.settings.experimental-features = "nix-command flakes"; # Enable flakes
   services.nix-daemon.enable = true; # Auto upgrade nix package and the daemon service.
-  nix.package = pkgs.nix;
+  nix.package = pkgs.nix; # idk
+  nix.registry.nixpkgs.flake = inputs.nixpkgs; # make `nix run nixpkgs#nixpkgs` use the same nixpkgs as the one used by this flake.
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # Set NIX_PATH (WHY ISN'T THIS WORKING)
-  nix.nixPath = [
-    "darwin-config=$HOME/.nixpkgs/darwin-configuration.nix"
-    "/nix/var/nix/profiles/per-user/root/channels"
-
-    # Had to add this so nixd would work
-    # Error: file 'nixpkgs' was not found in the Nix search path
-    "nixpkgs=${pkgs.path}"
+  # Set NIX_PATH 
+  # Based on this: https://nixos-and-flakes.thiscute.world/best-practices/nix-path-and-flake-registry
+  # environment.etc."nix/inputs/nixpkgs".source = "${inputs.nixpkgs}";
+  nix.nixPath = lib.mkForce [
+    { darwin-config = "$HOME/.nixpkgs/darwin-configuration.nix"; }
+    # { nixpkgs = "/etc/nix/inputs/nixpkgs"; }
+    { nixpkgs = "${inputs.nixpkgs}"; }
+    # "/nix/var/nix/profiles/per-user/root/channels" # We probably don't need this anymore.
   ];
 
   # do garbage collection monthly
