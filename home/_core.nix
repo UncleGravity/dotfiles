@@ -121,6 +121,9 @@ in
     ".config/git" = {
       source = "${DOTFILES_DIR}/git";
     };
+    ".config/lazygit" = {
+      source = "${DOTFILES_DIR}/lazygit";
+    };
     ".config/wezterm" = {
       source = "${DOTFILES_DIR}/wezterm";
     };

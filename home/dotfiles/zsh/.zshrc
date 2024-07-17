@@ -146,7 +146,7 @@ alias tree="eza -T"
 alias grep="rg"
 
 # ------------ cat -> bat ------------
-export BAT_PAGER="less -RFX --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
+export BAT_PAGER="less -RF --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
 export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Colorize man pages (with bat)
 export MANROFFOPT="-c" # Fix man page formatting issue
 alias cat="bat --paging=never"
@@ -166,6 +166,9 @@ alias zshrst='source $HOME/.config/zsh/.zshrc'
 
 # yazi
 alias ya="yazi"
+
+# git
+alias lg="lazygit"
 
 # Tmux aliases
 # alias t="tmux new-session -A -s $(basename $(pwd))"
@@ -275,6 +278,7 @@ zstyle ':completion:*' rehash true # automatically update cache (keep completion
 
 # Load missing completions for macOS
 if [[ "$(uname)" == "Darwin" ]]; then
+  # [[ -d /etc/profiles/per-user/$USER/share/zsh/site-functions ]] && fpath=(/etc/profiles/per-user/$USER/share/zsh/site-functions $fpath)
   # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
   # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
 fi

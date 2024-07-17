@@ -9,7 +9,7 @@
     ui = auto
 
 [core]
-    pager = delta
+    pager = delta --paging=never
 
 [interactive]
     diffFilter = delta --color-only --features=interactive
