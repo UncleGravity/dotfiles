@@ -8,7 +8,9 @@ sudo nixos-rebuild switch --flake ".?submodules=1#nixos" -v
 1. Install Nix (Determinate Installer)
 2. Git clone this repo
 3. cd into repo
-4. run `home-manager switch --flake .#pi`
+4. Build new systsem:
+    - run `nix run home-manager/master -- switch --flake .#pi`
+    - Subsequent runs: `home-manager switch --flake .#pi`
 
 # For Darwin (macOS)
 1. Install Nix (Determinate Installer)

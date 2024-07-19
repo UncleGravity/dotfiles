@@ -93,3 +93,32 @@ function vmcursor() {
       ;;
   esac
 }
+
+# ==================================================================================================
+# Completions
+# ==================================================================================================
+
+# Completion for vmshell
+_vmshell() {
+    local -a vm_options
+    vm_options=('nixos' 'ubuntu')
+    _describe 'vm options' vm_options
+}
+compdef _vmshell vmshell
+
+# Completion for vmcode and vmcursor
+_vm_code_cursor() {
+    local -a vm_options
+    vm_options=('nixos' 'ubuntu')
+    _arguments \
+        '1:vm options:->vms' \
+        '2:dotfiles:(-d)'
+    
+    case $state in
+        vms)
+            _describe 'vm options' vm_options
+            ;;
+    esac
+}
+compdef _vm_code_cursor vmcode
+compdef _vm_code_cursor vmcursor

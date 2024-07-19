@@ -59,6 +59,3 @@ export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PR
 # Github Copilot CLI setup
 # To upgrade -> npm install -g @githubnext/github-copilot-cli
 # eval "$(github-copilot-cli alias -- "$0")"
-
-# bun completions
-[ -s "/Users/useradmin/.bun/_bun" ] && source "/Users/useradmin/.bun/_bun"
