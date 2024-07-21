@@ -280,16 +280,17 @@ zstyle ':completion:*' rehash true # automatically update cache (keep completion
 if [[ "$(uname)" == "Darwin" ]]; then
   # [[ -d /etc/profiles/per-user/$USER/share/zsh/site-functions ]] && fpath=(/etc/profiles/per-user/$USER/share/zsh/site-functions $fpath)
   # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
-  # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
+  [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
 fi
 
 # Load missing completions for ubuntu!
-[[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
-[[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
-[[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
+# [[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
+# [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
+# [[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
 
 # Load custom completions
-fpath=(~/.config/zsh/completions $fpath)
+fpath=(~/.config/zsh/auto-completions $fpath) # automatic collection of completions for all home-manager packages
+fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
@@ -298,8 +299,14 @@ autoload -Uz compinit;  # Load the completion system
 compinit -d "$HOME/.cache/zsh/zcompdump" # Initialize completion system with custom dump file location
 
 ## Additional completions for commands that don't have them
-## This generates completions using the fzf help page
-compdef _gnu_generic fzf # Completions for the fzf command: https://github.com/junegunn/fzf/issues/3349
+## This generates completions using the respective --help page
+compdef _gnu_generic fzf # https://github.com/junegunn/fzf/issues/3349
+compdef _gnu_generic lazygit
+compdef _gnu_generic file
+compdef _gnu_generic devenv
 # compdef _gnu_generic SOME_OTHER_COMMAND
+
+# Weird issue with delta completion, I have to load it manually
+compdef _delta delta
 
 zinit cdreplay -q # recommended by zinit

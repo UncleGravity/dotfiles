@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, username, ... }:
+{ config, pkgs, lib, inputs, username, ... }:
 
 let
   DOTFILES_DIR = ./dotfiles;
@@ -114,6 +114,20 @@ in
     ".config/zsh" = {
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
+    };
+    # Collects all home-manager completions into a single directory
+    # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
+    # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
+    ".config/zsh/auto-completions" = {
+      source = pkgs.runCommand "vendored-zsh-completions" { } ''
+        set -euo pipefail
+        mkdir -p $out
+        ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
+          ${lib.escapeShellArgs config.home.packages} \
+          | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
+          | xargs -0 cp -t $out/
+      '';
+      recursive = true;
     };
     ".config/git" = {
       source = "${DOTFILES_DIR}/git";
