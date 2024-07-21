@@ -132,6 +132,19 @@
         NSAutomaticSpellingCorrectionEnabled = false;  # disable auto spelling correction
       };
 
+      # Dock
+      dock = {
+        autohide = true; # hide dock when not in use
+        autohide-time-modifier = 0.2; # opening/closing animation times.
+        autohide-delay = 0.0; # delay before showing/hiding dock.
+        show-recents = false; # don't show recent applications in dock
+        mru-spaces = false; # don't automatically rearrange spaces based on most recent use.
+        mineffect = "scale"; # animation effect for minimizing windows
+      };
+      CustomUserPreferences."com.apple.dock" = { # not added to nix-darwin yet
+        scroll-to-open = true; # scroll up on a Dock icon to show all opened windows for an app
+      };
+
       # Top Menu bar
       menuExtraClock = {
         ShowAMPM = true;
@@ -143,21 +156,28 @@
 
       # Finder
       finder = {
+        # _FXShowPosixPathInTitle = true;
         ShowPathbar = true; # Breadcrumbs
         AppleShowAllExtensions = true; # Show all file extensions
         AppleShowAllFiles = true; # Show hidden files
         FXDefaultSearchScope = "SCcf"; # Search the current folder by default
         FXPreferredViewStyle = "Nlsv"; # List view
       };
-      CustomUserPreferences."com.apple.finder" = {
-        ShowExternalHardDrivesOnDesktop = false;
-        ShowHardDrivesOnDesktop = false;
+      CustomUserPreferences = {
+        "com.apple.finder" = {
+          ShowExternalHardDrivesOnDesktop = false;
+          ShowHardDrivesOnDesktop = false;
+          ShowRemovableMediaOnDesktop = false;
+        };
+        "NSGlobalDomain" = {
+          "NSToolbarTitleViewRolloverDelay" = 0.0;
+        };
       };
 
       # Login Window
       loginwindow = {
         GuestEnabled = false; # Disable guest account
-        SHOWFULLNAME = true;  # show full name in login window
+        # SHOWFULLNAME = true;  # show full name in login window
       };
 
       # Misc
@@ -174,6 +194,7 @@
   security.pam.enableSudoTouchIdAuth = true;
 
   # ^ Won't work on TMUX unless we add this
+  #https://github.com/LnL7/nix-darwin/pull/787
   environment.etc."pam.d/sudo_local".text = ''
     # Managed by Nix Darwin
     auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so ignore_ssh
