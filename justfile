@@ -53,6 +53,31 @@ gc days="30d":
     @echo "Performing garbage collection..."
     nix-collect-garbage --delete-older-than {{days}}
 
+# Remove unused nix store paths
+prune:
+    @echo "Pruning unused nix store paths..."
+    nix-store --gc
+
+# List system generations
+list-generations:
+    #!/usr/bin/env bash
+    echo "Listing system generations for {{system_type}}..."
+    case "{{system_type}}" in
+        "nixos")
+            sudo nix-env -p /nix/var/nix/profiles/system --list-generations
+            ;;
+        "darwin")
+            darwin-rebuild --list-generations
+            ;;
+        "home-manager")
+            home-manager generations
+            ;;
+        *)
+            echo "Error: Unsupported system type for listing generations."
+            exit 1
+            ;;
+    esac
+
 # Display available commands
 help:
     @just --list
