@@ -2,17 +2,9 @@
 
 let
   DOTFILES_DIR = ./dotfiles;
-  isDarwin = pkgs.stdenv.isDarwin;
-in
-{
-  imports = [
-    # ./zsh.nix
-  ];
+  # isDarwin = pkgs.stdenv.isDarwin;
 
-  home.username = username;
-  home.homeDirectory = if isDarwin then "/Users/${username}" else "/home/${username}";
-
-  home.packages = with pkgs; [
+  commonPackages = with pkgs; [
     # Dev
     gnumake
     cmake
@@ -48,29 +40,40 @@ in
     bat # better cat
     delta # better diff
     fd # better find
-    yazi
-    glow
+    yazi # file manager
+    glow # markdown viewer
+    clipboard-jh # clipboard manager
 
     # alacritty
     # wezterm
 
     # USB Stuff
     cyme
-    # usbutils
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
     (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; }) # Nerd Font with more icons
-
-    llm # https://github.com/simonw/llm
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
   ];
+
+  darwinOnlyPackages = with pkgs; [
+    # Add Darwin-specific packages here
+  ];
+
+  linuxOnlyPackages = with pkgs; [
+    llm # https://github.com/simonw/llm
+    usbutils
+  ];
+in
+{
+  imports = [
+    # ./zsh.nix
+  ];
+
+  home.username = username;
+  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+
+  home.packages = commonPackages
+    ++ (if pkgs.stdenv.isDarwin then darwinOnlyPackages else linuxOnlyPackages);
 
   programs.zsh = {
     enable = true;
@@ -97,6 +100,21 @@ in
     defaultEditor = true;
     extraConfig = ''
       set number relativenumber
+
+      " Clipboard configuration
+      let g:clipboard = {
+        \   'name': 'clipboard-jh',
+        \   'copy': {
+        \      '+': 'cb copy',
+        \      '*': 'cb copy',
+        \    },
+        \   'paste': {
+        \      '+': 'cb paste',
+        \      '*': 'cb paste',
+        \   },
+        \   'cache_enabled': 0,
+        \ }
+      set clipboard+=unnamedplus
     '';
 
     # OR
