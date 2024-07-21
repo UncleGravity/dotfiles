@@ -138,6 +138,9 @@ in
     ".config/zellij" = {
       source = "${DOTFILES_DIR}/zellij";
     };
+    ".config/yabai" = lib.mkIf pkgs.stdenv.isDarwin {
+      source = "${DOTFILES_DIR}/yabai";
+    };
   };
 
   # Home Manager can also manage your environment variables through
