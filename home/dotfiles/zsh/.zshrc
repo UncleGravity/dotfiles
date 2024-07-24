@@ -97,7 +97,7 @@ source <(fzf --zsh)
 # fzf-git.sh 
 # ----------------------------------------------------------------------------------------
 # Source fzf-git.sh if available
-zinit snippet https://raw.githubusercontent.com/junegunn/fzf-git.sh/main/fzf-git.sh
+# zinit snippet https://raw.githubusercontent.com/junegunn/fzf-git.sh/main/fzf-git.sh
 
 # Redefine this function from fzf-git.sh to make the tmux popup bigger.
 _fzf_git_fzf() {
@@ -161,7 +161,7 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-alias zshconfig="sudo nvim /etc/nixos/dotfiles/zsh/.zshrc"
+alias zshconfig="sudo nvim $HOME/.dotfiles/"
 alias zshrst='source $HOME/.config/zsh/.zshrc'
 
 # yazi

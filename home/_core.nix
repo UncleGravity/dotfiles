@@ -6,9 +6,9 @@ let
 
   commonPackages = with pkgs; [
     # Dev
-    gnumake
-    cmake
-    gcc
+    # gnumake
+    # cmake
+    # gcc
     git
     file
     just
@@ -43,6 +43,7 @@ let
     yazi # file manager
     glow # markdown viewer
     clipboard-jh # clipboard manager
+    nix-output-monitor
 
     # alacritty
     # wezterm
@@ -52,7 +53,7 @@ let
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
-    (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; }) # Nerd Font with more icons
+    (pkgs.nerdfonts.override { fonts = [ "Meslo" "JetBrainsMono"]; }) # Nerd Font with more icons
   ];
 
   darwinOnlyPackages = with pkgs; [
