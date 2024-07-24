@@ -285,8 +285,8 @@ fi
 
 # Load missing completions for ubuntu!
 # [[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
-# [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
-# [[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
+[[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
+[[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
 
 # Load custom completions
 fpath=(~/.config/zsh/auto-completions $fpath) # automatic collection of completions for all home-manager packages
