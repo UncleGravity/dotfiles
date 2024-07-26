@@ -2,14 +2,12 @@
 
 let
   DOTFILES_DIR = ./dotfiles;
-  # isDarwin = pkgs.stdenv.isDarwin;
 
   commonPackages = with pkgs; [
     # Dev
     # gnumake
     # cmake
     # gcc
-    git
     file
     just
     bun
@@ -21,9 +19,11 @@ let
     nixd # nix language server (lsp)
     nixpkgs-fmt
     alejandra
-    pipx
     jq
     lazygit
+
+    pipx
+    # pkgx
 
     # Security
     age
@@ -40,16 +40,14 @@ let
     bat # better cat
     delta # better diff
     fd # better find
-    yazi # file manager
+    # yazi # file manager
     glow # markdown viewer
     clipboard-jh # clipboard manager
     nix-output-monitor
 
     # alacritty
     # wezterm
-
-    # USB Stuff
-    cyme
+    # kitty
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
@@ -62,7 +60,10 @@ let
 
   linuxOnlyPackages = with pkgs; [
     llm # https://github.com/simonw/llm
+    
+    # USB Stuff
     usbutils
+    cyme
   ];
 in
 {
@@ -93,6 +94,7 @@ in
 
   programs.yazi = {
     enable = true;
+    package = inputs.yazi.packages.${pkgs.system}.default;
     enableZshIntegration = true;
   };
 
@@ -134,6 +136,7 @@ in
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
+    ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
     # Collects all home-manager completions into a single directory
     # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
     # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
@@ -156,6 +159,9 @@ in
     };
     ".config/wezterm" = {
       source = "${DOTFILES_DIR}/wezterm";
+    };
+    ".config/kitty" = {
+      source = "${DOTFILES_DIR}/kitty";
     };
     ".config/alacritty" = {
       source = "${DOTFILES_DIR}/alacritty";

@@ -1,5 +1,10 @@
 { pkgs, lib, inputs, username, hostname, ... }: {
 
+  imports = [
+    # ./kanata.nix
+    ./homebrew.nix
+  ];
+
   #############################################################
   #  Host & User config
   #############################################################
@@ -13,7 +18,7 @@
   };
 
   nix.settings.trusted-users = [ username ];
-  
+
   #############################################################
   #  Yabai
   #############################################################
@@ -24,36 +29,11 @@
   #############################################################
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages = with pkgs; [ vim git ];
-
-  #############################################################
-  #  Homebrew
-  #############################################################
-  homebrew = {
-    enable = true;
-
-    onActivation = {
-      autoUpdate = false;
-      # 'zap': uninstalls all formulae(and related files) not listed here.
-      # cleanup = "zap";
-    };
-
-    taps = [
-      "homebrew/services"
+  environment.systemPackages = with pkgs; [ 
+    wget
+    vim 
+    git 
     ];
-
-    # `brew install`
-    # TODO Feel free to add your favorite apps here.
-    brews = [
-      # "aria2"  # download tool
-    ];
-
-    # `brew install --cask`
-    # TODO Feel free to add your favorite apps here.
-    casks = [
-      # "google-chrome"
-    ];
-  };
 
   #############################################################
   #  Nix
@@ -113,7 +93,7 @@
     '';
 
     keyboard = {
-      enableKeyMapping = true;  # enable key mapping
+      enableKeyMapping = true; # enable key mapping
       remapCapsLockToControl = true; # save fingers
     };
 
@@ -121,15 +101,15 @@
 
       NSGlobalDomain = {
         # Sets how long you must hold down the key before it starts repeating.
-        InitialKeyRepeat = 15;  # minimum is 15 (225 ms), maximum is 120 (1800 ms)
+        InitialKeyRepeat = 15; # minimum is 15 (225 ms), maximum is 120 (1800 ms)
         # Sets how fast it repeats once it starts.
-        KeyRepeat = 3;  # minimum is 2 (30 ms), maximum is 120 (1800 ms)
+        KeyRepeat = 3; # minimum is 2 (30 ms), maximum is 120 (1800 ms)
 
-        NSAutomaticCapitalizationEnabled = false;  # disable auto capitalization
-        NSAutomaticDashSubstitutionEnabled = false;  # disable auto dash substitution
-        NSAutomaticPeriodSubstitutionEnabled = false;  # disable auto period substitution
-        NSAutomaticQuoteSubstitutionEnabled = false;  # disable auto quote substitution
-        NSAutomaticSpellingCorrectionEnabled = false;  # disable auto spelling correction
+        NSAutomaticCapitalizationEnabled = false; # disable auto capitalization
+        NSAutomaticDashSubstitutionEnabled = false; # disable auto dash substitution
+        NSAutomaticPeriodSubstitutionEnabled = false; # disable auto period substitution
+        NSAutomaticQuoteSubstitutionEnabled = false; # disable auto quote substitution
+        NSAutomaticSpellingCorrectionEnabled = false; # disable auto spelling correction
       };
 
       # Dock
@@ -141,7 +121,8 @@
         mru-spaces = false; # don't automatically rearrange spaces based on most recent use.
         mineffect = "scale"; # animation effect for minimizing windows
       };
-      CustomUserPreferences."com.apple.dock" = { # not added to nix-darwin yet
+      CustomUserPreferences."com.apple.dock" = {
+        # not added to nix-darwin yet
         scroll-to-open = true; # scroll up on a Dock icon to show all opened windows for an app
       };
 

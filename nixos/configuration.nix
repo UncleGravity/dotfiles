@@ -143,16 +143,11 @@
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default. 
     wget
+    git
     distrobox
     podman
     chromium
-    # hackrf
   ];
-
-  # (pkgs.writeShellScriptBin "node" ''
-  #   export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
-  #   exec ${pkgs.nodejs}/bin/node "$@"
-  # '')
   
   # ---------------------------------------------------------------------------
   # PODMAN CONFIG

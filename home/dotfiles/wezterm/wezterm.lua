@@ -38,6 +38,19 @@ config.keys = {
 			theme_switcher.theme_switcher(window, pane)
 		end),
 	},
+	-- Add these new keybindings
+	{
+		key = "h",
+		mods = "CMD|SHIFT",
+		action = wezterm.action.ActivateTabRelative(-1),
+	},
+	{
+		key = "l",
+		mods = "CMD|SHIFT",
+		action = wezterm.action.ActivateTabRelative(1),
+	},
+	{ key = "UpArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(-1) },
+	{ key = "DownArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(1) },
 	-- {
 	--   key="t",mods="CMD|SHIFT",
 	--   action=wezterm.action_callback(function(window, pane)
@@ -46,6 +59,20 @@ config.keys = {
 	--   end)
 	-- },
 }
+
+-- config.mouse_bindings = {
+-- 	-- Disable horizontal scrolling
+-- 	{
+-- 		event = { Down = { streak = 1, button = { WheelLeft = 1 } } },
+-- 		mods = "NONE",
+-- 		action = wezterm.action.Nop,
+-- 	},
+-- 	{
+-- 		event = { Down = { streak = 1, button = { WheelRight = 1 } } },
+-- 		mods = "NONE",
+-- 		action = wezterm.action.Nop,
+-- 	},
+-- }
 
 -- wezterm.on('gui-startup', function(cmd)
 --   local screen = wezterm.gui.screens().active
@@ -74,3 +101,4 @@ config.keys = {
 
 -- and finally, return the configuration to wezterm
 return config
+
