@@ -16,9 +16,18 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # ---------------------------------------------------------------------------
+  # Automatic garbage collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  # ---------------------------------------------------------------------------
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 5;  # Limit to 5 latest generations
 
 
   # ---------------------------------------------------------------------------
@@ -147,6 +156,7 @@
     distrobox
     podman
     chromium
+    kitty # Required for kitty to work
   ];
   
   # ---------------------------------------------------------------------------
