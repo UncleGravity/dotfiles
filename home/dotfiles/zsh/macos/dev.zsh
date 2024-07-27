@@ -10,10 +10,6 @@ export NDK=$ANDROID_HOME/ndk-bundle
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
-# Hammerhead
-export KAROO_PRODUCTION_KEY=nonono
-export KAROO_PRODUCTION_KEYSTORE=nonono
-
 # Pyenv Setup
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
