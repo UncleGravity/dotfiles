@@ -41,9 +41,12 @@ let
     delta # better diff
     fd # better find
     # yazi # file manager
+    exiftool # optionally used by yazi
+    unar # archive extractor
     glow # markdown viewer
     clipboard-jh # clipboard manager
     nix-output-monitor
+    nnn
 
     # alacritty
     # wezterm
@@ -51,7 +54,7 @@ let
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
-    (pkgs.nerdfonts.override { fonts = [ "Meslo" "JetBrainsMono"]; }) # Nerd Font with more icons
+    (pkgs.nerdfonts.override { fonts = [ "Meslo" "JetBrainsMono" ]; }) # Nerd Font with more icons
   ];
 
   darwinOnlyPackages = with pkgs; [
@@ -60,7 +63,7 @@ let
 
   linuxOnlyPackages = with pkgs; [
     llm # https://github.com/simonw/llm
-    
+
     # USB Stuff
     usbutils
     cyme
@@ -156,6 +159,9 @@ in
     };
     ".config/lazygit" = {
       source = "${DOTFILES_DIR}/lazygit";
+    };
+    ".config/yazi" = {
+      source = "${DOTFILES_DIR}/yazi";
     };
     ".config/wezterm" = {
       source = "${DOTFILES_DIR}/wezterm";

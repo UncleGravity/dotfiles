@@ -1,4 +1,9 @@
 # ==================================================================================================
+# Profiling
+# ==================================================================================================
+# zmodload zsh/zprof
+
+# ==================================================================================================
 # Powerlevel10k Instant Prompt
 # ==================================================================================================
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -20,7 +25,7 @@ source "${ZINIT_HOME}/zinit.zsh"
 zinit for \
   depth=1 \
   lucid \
-  atload="[[ -f \${HOME}/.config/zsh/.p10k.zsh ]] && source \${HOME}/.config/zsh/.p10k.zsh" \
+  atload="[[ -f \${HOME}/.config/zsh/p10k.zsh ]] && source \${HOME}/.config/zsh/p10k.zsh" \
   romkatv/powerlevel10k
 
 # Load other plugins with Turbo mode
@@ -162,10 +167,10 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 alias zshconfig="sudo nvim $HOME/.dotfiles/"
-alias zshrst='source $HOME/.config/zsh/.zshrc'
+alias zshrst="compinit -d $HOME/.cache/zsh/zcompdump && source $HOME/.config/zsh/zshrc"
 
 # yazi
-alias ya="yazi"
+alias y="yazi"
 
 # git
 alias lg="lazygit"
@@ -255,9 +260,9 @@ zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl
 
 ### kill
 # give a preview of commandline arguments when completing `kill`
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
+zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm"
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
-  '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
+  '[[ $group == "[process ID]" ]] && ps -p $word -o pid,user,comm,cmd'
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags \
   --preview-window=down:3:wrap \
   --multi \
@@ -281,6 +286,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
   # [[ -d /etc/profiles/per-user/$USER/share/zsh/site-functions ]] && fpath=(/etc/profiles/per-user/$USER/share/zsh/site-functions $fpath)
   # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
   [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
+  [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh)
 fi
 
 # Load missing completions for ubuntu!
@@ -294,9 +300,15 @@ fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
-[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh" # Create zsh cache dir
-autoload -Uz compinit;  # Load the completion system
-compinit -d "$HOME/.cache/zsh/zcompdump" # Initialize completion system with custom dump file location
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+	compinit -d "$HOME/.cache/zsh/zcompdump";
+else
+	compinit -C -d "$HOME/.cache/zsh/zcompdump";
+fi;
+
+# Ensure zsh cache directory exists
+[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh"
 
 ## Additional completions for commands that don't have them
 ## This generates completions using the respective --help page
@@ -310,3 +322,8 @@ compdef _gnu_generic devenv
 compdef _delta delta
 
 zinit cdreplay -q # recommended by zinit
+
+# ==================================================================================================
+# Profiling End
+# ==================================================================================================
+# zprof
