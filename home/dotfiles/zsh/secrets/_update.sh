@@ -4,16 +4,24 @@
 SECRETS_SH="secrets.sh"
 SECRETS_AGE="secrets.age"
 
-# Check if secrets.sh exists
-if [ ! -f "$SECRETS_SH" ]; then
-    echo "Error: $SECRETS_SH does not exist"
-    exit 1
+# Decrypt secrets.age if it exists
+if [ -f "$SECRETS_AGE" ]; then
+    if ! age -d -i ~/.ssh/id_ed25519 "$SECRETS_AGE" > "$SECRETS_SH"; then
+        echo "Error: Failed to decrypt $SECRETS_AGE"
+        exit 1
+    fi
 fi
 
-# Encrypt secrets.sh with GitHub keys and save as secrets.age
+# Open the decrypted file in the default editor
+$EDITOR "$SECRETS_SH"
+
+# Encrypt the edited secrets.sh with GitHub keys and save as secrets.age
 if ! curl -s https://github.com/unclegravity.keys | age -R - "$SECRETS_SH" > "$SECRETS_AGE"; then
     echo "Error: Failed to encrypt $SECRETS_SH"
     exit 1
 fi
 
 echo "Successfully updated $SECRETS_AGE with contents from $SECRETS_SH"
+
+# Remove the temporary decrypted file
+rm "$SECRETS_SH"

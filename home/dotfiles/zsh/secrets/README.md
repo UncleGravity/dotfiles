@@ -14,18 +14,21 @@ This system uses Age encryption with GitHub SSH keys to securely manage secrets 
 
 ### Initial Setup
 
-1. Create a `secrets.sh` file with your secret environment variables:
+1. Run `_update.sh` to create or edit your secrets:
+   ```
+   ./zsh/secrets/_update.sh
+   ```
+   This will open your default editor to create or edit `secrets.sh`.
+
+2. In the editor, add your secret environment variables:
    ```sh
    export SECRET_KEY="your_secret_value"
    export ANOTHER_SECRET="another_value"
    ```
 
-2. Run `_update.sh` to encrypt `secrets.sh` into `secrets.age`:
-   ```
-   ./zsh/secrets/_update.sh
-   ```
+3. Save and close the editor. The script will automatically encrypt `secrets.sh` into `secrets.age`.
 
-3. Commit `secrets.age` to your repository. Do not commit `secrets.sh`.
+4. Commit `secrets.age` to your repository. Do not commit `secrets.sh`.
 
 ### Decrypting Secrets
 
@@ -37,12 +40,14 @@ The `_decrypt.sh` script is automatically sourced in your `.zshrc`. It will:
 
 ### Updating Secrets
 
-1. Modify `secrets.sh` with your updated secrets.
-2. Run `_update.sh` to re-encrypt the changes:
+1. Run `_update.sh` to decrypt, edit, and re-encrypt your secrets:
    ```
    ./zsh/secrets/_update.sh
    ```
-3. Commit the updated `secrets.age` file.
+2. This will open your default editor with the decrypted secrets.
+3. Make your changes, save, and close the editor.
+4. The script will automatically re-encrypt the changes and update `secrets.age`.
+5. Commit the updated `secrets.age` file.
 
 ### Rotating Keys
 
@@ -59,3 +64,4 @@ When updating your GitHub SSH keys or setting up a new machine:
 - Never commit `secrets.sh` to version control.
 - Ensure your GitHub account and SSH keys are secure.
 - Regularly update your secrets and rotate your GitHub SSH keys.
+- The `_update.sh` script temporarily creates a `secrets.sh` file but deletes it after encryption.
