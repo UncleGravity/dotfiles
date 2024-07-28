@@ -91,28 +91,13 @@ bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
 # FZF
 # ==================================================================================================
 
-# Set up fzf key bindings and fuzzy completion
+# Set up default fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 # export FZF_DEFAULT_OPTS='--tmux' # I think this is causing issue
  
 # MY FZF CONFIG 
 # -------------------------------------------------------------------------------------
 [ -f "$HOME/.config/zsh/fzf.zsh" ] && source "$HOME/.config/zsh/fzf.zsh"
-
-# fzf-git.sh 
-# ----------------------------------------------------------------------------------------
-# Source fzf-git.sh if available
-# zinit snippet https://raw.githubusercontent.com/junegunn/fzf-git.sh/main/fzf-git.sh
-
-# Redefine this function from fzf-git.sh to make the tmux popup bigger.
-_fzf_git_fzf() {
-  fzf-tmux -p90%,90% -- \
-    --layout=reverse --multi --height=50% --min-height=20 --border \
-    --border-label-pos=2 \
-    --color='header:italic:underline,label:blue' \
-    --preview-window='right,50%,border-left' \
-    --bind='ctrl-/:change-preview-window(down,50%,border-top|hidden|)' "$@"
-}
 
 # ==================================================================================================
 # Options
@@ -161,16 +146,24 @@ alias -g -- --help='--help | bat --language=help --style=plain --paging=never' #
 export DELTA_PAGER="less -RFX --mouse" # Fix "delta" issue where mouse scroll doesn't work in tmux
 alias diff="delta"
 
+# ------------ yazi ------------
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
+# ------------ cd ------------
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 alias zshconfig="sudo nvim $HOME/.dotfiles/"
-alias zshrst="compinit -d $HOME/.cache/zsh/zcompdump && source $HOME/.config/zsh/zshrc"
-
-# yazi
-alias y="yazi"
+alias zshrst="compinit -d $HOME/.cache/zsh/zcompdump && source $HOME/.config/zsh/.zshrc"
 
 # git
 alias lg="lazygit"
@@ -222,7 +215,7 @@ esac
 # ==================================================================================================
 # DEV
 # ==================================================================================================
-# eval "$(direnv hook zsh)" # Without this, direnv will not work (actually I'll just set this on home.nix)
+eval "$(direnv hook zsh)" # Without this, direnv will not work (actually I'll just set this on home.nix)
 
 # ==================================================================================================
 # Completions (KEEP AT THE END OF FILE)
@@ -235,47 +228,7 @@ zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing 
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # colorize the completion list
 zstyle ':completion:*' menu no # disable default menu so that we can use fzf instead
 
-# FZF-TAB
-## Show a preview of the selected item
-# -------------------------------------------------------------------------------------------------
-
-### general:
-zstyle ':completion:*:descriptions' format '[%d]' # group completions by type
-zstyle ':fzf-tab:*' switch-group '<' '>' # switch group using `<` and `>`
-zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup # use tmux popup for fzf-tab, if in tmux
-
-### Formatting:
-zstyle ':fzf-tab:*' popup-min-size 200 200 # minimum size, apply to all commands
-# zstyle ':fzf-tab:complete:diff:*' popup-min-size 80 12 # only apply to 'diff' (for example)
-
-### cd
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # preview directory contents
-
-### environment variables
-zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
-	fzf-preview 'echo ${(P)word}'
-
-### systemd
-zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
-
-### kill
-# give a preview of commandline arguments when completing `kill`
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm"
-zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
-  '[[ $group == "[process ID]" ]] && ps -p $word -o pid,user,comm,cmd'
-zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags \
-  --preview-window=down:3:wrap \
-  --multi \
-  --bind='ctrl-a:toggle-all' \
-  --bind='tab:toggle+down' 
-
-### code
-zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' \
-  fzf-preview 'bat --color=always --style=numbers $realpath'
-zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' fzf-flags \
-  --multi \
-  --bind='ctrl-a:toggle-all' \
-  --bind='tab:toggle+down'
+# FZF-TAB behavior defined in fzf.zsh
 
 # -------------------------------------------------------------------------------------------------
 
@@ -287,12 +240,12 @@ if [[ "$(uname)" == "Darwin" ]]; then
   # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
   [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
   [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh)
+  [[ -d /Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions ]] && fpath+=(/Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions)
+else
+  # Load missing completions for ubuntu!
+  [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
+  [[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
 fi
-
-# Load missing completions for ubuntu!
-# [[ -d ~/.nix-profile/share/zsh/site-functions ]] && fpath+=~/.nix-profile/share/zsh/site-functions
-[[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
-[[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
 
 # Load custom completions
 fpath=(~/.config/zsh/auto-completions $fpath) # automatic collection of completions for all home-manager packages

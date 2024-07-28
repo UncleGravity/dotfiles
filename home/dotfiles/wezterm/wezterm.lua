@@ -74,30 +74,31 @@ config.keys = {
 -- 	},
 -- }
 
--- wezterm.on('gui-startup', function(cmd)
---   local screen = wezterm.gui.screens().active
---   print("Screen:", screen)
---   local width = math.floor(screen.width / 2)
---   local height = screen.height
+# Test this with: `wezterm start --workspace caquita -- tmux new-session -A -s 1`
+wezterm.on('gui-startup', function(cmd)
+  local screen = wezterm.gui.screens().active
+  print("Screen:", screen)
+  local width = math.floor(screen.width / 2)
+  local height = screen.height
 
---   local tab, pane, window = mux.spawn_window(cmd or {
---     -- x = screen.x,
---     -- y = screen.y,
---     -- origin = {Named=screen.name}
---   })
+  local tab, pane, window = mux.spawn_window(cmd or {
+    -- x = screen.x,
+    -- y = screen.y,
+    -- origin = {Named=screen.name}
+  })
 
---   -- wezterm.sleep_ms(1000)
+  -- wezterm.sleep_ms(1000)
 
---   print("Window", window)
---   if window:get_workspace() == "caquita" then
---     -- wezterm.sleep_ms(1000)  -- Delay to ensure the window is ready
---     local gui_window = window:gui_window()
---     wezterm.sleep_ms(50)
---     gui_window:set_inner_size(width, height)
---     gui_window:set_position(screen.x, -screen.y*2)  -- X = lower is more left, Y = lower is more up
---     -- pane:send_text 'fastfetch\n'
---   end
--- end)
+  print("Window", window)
+  if window:get_workspace() == "caquita" then
+    -- wezterm.sleep_ms(1000)  -- Delay to ensure the window is ready
+    local gui_window = window:gui_window()
+    wezterm.sleep_ms(50)
+    gui_window:set_inner_size(width, height)
+    gui_window:set_position(screen.x, -screen.y*2)  -- X = lower is more left, Y = lower is more up
+    -- pane:send_text 'fastfetch\n'
+  end
+end)
 
 -- and finally, return the configuration to wezterm
 return config

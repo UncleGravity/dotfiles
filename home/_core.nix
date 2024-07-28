@@ -47,6 +47,7 @@ let
     clipboard-jh # clipboard manager
     nix-output-monitor
     nnn
+    tlrc # tldr in rust
 
     # alacritty
     # wezterm
