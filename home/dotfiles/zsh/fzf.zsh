@@ -167,7 +167,7 @@ zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl
 # give a preview of commandline arguments when completing `kill`
 zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm"
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
-  '[[ $group == "[process ID]" ]] && ps -p $word -o pid,user,comm,cmd'
+  '[[ $group == "[process ID]" ]] && ps -p $word -o pid,user,comm,args'
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags \
   --preview-window=down:3:wrap \
   --multi \
