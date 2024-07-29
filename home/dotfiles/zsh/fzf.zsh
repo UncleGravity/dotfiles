@@ -48,7 +48,7 @@ export FZF_CTRL_R_OPTS="--tmux 80%"
 
 # Helper functions
 _fzf_select_mode() {
-    echo -e "files\ndirectories\ngrep\ntmux" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
+    echo -e "files\ndirectories\ngrep\ntmux\nprojects" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
 }
 
 # Fuzzy
@@ -99,6 +99,42 @@ _select_editor() {
     echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --tmux 80% --layout=reverse --border
 }
 
+_fzf_projects() {
+    local projects_command="fd -t d -H '^.git$' ~/Documents -x echo {//}"
+    
+    local project_dir=$(eval "$projects_command" | 
+        fzf --prompt="Select project: " \
+            --height=~50% \
+            --tmux 80% \
+            --layout=reverse \
+            --border
+    )
+
+    if [[ -z "$project_dir" ]]; then
+        return 1
+    fi
+
+    # Expand the tilde to the full path
+    project_dir="${project_dir/#\~/$HOME}"
+
+    local action=$(echo -e "cursor\nvscode\nnvim\ntmux" | 
+        fzf --prompt="Open with: " --height=~50% --tmux --layout=reverse --border)
+    
+    if [[ -z "$action" ]]; then
+        return 1
+    fi
+
+    case $action in
+        cursor) cursor "$project_dir" ;;
+        vscode) code "$project_dir" ;;
+        nvim)   nvim "$project_dir" ;;
+        tmux)   
+            local session_name=$(basename "$project_dir")
+            tmux new-session -A -s "$session_name" -c "$project_dir"
+            ;;
+    esac
+}
+
 # Main function
 fuzzy-files() {
     local mode=$(_fzf_select_mode)
@@ -106,7 +142,7 @@ fuzzy-files() {
 
     local result=""
     case $mode in
-        files)      result=$(fzf-file-widget) ;;
+        files)       result=$(fzf-file-widget) ;;
         directories) result=$(fzf-cd-widget) ;;
         grep)
             local selected=$(_fzf_grep)
@@ -125,6 +161,9 @@ fuzzy-files() {
             ;;
         tmux)
             result=$(_fzf_tmux) 
+            ;;
+        projects)
+            result=$(_fzf_projects)
             ;;
     esac
 
