@@ -114,9 +114,6 @@ _fzf_projects() {
         return 1
     fi
 
-    # Expand the tilde to the full path
-    project_dir="${project_dir/#\~/$HOME}"
-
     local action=$(echo -e "cursor\nvscode\nnvim\ntmux" | 
         fzf --prompt="Open with: " --height=~50% --tmux --layout=reverse --border)
     
@@ -125,12 +122,12 @@ _fzf_projects() {
     fi
 
     case $action in
-        cursor) cursor "$project_dir" ;;
-        vscode) code "$project_dir" ;;
-        nvim)   nvim "$project_dir" ;;
+        cursor) echo "cursor \"$project_dir\"" ;;
+        vscode) echo "code \"$project_dir\"" ;;
+        nvim)   echo "nvim \"$project_dir\"" ;;
         tmux)   
             local session_name=$(basename "$project_dir")
-            tmux new-session -A -s "$session_name" -c "$project_dir"
+            echo "tmux new-session -A -s \"$session_name\" -c \"$project_dir\""
             ;;
     esac
 }
@@ -168,8 +165,9 @@ fuzzy-files() {
     esac
 
     if [[ -n $result ]]; then
-        LBUFFER="$result"
+        BUFFER="$result"
         zle redisplay
+        zle accept-line  # This line will submit the command
     fi
     zle reset-prompt
 }
