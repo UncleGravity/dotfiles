@@ -103,13 +103,16 @@
         # Sets how long you must hold down the key before it starts repeating.
         InitialKeyRepeat = 15; # minimum is 15 (225 ms), maximum is 120 (1800 ms)
         # Sets how fast it repeats once it starts.
-        KeyRepeat = 3; # minimum is 2 (30 ms), maximum is 120 (1800 ms)
+        KeyRepeat = 2; # minimum is 2 (30 ms), maximum is 120 (1800 ms)
 
         NSAutomaticCapitalizationEnabled = false; # disable auto capitalization
         NSAutomaticDashSubstitutionEnabled = false; # disable auto dash substitution
         NSAutomaticPeriodSubstitutionEnabled = false; # disable auto period substitution
         NSAutomaticQuoteSubstitutionEnabled = false; # disable auto quote substitution
         NSAutomaticSpellingCorrectionEnabled = false; # disable auto spelling correction
+
+        # Disable "Press and Hold" system-wide
+        ApplePressAndHoldEnabled = false;
       };
 
       # Dock
@@ -185,5 +188,5 @@
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
   programs.zsh.enable = true;
-  environment.shells = [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated)
+  environment.shells = [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 }
