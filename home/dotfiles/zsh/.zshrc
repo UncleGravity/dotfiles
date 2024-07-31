@@ -162,7 +162,7 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-alias zshconfig="sudo nvim $HOME/.dotfiles/"
+alias zshconfig="nvim $HOME/Documents/.dotfiles/"
 alias zshrst="compinit -d $HOME/.cache/zsh/zcompdump && source $HOME/.config/zsh/.zshrc"
 
 # git
@@ -178,10 +178,14 @@ alias tk="tmux kill-session -t"     # Kill a specific tmux session
 alias ts="tmux switch-client -t"    # Switch to a specific tmux session
 alias tks="tmux kill-server"        # Kill the tmux server and all sessions
 
+# [ -f "$HOME/.config/zsh/tmux.zsh" ] && source "$HOME/.config/zsh/tmux.zsh"
+
 alias zj="zellij"
 alias zjc="zellij --layout compact"
 
 alias ff="fastfetch"
+
+alias nvim="NVIM_APPNAME=lazyvim nvim"
 
 # ==================================================================================================
 # OS Specific
@@ -251,6 +255,9 @@ fi
 fpath=(~/.config/zsh/auto-completions $fpath) # automatic collection of completions for all home-manager packages
 fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 
+# Ensure zsh cache directory exists
+[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh"
+
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 autoload -Uz compinit
@@ -259,9 +266,6 @@ if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
 else
 	compinit -C -d "$HOME/.cache/zsh/zcompdump";
 fi;
-
-# Ensure zsh cache directory exists
-[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh"
 
 ## Additional completions for commands that don't have them
 ## This generates completions using the respective --help page

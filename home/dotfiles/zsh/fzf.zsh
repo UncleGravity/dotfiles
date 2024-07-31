@@ -48,7 +48,7 @@ export FZF_CTRL_R_OPTS="--tmux 80%"
 
 # Helper functions
 _fzf_select_mode() {
-    echo -e "files\ndirectories\ngrep\ntmux\nprojects" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
+    echo -e "grep\ntmux\nprojects\ndotfiles\ngh" | fzf --prompt="Select search mode: " --height=~50% --tmux --layout=reverse --border
 }
 
 # Fuzzy
@@ -77,7 +77,7 @@ _fzf_tmux() {
                     --height=80% \
                     --tmux 80% \
                     --preview 'tmux list-commands {1} | bat --color=always --language=sh' \
-                    --preview-window 'right:50%,border-left' \
+                    --preview-window 'down:20%' \
                     --bind 'ctrl-/:change-preview-window(down|hidden|)' |
                 cut -d' ' -f1
             ;;
@@ -89,7 +89,7 @@ _fzf_tmux() {
                     --height=80% \
                     --tmux 80% \
                     --preview 'echo {} | bat --color=always --language=sh' \
-                    --preview-window 'right:50%,border-left' \
+                    --preview-window 'down:20%' \
                     --bind 'ctrl-/:change-preview-window(down|hidden|)'
             ;;
     esac
@@ -99,8 +99,10 @@ _select_editor() {
     echo -e "nvim\ncode\ncursor" | fzf --prompt="Select an editor: " --height=~50% --tmux 80% --layout=reverse --border
 }
 
+export DOTFILES_DIR="$HOME/Documents/.dotfiles"
+
 _fzf_projects() {
-    local projects_command="fd -t d -H '^.git$' ~/Documents -x echo {//}"
+    local projects_command="fd -t d -H '^.git$' ~/Documents $(test -d /media/psf/Home/Documents && echo /media/psf/Home/Documents) -x echo {//}"
     
     local project_dir=$(eval "$projects_command" | 
         fzf --prompt="Select project: " \
@@ -132,6 +134,65 @@ _fzf_projects() {
     esac
 }
 
+_fzf_dotfiles() {
+    local action=$(echo -e "cursor\nnvim\ntmux" | 
+        fzf --prompt="Open dotfiles with: " --height=~50% --tmux --layout=reverse --border)
+    
+    if [[ -z "$action" ]]; then
+        return 1
+    fi
+
+    case $action in
+        cursor) echo "cursor \"$DOTFILES_DIR\"" ;;
+        nvim)   echo "nvim \"$DOTFILES_DIR\"" ;;
+        tmux)   
+            local session_name="_dotfiles"
+            if ! tmux has-session -t "$session_name" 2>/dev/null; then
+                tmux new-session -d -s "$session_name" -c "$DOTFILES_DIR"
+                tmux send-keys -t "$session_name" 'nvim .' C-m
+            fi
+            if [ -z "$TMUX" ]; then
+                tmux attach-session -t "$session_name"
+            else
+                tmux switch-client -t "$session_name"
+            fi
+            return 0
+            ;;
+    esac
+}
+
+_fzf_gh() {
+    local username=$(gh api user --jq '.login')
+    
+    local org=$(printf "%s\n%s\n" "$username" "$(gh api user/orgs --jq '.[].login')" | 
+        fzf --prompt="Select organization: " --height=~50% --tmux --layout=reverse --border)
+    [[ -z "$org" ]] && return 1
+
+    local repos_json=$(gh repo list $org --json name,nameWithOwner,description,isFork --limit 1000)
+    
+    local repo=$(echo "$repos_json" | jq -r '.[] | "\(.name)\t\(.nameWithOwner)\t\(.description)\t\(.isFork)"' | 
+        awk -F'\t' '{print ($4 == "true" ? "* " : "  ") $1 "\t" $2 "\t" $3}' |
+        fzf --prompt="Select repository: " \
+            --height=80% \
+            --tmux 80% \
+            --layout=reverse \
+            --border \
+            --with-nth=1,2 \
+            --preview 'echo {3}' \
+            --preview-window=down:3:wrap \
+            --delimiter='\t' \
+            --bind="ctrl-/:change-preview-window(down|hidden|)" \
+            --color 'fg:188,fg+:222,bg+:#3a3a3a,hl+:104' \
+            --color 'pointer:161,info:144,spinner:135,header:61,prompt:214' \
+            --color 'marker:118,border:248')
+    [[ -z "$repo" ]] && return 1
+
+    local repo_name=$(echo "$repo" | cut -f2)
+    local repo_local_name=$(echo "$repo_name" | cut -d'/' -f2)
+
+    echo "gh repo clone $repo_name -- --recursive && cd $repo_local_name"
+}
+
 # Main function
 fuzzy-files() {
     local mode=$(_fzf_select_mode)
@@ -139,8 +200,6 @@ fuzzy-files() {
 
     local result=""
     case $mode in
-        files)       result=$(fzf-file-widget) ;;
-        directories) result=$(fzf-cd-widget) ;;
         grep)
             local selected=$(_fzf_grep)
             if [[ -n $selected ]]; then
@@ -161,6 +220,12 @@ fuzzy-files() {
             ;;
         projects)
             result=$(_fzf_projects)
+            ;;
+        dotfiles)
+            result=$(_fzf_dotfiles)
+            ;;
+        gh)
+            result=$(_fzf_gh)
             ;;
     esac
 
