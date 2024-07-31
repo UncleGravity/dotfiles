@@ -1,4 +1,15 @@
+nerdFontsVersion: "3"
+
 git:
   paging:
     colorArg: always
-    pager: delta --paging=never
+    pager: delta --diff-so-fancy --paging=never
+
+# git:
+#   paging:
+#     colorArg: always
+#     pager: diff-so-fancy
+
+# git:
+#   paging:
+#     externalDiffCommand: difft --color=always
