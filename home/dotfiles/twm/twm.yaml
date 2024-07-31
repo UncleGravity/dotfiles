@@ -1,7 +1,7 @@
 # ~/.config/twm/twm.yaml
 
 search_paths:  # directories we should begin searching for workspaces in. i just use home. shell expansion is supported
-    - "~"      # default: ["~"]
+    - "~/Documents"      # default: ["~"]
     - "/media/psf/Home/Documents"
 
 exclude_path_components:  # search branches will be pruned the path being explored contains any of these components
@@ -9,14 +9,16 @@ exclude_path_components:  # search branches will be pruned the path being explor
   - .direnv
   - node_modules
   - venv
+  - .cache
+  - dist
   #  - target
 
-max_search_depth: 5  # how deep we should search for workspaces (default: 3)
+max_search_depth: 8  # how deep we should search for workspaces (default: 3)
 session_name_path_components: 1    # how many parts of the workspace path to use in generating the session name by default
                                    # if you attempt to open two separate workspaces that would generate the same session name,
                                    # this value will be incremented until a unique session name is found
 
-# workspace_definitions:             # our list of workspaces, each with different properties
+workspace_definitions:             # our list of workspaces, each with different properties
 #     - name: python                 # they all have to be named
 #       has_any_file:                # if any file matches this list, we consider it a match, since its "has_any_file"
 #         - requirements.txt         # more complex matching isn't implemented currently
@@ -45,8 +47,8 @@ session_name_path_components: 1    # how many parts of the workspace path to use
 #         - .nvmrc
 #       default_layout: node-dev
 
-#     - name: catchall               # without any conditions, all directories will match this wworkspace
-#       default_layout: catchall-dev # this is the default layout for this workspace type
+    - name: catchall               # without any conditions, all directories will match this wworkspace
+      default_layout: catchall-dev # this is the default layout for this workspace type
 
 #     - name: rust
 #       has_any_file:
@@ -54,11 +56,12 @@ session_name_path_components: 1    # how many parts of the workspace path to use
 #         - Cargo.lock
 #       default_layout: rust-dev
 
-#     - name: other
-#       has_any_file:
-#         - .git
-#         - flake.nix
-#         - .twm.yaml
+    # - name: dotfiles
+    #   has_all_files:
+    #     - .git
+    #     - flake.nix
+    #     - twm.yaml
+    #   default_layout: dotfiles-dev
 
 layouts:                           # our list of layouts just have names and a list of commands. the command get sent directly with tmux send-keys
     - name: python-dev             # i chose not to use any custom configuration becuase that would be a lot of work to basically maintain a subset of possible functionality
@@ -93,3 +96,10 @@ layouts:                           # our list of layouts just have names and a l
       commands:
         - tmux send-keys -t 1 'tail -f /var/log/syslog' C-m
         - tmux send-keys -t 2 'journalctl -f' C-m       
+    
+    - name: dotfiles-dev
+      commands:
+        - tmux split-window -v -p 20
+        - tmux select-pane -t 0
+        - tmux send-keys -t 0 'zshconfig' C-m
+        # - tmux select-pane -t 1
