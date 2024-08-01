@@ -142,9 +142,6 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 # rg <query> --json | delta : add syntax highlighting to the output of the given <query> (for code searching)
 # tree : display recursive tree view starting from current directory
 
-# ------------ cd -> zoxide ------------
-alias cd="z"
-
 # ------------ ls -> eza ------------
 alias ls="eza"
 alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"
@@ -272,7 +269,7 @@ fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 autoload -Uz compinit
 compinit -d "${ZDOTDIR}/.zcompdump"
 
-eval "$(zoxide init zsh)" # this goes after compinit, according to the docs
+eval "$(zoxide init --cmd cd zsh)" # this goes after compinit, according to the docs
 
 ## Additional completions for commands that don't have them
 ## This generates completions using the respective --help page

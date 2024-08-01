@@ -31,6 +31,7 @@ let
     # goodies
     tmux
     twm
+    sesh
     zellij
     tree
     fastfetch
@@ -45,6 +46,7 @@ let
     exiftool # optionally used by yazi
     unar # archive extractor
     glow # markdown viewer
+    gum
     clipboard-jh # clipboard manager
     nix-output-monitor
     nnn
@@ -181,6 +183,9 @@ in
     };
     ".config/twm" = {
       source = "${DOTFILES_DIR}/twm";
+    };
+    ".config/sesh" = {
+      source = "${DOTFILES_DIR}/sesh";
     };
     ".config/zellij" = {
       source = "${DOTFILES_DIR}/zellij";
