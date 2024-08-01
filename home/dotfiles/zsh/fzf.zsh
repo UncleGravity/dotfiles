@@ -168,10 +168,11 @@ _fzf_gh() {
         fzf --prompt="Select organization: " --height=~50% --tmux --layout=reverse --border)
     [[ -z "$org" ]] && return 1
 
-    local repos_json=$(gh repo list $org --json name,nameWithOwner,description,isFork --limit 1000)
+    local repos=$(gh repo list "$org" --limit 1000 --json name,nameWithOwner,description,isFork,url \
+        --jq '.[] | "\(.name)\t\(.nameWithOwner)\t\(.description)\t\(.isFork)\t\(.url)"')
     
-    local repo=$(echo "$repos_json" | jq -r '.[] | "\(.name)\t\(.nameWithOwner)\t\(.description)\t\(.isFork)"' | 
-        awk -F'\t' '{print ($4 == "true" ? "* " : "  ") $1 "\t" $2 "\t" $3}' |
+    local repo=$(echo "$repos" | 
+        awk -F'\t' '{print ($4 == "true" ? "* " : "  ") $1 "\t" $2 "\t" $3 "\t" $5}' |
         fzf --prompt="Select repository: " \
             --height=80% \
             --tmux 80% \
@@ -182,6 +183,8 @@ _fzf_gh() {
             --preview-window=down:3:wrap \
             --delimiter='\t' \
             --bind="ctrl-/:change-preview-window(down|hidden|)" \
+            --bind="ctrl-y:execute-silent(echo -n {4} | cb copy)+abort" \
+            --header="CTRL-Y: Copy repo URL" \
             --color 'fg:188,fg+:222,bg+:#3a3a3a,hl+:104' \
             --color 'pointer:161,info:144,spinner:135,header:61,prompt:214' \
             --color 'marker:118,border:248')
