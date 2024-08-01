@@ -38,6 +38,7 @@ let
     eza # better ls/tree
     ripgrep # better grep
     bat # better cat
+    zoxide # better cd
     delta # better diff
     fd # better find
     # yazi # file manager
@@ -88,18 +89,18 @@ in
 
   programs.fzf = {
     enable = true;
-    enableZshIntegration = true;
+    # enableZshIntegration = true;
   };
 
   programs.wezterm = {
     enable = true;
-    enableZshIntegration = true;
+    # enableZshIntegration = true;
   };
 
   programs.yazi = {
     enable = true;
     package = inputs.yazi.packages.${pkgs.system}.default;
-    enableZshIntegration = true;
+    # enableZshIntegration = true;
   };
 
   programs.neovim = {
@@ -130,7 +131,7 @@ in
 
   programs.direnv = {
     enable = true;
-    enableZshIntegration = true;
+    # enableZshIntegration = true;
     nix-direnv.enable = true;
   };
 

@@ -30,6 +30,7 @@
       "cursor"
       "kitty"
       "wezterm"
+      "hammerspoon"
 
       # TODO: Move to nix-darwin: services.karabiner-elements.enable. 
       # https://github.com/LnL7/nix-darwin/blob/master/modules/services/karabiner-elements/default.nix

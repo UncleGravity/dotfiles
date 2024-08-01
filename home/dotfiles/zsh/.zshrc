@@ -213,7 +213,7 @@ case "$(uname -s)" in
     export XDG_CONFIG_HOME="$HOME/.config"
     eval "$(/opt/homebrew/bin/brew shellenv)"
     
-    # [ -f "${HOME}/.config/zsh/macos/vm-utils.zsh" ] && source "${HOME}/.config/zsh/macos/vm-utils.zsh"
+    [ -f "${HOME}/.config/zsh/macos/vm.zsh" ] && source "${HOME}/.config/zsh/macos/vm.zsh"
     [ -f "${HOME}/.config/zsh/macos/dev.zsh" ] && source "${HOME}/.config/zsh/macos/dev.zsh"
     ;;
   Linux)
