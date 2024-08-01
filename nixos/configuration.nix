@@ -137,6 +137,7 @@
   # SHELLS
   environment.shells = with pkgs; [bash zsh];
   programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
+  programs.zsh.enableGlobalCompInit = false; # This prevents compinit from running on /etc/zshrc, which noticeably slows down shell startup. Run compinit from user zshrc instead.
   environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
 
   # ---------------------------------------------------------------------------

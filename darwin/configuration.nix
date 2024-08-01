@@ -185,8 +185,16 @@
     auth       sufficient     pam_tid.so
   '';
 
+  #############################################################
+  #  Zsh
+  #############################################################
+
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
   programs.zsh.enable = true;
+
+  # IMPORTANT - This prevents compinit from running on /etc/zshrc, 
+  # which noticeably slows down shell startup. Run compinit from user zshrc instead.
+  programs.zsh.enableGlobalCompInit = false;
   environment.shells = [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 }
