@@ -48,12 +48,13 @@ zinit for \
   romkatv/powerlevel10k
 
 # Load other plugins with Turbo mode
-# zinit light MichaelAquilina/zsh-you-should-use
+zinit light MichaelAquilina/zsh-you-should-use
 zinit light Aloxaf/fzf-tab
 zinit light zsh-users/zsh-completions
-zinit light zsh-users/zsh-autosuggestions
-zinit light zdharma-continuum/fast-syntax-highlighting
-# zinit light zsh-users/zsh-syntax-highlighting
+zinit wait lucid for \
+  atload"_zsh_autosuggest_start" \
+  zsh-users/zsh-autosuggestions \
+  zdharma-continuum/fast-syntax-highlighting # This breaks delimiters if not deferred
 
 # ==================================================================================================
 # History
@@ -82,8 +83,7 @@ bindkey -e
 
 # Word delimiters
 # This section configures how Zsh treats word boundaries, which affects navigation and text manipulation
-autoload -U select-word-style
-select-word-style bash  # Use Bash-style word definitions
+autoload -U select-word-style; select-word-style bash  # Use Bash-style word definitions
 zstyle ':zle:*' word-chars " _-./;@"  # Define additional characters to be treated as part of words
 zstyle ':zle:*' word-style unspecified
 
@@ -141,6 +141,9 @@ setopt interactivecomments # Allow comments to be entered in interactive mode
 # rg <query> -l : list all files that contain the given <query>
 # rg <query> --json | delta : add syntax highlighting to the output of the given <query> (for code searching)
 # tree : display recursive tree view starting from current directory
+
+# ------------ cd -> zoxide ------------
+alias cd="z"
 
 # ------------ ls -> eza ------------
 alias ls="eza"
