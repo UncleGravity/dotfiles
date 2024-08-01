@@ -1,7 +1,33 @@
 # ==================================================================================================
-# Profiling
+# Profiling Start (see end of file)
 # ==================================================================================================
 # zmodload zsh/zprof
+
+# ==================================================================================================
+# Zinit - Install and Update
+# ==================================================================================================
+
+# Install Zinit if it's not already installed
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+[ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
+[ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+source "${ZINIT_HOME}/zinit.zsh"
+
+# (optional) Update Zinit and plugins (weekly)
+ZINIT_LAST_UPDATE_FILE="${ZINIT_HOME}/.zinit_last_update"
+ZINIT_UPDATE_INTERVAL=$((7 * 24 * 60 * 60))  # 7 days in seconds
+
+if [[ ! -f "$ZINIT_LAST_UPDATE_FILE" ]] || (( $(date +%s) - $(cat "$ZINIT_LAST_UPDATE_FILE") > ZINIT_UPDATE_INTERVAL )); then
+    echo "Updating Zinit and plugins..."
+  zinit self-update
+    zinit update --all
+    date +%s > "$ZINIT_LAST_UPDATE_FILE"
+fi
+
+# ==================================================================================================
+# DEV
+# ==================================================================================================
+eval "$(direnv hook zsh)" # Without this, direnv will not work (actually I'll just set this on home.nix)
 
 # ==================================================================================================
 # Powerlevel10k Instant Prompt
@@ -11,21 +37,14 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # ==================================================================================================
-# Zinit
+# Plugins
 # ==================================================================================================
-# Run "zinit update --all" and "zinit self-update" every once in a while to update all plugins
-
-ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
-[ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
-[ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-source "${ZINIT_HOME}/zinit.zsh"
 
 # Load Powerlevel10k theme
-# zinit ice depth=1 lucid
 zinit for \
   depth=1 \
   lucid \
-  atload="[[ -f \${HOME}/.config/zsh/p10k.zsh ]] && source \${HOME}/.config/zsh/p10k.zsh" \
+  atload="[[ -f \${ZDOTDIR}/p10k.zsh ]] && source \${ZDOTDIR}/p10k.zsh" \
   romkatv/powerlevel10k
 
 # Load other plugins with Turbo mode
@@ -33,14 +52,13 @@ zinit for \
 zinit light Aloxaf/fzf-tab
 zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
-zinit light zsh-users/zsh-syntax-highlighting
-
-# zinit pack for fzf
+zinit light zdharma-continuum/fast-syntax-highlighting
+# zinit light zsh-users/zsh-syntax-highlighting
 
 # ==================================================================================================
 # History
 # ==================================================================================================
-HISTFILE=$HOME/.config/zsh/.zsh_history
+HISTFILE="${ZDOTDIR}/.zsh_history"
 HISTSIZE=1_000_000
 SAVEHIST=$HISTSIZE
 setopt EXTENDED_HISTORY          # Write the history file in the ':start:elapsed;command' format.
@@ -163,7 +181,7 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 alias zshconfig="nvim $HOME/Documents/.dotfiles/"
-alias zshrst="compinit -d $HOME/.cache/zsh/zcompdump && source $HOME/.config/zsh/.zshrc"
+alias zshrst="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
 
 # git
 alias lg="lazygit"
@@ -195,13 +213,11 @@ case "$(uname -s)" in
     export XDG_CONFIG_HOME="$HOME/.config"
     eval "$(/opt/homebrew/bin/brew shellenv)"
     
-    # export NIX_PATH=$NIX_PATH:nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs
-    [ -f "${HOME}/.config/zsh/macos/vm-utils.zsh" ] && source "${HOME}/.config/zsh/macos/vm-utils.zsh"
+    # [ -f "${HOME}/.config/zsh/macos/vm-utils.zsh" ] && source "${HOME}/.config/zsh/macos/vm-utils.zsh"
     [ -f "${HOME}/.config/zsh/macos/dev.zsh" ] && source "${HOME}/.config/zsh/macos/dev.zsh"
     ;;
   Linux)
     alias dbox="distrobox"
-    # fpath+=(/run/current-system/sw/share/zsh/site-functions)
     ;;
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     # echo 'MS Windows'
@@ -215,11 +231,6 @@ esac
 # SECRETS
 # ==================================================================================================
 [ -f "$HOME/.config/zsh/secrets/_decrypt.sh" ] && source "$HOME/.config/zsh/secrets/_decrypt.sh"
-
-# ==================================================================================================
-# DEV
-# ==================================================================================================
-eval "$(direnv hook zsh)" # Without this, direnv will not work (actually I'll just set this on home.nix)
 
 # ==================================================================================================
 # Completions (KEEP AT THE END OF FILE)
@@ -240,11 +251,9 @@ zstyle ':completion:*' rehash true # automatically update cache (keep completion
 
 # Load missing completions for macOS
 if [[ "$(uname)" == "Darwin" ]]; then
-  # [[ -d /etc/profiles/per-user/$USER/share/zsh/site-functions ]] && fpath=(/etc/profiles/per-user/$USER/share/zsh/site-functions $fpath)
-  # [[ -d /usr/share/zsh/*/functions ]] && fpath+=(/usr/share/zsh/*/functions)
-  [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions)
-  [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh)
-  [[ -d /Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions ]] && fpath+=(/Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions)
+  [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions) # Homebrew
+  [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh) # Cursor
+  [[ -d /Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions ]] && fpath+=(/Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions) # Kitty
 else
   # Load missing completions for ubuntu!
   [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
@@ -255,17 +264,12 @@ fi
 fpath=(~/.config/zsh/auto-completions $fpath) # automatic collection of completions for all home-manager packages
 fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 
-# Ensure zsh cache directory exists
-[[ ! -d "$HOME/.cache/zsh" ]] && mkdir -p "$HOME/.cache/zsh"
-
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 autoload -Uz compinit
-if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-	compinit -d "$HOME/.cache/zsh/zcompdump";
-else
-	compinit -C -d "$HOME/.cache/zsh/zcompdump";
-fi;
+compinit -d "${ZDOTDIR}/.zcompdump"
+
+eval "$(zoxide init zsh)" # this goes after compinit, according to the docs
 
 ## Additional completions for commands that don't have them
 ## This generates completions using the respective --help page
