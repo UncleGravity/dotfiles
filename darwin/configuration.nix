@@ -82,6 +82,8 @@
   #
   #  All the configuration options are documented here:
   #    https://daiderd.com/nix-darwin/manual/index.html#sec-options
+  #  Extra options are documented here:
+  #    https://macos-defaults.com/
   ###################################################################################
 
   system = {
@@ -166,6 +168,7 @@
 
       # Misc
       ActivityMonitor.IconType = 6; # CPU usage plot
+      CustomUserPreferences."com.apple.ActivityMonitor".UpdatePeriod = 2; # Update every 2 seconds
       LaunchServices.LSQuarantine = false; # Disable "This app is from the internet" quarantine message
 
       # ----------------- Defaults end
