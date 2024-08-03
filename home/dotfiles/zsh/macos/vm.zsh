@@ -29,8 +29,8 @@
 # Format: [vm_name]="username@hostname:/remote/base/path"
 typeset -A VM_CONFIG
 VM_CONFIG=(
-  [ubuntu]="parallels@uvm.local:/media/psf/Home"
-  [nixos]="angel@nixos:/home/angel"
+  [ubuntu]="parallels@uvm.local:/media/psf/Home/"
+  [nixos]="angel@nixos:/media/psf/Home/"
 )
 
 # Helper function to get the remote path for a VM
