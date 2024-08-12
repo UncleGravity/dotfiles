@@ -198,6 +198,7 @@
 
   # IMPORTANT - This prevents compinit from running on /etc/zshrc, 
   # which noticeably slows down shell startup. Run compinit from user zshrc instead.
+  # This is (I think) mostly necessary because I am using a custom zshrc file instead of letting nix manage it.
   programs.zsh.enableGlobalCompInit = false;
   environment.shells = [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 }
