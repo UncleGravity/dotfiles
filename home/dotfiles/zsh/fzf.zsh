@@ -129,7 +129,14 @@ _fzf_projects() {
         nvim)   echo "nvim \"$project_dir\"" ;;
         tmux)   
             local session_name=$(basename "$project_dir")
-            echo "tmux new-session -A -s \"$session_name\" -c \"$project_dir\""
+            if [ -n "$TMUX" ]; then
+                # If already in a tmux session, create a new session and switch to it
+                tmux new-session -A -d -s "$session_name" -c "$project_dir"
+                tmux switch-client -t "$session_name"
+            else
+                # If not in a tmux session, create a new session and attach to it
+                tmux new-session -A -s "$session_name" -c "$project_dir"
+            fi
             ;;
     esac
 }
