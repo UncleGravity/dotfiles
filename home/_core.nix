@@ -174,6 +174,9 @@ in
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
     };
+    ".hammerspoon/" = {
+      source = "${DOTFILES_DIR}/hammerspoon";
+    };
     ".config/alacritty" = {
       source = "${DOTFILES_DIR}/alacritty";
     };
