@@ -9,7 +9,12 @@ local wf = hs.window.filter.new(function(win)
 end)
 
 -- Hotkey to toggle Dropterm
-hs.hotkey.bind({"cmd"}, "escape", function()
+-- hs.hotkey.bind({"cmd"}, "escape", function()
+--     toggleDropterm()
+-- end)
+
+-- Hotkey for cmd+shift+/
+hs.hotkey.bind({"cmd", "shift"}, "/", function()
     toggleDropterm()
 end)
 
