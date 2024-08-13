@@ -74,7 +74,7 @@ config.keys = {
 -- 	},
 -- }
 
-# Test this with: `wezterm start --workspace caquita -- tmux new-session -A -s 1`
+-- Test this with: `wezterm start --workspace caquita -- tmux new-session -A -s 1`
 wezterm.on('gui-startup', function(cmd)
   local screen = wezterm.gui.screens().active
   print("Screen:", screen)
