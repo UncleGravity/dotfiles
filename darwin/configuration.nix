@@ -1,7 +1,6 @@
 { pkgs, lib, inputs, username, hostname, ... }: {
 
   imports = [
-    # ./kanata.nix
     ./homebrew.nix
   ];
 
@@ -18,11 +17,6 @@
   };
 
   nix.settings.trusted-users = [ username ];
-
-  #############################################################
-  #  Yabai
-  #############################################################
-  # services.yabai.enable = true;
 
   #############################################################
   #  Packages
