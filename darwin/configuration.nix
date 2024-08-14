@@ -139,7 +139,7 @@
         # _FXShowPosixPathInTitle = true;
         ShowPathbar = true; # Breadcrumbs
         AppleShowAllExtensions = true; # Show all file extensions
-        AppleShowAllFiles = true; # Show hidden files
+        AppleShowAllFiles = false; # Don't show hidden files
         FXDefaultSearchScope = "SCcf"; # Search the current folder by default
         FXPreferredViewStyle = "Nlsv"; # List view
       };
