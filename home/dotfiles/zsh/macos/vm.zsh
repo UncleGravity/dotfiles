@@ -40,15 +40,14 @@ function _vm_get_remote_path() {
   local vm_name="$1"
   local current_local_path="$(pwd)"
   local vm_info="${VM_CONFIG[$vm_name]}"
-  local remote_user="${vm_info%%@*}"
-  local remote_host="${vm_info#*@}"
-  remote_host="${remote_host%%:*}"
   local remote_base_path="${vm_info#*:}"
   
-  if [[ $current_local_path == "/Users/"* ]]; then
+  if [[ $current_local_path == "$HOME" ]]; then
+    echo "${remote_base_path%/}"
+  elif [[ $current_local_path == "/Users/"* ]]; then
     echo "${remote_base_path}${current_local_path#/Users/*/}"
   else
-    echo "~/"
+    echo "${remote_base_path}${current_local_path#$HOME}"
   fi
 }
 
