@@ -203,7 +203,8 @@ alias zjc="zellij --layout compact"
 
 alias ff="fastfetch"
 
-alias nvim="NVIM_APPNAME=lazyvim nvim"
+export NVIM_APPNAME=lazyvim
+# alias nvim="NVIM_APPNAME=lazyvim nvim"
 
 # ==================================================================================================
 # OS Specific

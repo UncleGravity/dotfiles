@@ -2,18 +2,13 @@
 # If you encounter any issues, please make an issue at https://github.com/yazi-rs/schemas.
 "$schema" = "https://yazi-rs.github.io/schemas/keymap.json"
 
-# Smart paste
-[[manager.prepend_keymap]]
-on   = [ "p" ]
-run  = "plugin --sync smart-paste"
-desc = "Paste into the hovered directory or CWD"
-
-# Yank to clipboard
+# Yank file to clipboard
 [[manager.prepend_keymap]]
 on  = [ "y" ]
 run = [ '''
-	shell 'echo "$@" | cb copy' --confirm
+	shell 'cb copy "$@"' --confirm
 ''', "yank" ]
+desc = "Yank to clipboard"
 
 # Maximize / Restore preview
 [[manager.prepend_keymap]]
@@ -114,10 +109,10 @@ keymap = [
 	{ on = [ "m", "n" ], run = "linemode none",        desc = "Set linemode to none" },
 
 	# Copy
-	{ on = [ "c", "c" ], run = "copy path",             desc = "Copy the absolute path" },
-	{ on = [ "c", "d" ], run = "copy dirname",          desc = "Copy the path of the parent directory" },
-	{ on = [ "c", "f" ], run = "copy filename",         desc = "Copy the name of the file" },
-	{ on = [ "c", "n" ], run = "copy name_without_ext", desc = "Copy the name of the file without the extension" },
+	{ on = [ "c", "c" ], run = "copy path",             desc = "Copy absolute path" },
+	{ on = [ "c", "d" ], run = "copy dirname",          desc = "Copy parent directory path" },
+	{ on = [ "c", "f" ], run = "copy filename",         desc = "Copy file name" },
+	{ on = [ "c", "n" ], run = "copy name_without_ext", desc = "Copy file name without extension" },
 
 	# Filter
 	{ on = [ "f" ], run = "filter --smart", desc = "Filter the files" },
