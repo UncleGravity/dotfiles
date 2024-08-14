@@ -3,7 +3,9 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, inputs, options, username, hostname, ... }:
-
+let
+  enableXServer = false;  # Set to false to disable X server
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -65,10 +67,11 @@
 
   # ---------------------------------------------------------------------------
   # X11
-  services.xserver.enable = true;
+  services.xserver.enable = enableXServer;
+  services.xserver.autorun = enableXServer;
    
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager.gdm.enable = enableXServer;
   services.xserver.desktopManager.gnome.enable = true;
 
   # Enable xkb Options in TTY
