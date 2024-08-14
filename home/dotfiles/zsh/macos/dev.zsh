@@ -19,27 +19,8 @@ eval "$(pyenv init -);"
 eval "$(pyenv virtualenv-init -)"
 # if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
 
-# Poetry setup
+# pipx setup
 export PATH="$HOME/.local/bin:$PATH"
-
-function poetry_init() {
-  # Check if the requirements.txt file exists in the current directory.
-  if [[ ! -f "requirements.txt" ]]; then
-      echo "Error: requirements.txt not found in the current directory."
-      return 1
-  fi
-
-  # Initialize Poetry project.
-  poetry init -n
-
-  # Add dependencies from requirements.txt to the project.
-  poetry add $(cat requirements.txt)
-
-  # Install the dependencies.
-  poetry install
-
-  echo "Poetry project initialized and dependencies installed."
-}
 
 # Ruby version manager setup
 export GEM_HOME=$HOME/.gem

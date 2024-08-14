@@ -17,13 +17,14 @@ let
     devenv
     direnv
     nixd # nix language server (lsp)
-    nixpkgs-fmt
-    alejandra
+    nixpkgs-fmt # nix formatter
+    alejandra # nix formatter
     jq
+    gh # github cli
     lazygit
+    lazydocker
 
     pipx
-    # pkgx
 
     # Security
     age

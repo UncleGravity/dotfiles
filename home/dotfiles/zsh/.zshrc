@@ -219,8 +219,7 @@ case "$(uname -s)" in
   Linux)
     alias dbox="distrobox"
     # Aliases for GNOME GUI control
-    alias gui-off="sudo systemctl set-default multi-user.target && sudo systemctl isolate multi-user.target"
-    alias gui-on="sudo systemctl set-default graphical.target && sudo systemctl isolate graphical.target"
+    alias lazypodman='DOCKER_HOST=unix:///run/user/1000/podman/podman.sock lazydocker'
     ;;
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     # echo 'MS Windows'
