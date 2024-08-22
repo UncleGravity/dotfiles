@@ -272,8 +272,11 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath' # 
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
 	fzf-preview 'echo ${(P)word}'
 
-### systemd
+### systemd (Linux)
 zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
+
+### launchd (macOS)
+zstyle ':fzf-tab:complete:launchctl-*:*' fzf-preview 'launchctl list $word'
 
 ### kill
 # give a preview of commandline arguments when completing `kill`

@@ -188,15 +188,15 @@ alias lg="lazygit"
 
 # Tmux aliases
 # alias t="tmux new-session -A -s $(basename $(pwd))"
-alias t="tmux"
-alias tn="tmux new-session -A -s"   # Create a new tmux session
-alias ta="tmux attach -t"           # Attach to an existing tmux session
-alias tl="tmux list-sessions"       # List all tmux sessions
-alias tk="tmux kill-session -t"     # Kill a specific tmux session
-alias ts="tmux switch-client -t"    # Switch to a specific tmux session
-alias tks="tmux kill-server"        # Kill the tmux server and all sessions
+# alias t="tmux"
+# alias tn="tmux new-session -A -s"   # Create a new tmux session
+# alias ta="tmux attach -t"           # Attach to an existing tmux session
+# alias tl="tmux list-sessions"       # List all tmux sessions
+# alias tk="tmux kill-session -t"     # Kill a specific tmux session
+# alias ts="tmux switch-client -t"    # Switch to a specific tmux session
+# alias tks="tmux kill-server"        # Kill the tmux server and all sessions
 
-# [ -f "$HOME/.config/zsh/tmux.zsh" ] && source "$HOME/.config/zsh/tmux.zsh"
+[ -f "$HOME/.config/zsh/tmux.zsh" ] && source "$HOME/.config/zsh/tmux.zsh"
 
 alias zj="zellij"
 alias zjc="zellij --layout compact"
