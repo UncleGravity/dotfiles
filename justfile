@@ -20,18 +20,27 @@ sync:
     case "{{system_type}}" in
         "nixos")
             HOSTNAME=$(hostname)
-            sudo nixos-rebuild switch --flake .#$HOSTNAME
+            if ! sudo nixos-rebuild switch --flake .#$HOSTNAME; then
+                echo "❌ Failed to rebuild NixOS configuration."
+                exit 1
+            fi
             ;;
         "darwin")
             HOSTNAME=$(scutil --get ComputerName)
-            darwin-rebuild switch --flake .#$HOSTNAME
+            if ! darwin-rebuild switch --flake .#$HOSTNAME; then
+                echo "❌ Failed to rebuild Darwin configuration."
+                exit 1
+            fi
             ;;
         "home-manager")
             USERNAME=$(whoami)
-            home-manager switch --flake .#$USERNAME
+            if ! home-manager switch --flake .#$USERNAME; then
+                echo "❌ Failed to rebuild Home Manager configuration."
+                exit 1
+            fi
             ;;
         *)
-            echo "❌ Error: Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
+            echo "❌ Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
             exit 1
             ;;
     esac

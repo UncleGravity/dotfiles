@@ -29,6 +29,10 @@ let
     # Security
     age
 
+    # AI
+    aichat
+    ollama
+
     # goodies
     tmux
     twm
