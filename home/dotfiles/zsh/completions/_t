@@ -1,0 +1,33 @@
+#compdef t
+
+# Completion function for t command
+function _t() {
+  local -a actions sessions
+  actions=(
+    'ls:List all tmux sessions'
+    'new:Create a new session'
+    'a:Attach to a session'
+    'attach:Attach to a session'
+    'kill:Kill a session'
+    'switch:Switch to a session'
+    'ks:Kill current session and switch to another'
+  )
+  sessions=(${(f)"$(tmux list-sessions -F '#S' 2>/dev/null)"})
+
+  _arguments \
+    '1:action:->actions' \
+    '*::arg:->args'
+
+  case $state in
+    actions)
+      _describe -t actions 'tmux actions' actions
+      ;;
+    args)
+      case $words[1] in
+        new|a|attach|kill|switch|ks)
+          _describe -t sessions 'tmux sessions' sessions
+          ;;
+      esac
+      ;;
+  esac
+}

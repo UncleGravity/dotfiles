@@ -10,16 +10,33 @@ run = [ '''
 ''', "yank" ]
 desc = "Yank to clipboard"
 
-# Maximize / Restore preview
+# [max-preview.yazi] Maximize preview
 [[manager.prepend_keymap]]
 on   = [ "T" ]
 run  = "plugin --sync max-preview"
 desc = "Maximize or restore preview"
 
+# [hide-preview.yazi] Toggle preview
 [[manager.prepend_keymap]]
 on   = [ ">" ]
 run  = "plugin --sync hide-preview"
 desc = "Hide or show preview"
+
+# [fg.yazi]
+[[manager.prepend_keymap]]
+on   = [ "f","g" ]
+run  = "plugin fg"
+desc = "find by content (fuzzy)"
+
+[[manager.prepend_keymap]]
+on   = [ "f","G" ]
+run  = "plugin fg --args='rg'"
+desc = "find by content"
+
+[[manager.prepend_keymap]]
+on   = [ "f","f" ]
+run  = "plugin fg --args='fzf'"
+desc = "find by filenames"
 
 [manager]
 keymap = [
@@ -115,7 +132,7 @@ keymap = [
 	{ on = [ "c", "n" ], run = "copy name_without_ext", desc = "Copy file name without extension" },
 
 	# Filter
-	{ on = [ "f" ], run = "filter --smart", desc = "Filter the files" },
+	{ on = [ "F" ], run = "filter --smart", desc = "Filter the files" },
 
 	# Find
 	{ on = [ "/" ], run = "find --smart",            desc = "Find next file" },
@@ -162,7 +179,7 @@ keymap = [
 	# Goto
 	{ on = [ "g", "h" ],       run = "cd ~",             desc = "Go: home directory" },
 	{ on = [ "g", "c", "c" ],  run = "cd ~/.config",     desc = "Go: config directory" },
-	{ on = [ "g", "c", "d" ],  run = "cd ~/.dotfiles",   desc = "Go: dotfiles directory" },
+	{ on = [ "g", "c", "d" ],  run = "cd ~/Documents/.dotfiles",   desc = "Go: dotfiles directory" },
 	{ on = [ "g", "d" ],       run = "cd ~/Downloads",   desc = "Go: downloads directory" },
 	{ on = [ "g", "D" ],       run = "cd ~/Documents",    desc = "Go: documents directory" },
 	{ on = [ "g", "t" ],       run = "cd /tmp",          desc = "Go: temporary directory" },
