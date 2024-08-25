@@ -203,6 +203,9 @@ alias zjc="zellij --layout compact"
 
 alias ff="fastfetch"
 
+alias du="dua"
+alias df="duf --hide-mp '/dev, *ystem*, /private*, /nix*'"
+
 export NVIM_APPNAME=lazyvim
 # alias nvim="NVIM_APPNAME=lazyvim nvim"
 

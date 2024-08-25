@@ -5,21 +5,17 @@ let
 
   commonPackages = with pkgs; [
     # Dev
-    # gnumake
-    # cmake
-    # gcc
+
     file
     just
     bun
-    # nodejs
-    # python3
-    # go
+    cargo
+
     devenv
     direnv
     nixd # nix language server (lsp)
     nixpkgs-fmt # nix formatter
     alejandra # nix formatter
-    jq
     gh # github cli
     lazygit
     lazydocker
@@ -28,39 +24,53 @@ let
 
     # Security
     age
+    binwalk
 
     # AI
     aichat
     ollama
 
-    # goodies
+    # goodies -------------------------
+
+    # tmux
     tmux
     twm
     sesh
     zellij
-    tree
-    fastfetch
-    btop
+
+    # replacements
+    fastfetch # better neofetch
+    btop # better top
     eza # better ls/tree
     ripgrep # better grep
     bat # better cat
     zoxide # better cd
     delta # better diff
     fd # better find
+    gping # better ping
+    duf # better df
+    dua # better du/ncdu
+
+    #JSON
+    jq # json parser
+    fq # everything else parser
+    fx # better json parser
+
     # yazi # file manager
     exiftool # optionally used by yazi
     unar # archive extractor
     glow # markdown viewer
-    gum
-    clipboard-jh # clipboard manager
-    nix-output-monitor
-    nnn
-    # tlrc # tldr in rust
-    tldr
+    hexyl # hex viewer
 
-    # alacritty
-    # wezterm
-    # kitty
+    gum # cli util
+    clipboard-jh # clipboard manager (cb)
+
+    nix-output-monitor
+    tldr
+    # tlrc # tldr in rust
+
+    # hacking
+    # termshark # wireshark for terminal
 
     # Fonts
     meslo-lgs-nf # Nerd Font for powerlevel10k
