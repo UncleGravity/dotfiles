@@ -17,7 +17,8 @@ local function positionDropterm(window)
     local newFrame = hs.geometry.rect(
         screenFrame.x,
         screenFrame.y,
-        screenFrame.w / 2,  -- 50% of screen width
+        -- screenFrame.w / 2,  -- 50% of screen width
+        screenFrame.w,
         screenFrame.h       -- 100% of screen height
     )
     window:setFrame(newFrame)
