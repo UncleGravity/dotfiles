@@ -5,22 +5,22 @@ let
 
   commonPackages = with pkgs; [
     # Dev
-
-    file
-    just
+    gh # github cli
+    pipx
     bun
+    just
     cargo
+    zig
+    go
 
-    devenv
+    # Nix
     direnv
     nixd # nix language server (lsp)
     nixpkgs-fmt # nix formatter
     alejandra # nix formatter
-    gh # github cli
+
     lazygit
     lazydocker
-
-    pipx
 
     # Security
     age
@@ -57,15 +57,13 @@ let
     fx # better json parser
 
     # yazi # file manager
-    exiftool # optionally used by yazi
+    exiftool # read exif data
     unar # archive extractor
     glow # markdown viewer
-    hexyl # hex viewer
 
     gum # cli util
     clipboard-jh # clipboard manager (cb)
 
-    nix-output-monitor
     tldr
     # tlrc # tldr in rust
 
