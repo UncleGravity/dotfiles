@@ -43,6 +43,7 @@ let
     btop # better top
     eza # better ls/tree
     ripgrep # better grep
+    ripgrep-all # ripgrep for all files
     bat # better cat
     zoxide # better cd
     delta # better diff
@@ -58,7 +59,8 @@ let
 
     # yazi # file manager
     exiftool # read exif data
-    unar # archive extractor
+    # unar # archive extractor
+    p7zip
     glow # markdown viewer
 
     gum # cli util

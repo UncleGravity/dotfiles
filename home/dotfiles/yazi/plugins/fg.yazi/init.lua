@@ -100,6 +100,8 @@ local function entry(_, args)
 			.. [[{q}" --bind "change:reload:sleep 100ms; try { ]]
 			.. rg_prefix
 			.. [[{q} }" --delimiter : --preview 'rga --smart-case --pretty --context 5 {q} {}' --preview-window 'up,60%' --nth '3..']]
+	elseif args[1] == "fd" then
+		cmd_args = [[fd --type d | fzf --preview='tree -L 1 {}' --preview-window='up,60%']]
 	else
 		cmd_args = [[rg --color=always --line-number --no-heading --smart-case '' | fzf --ansi --preview=']]
 			.. preview_cmd
