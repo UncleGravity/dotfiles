@@ -10,7 +10,7 @@ let
     bun
     just
     cargo
-    zig
+    inputs.zig.packages.${pkgs.system}.master
     go
 
     # Nix
