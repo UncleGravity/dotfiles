@@ -10,8 +10,8 @@
 #   ls                     List all VMs
 #   start <vm_name>        Start a VM
 #   stop <vm_name>         Stop a VM
-#   pause <vm_name>        Pause a VM
-#   resume <vm_name>       Resume a paused VM
+#   suspend <vm_name>      Suspend a VM
+#   resume <vm_name>       Resume a suspended VM
 #   restart <vm_name>      Restart a VM
 #   shell <vm_name>        Open a shell in a VM
 #   code <vm_name> [-d]    Open VS Code for a VM (use -d for dotfiles)
@@ -76,14 +76,14 @@ function vm() {
     ls)
       prlctl list -a
       ;;
-    start|stop|pause|resume|restart)
+    start|stop|suspend|resume|restart)
       [[ -z "$vm_name" ]] && { echo "Usage: vm $action <vm_name>"; return 1; }
       prlctl $action $vm_name
       ;;
     shell)
       [[ -z "$vm_name" ]] && { echo "Usage: vm shell <vm_name>"; return 1; }
       local remote_path=$(_vm_get_remote_path "$vm_name")
-      _vm_run_command "$vm_name" "cd $remote_path && exec \$SHELL -l"
+      _vm_run_command "$vm_name" "cd \"$remote_path\" && exec \$SHELL -l"
       ;;
     code|cursor)
       [[ -z "$vm_name" ]] && { echo "Usage: vm $action <vm_name> [-d]"; return 1; }
@@ -95,7 +95,7 @@ function vm() {
       local dotfiles_path="/home/$remote_user/.dotfiles"
       local target_path="$remote_path"
       [[ "$1" == "-d" ]] && target_path="$dotfiles_path"
-      $action --folder-uri "vscode-remote://ssh-remote+$remote_user@$remote_host$target_path" --new-window
+      $action --folder-uri "vscode-remote://ssh-remote+$remote_user@$remote_host\"$target_path\"" --new-window
       ;;
     run)
       [[ -z "$vm_name" ]] && { echo "Usage: vm run <vm_name> <command>"; return 1; }
@@ -104,7 +104,7 @@ function vm() {
       ;;
     *)
       echo "Usage: vm <action> [args]"
-      echo "Actions: ls, start, stop, pause, resume, restart, shell, code, cursor, run"
+      echo "Actions: ls, start, stop, suspend, resume, restart, shell, code, cursor, run"
       return 1
       ;;
   esac
