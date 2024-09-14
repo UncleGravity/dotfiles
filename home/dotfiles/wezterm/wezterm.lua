@@ -49,8 +49,8 @@ config.keys = {
 		mods = "CMD|SHIFT",
 		action = wezterm.action.ActivateTabRelative(1),
 	},
-	{ key = "UpArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(-1) },
-	{ key = "DownArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(1) },
+	-- { key = "UpArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(-1) },
+	-- { key = "DownArrow", mods = "SHIFT", action = wezterm.action.ScrollByLine(1) },
 	-- {
 	--   key="t",mods="CMD|SHIFT",
 	--   action=wezterm.action_callback(function(window, pane)
