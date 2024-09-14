@@ -34,8 +34,8 @@
   #############################################################
   nix.settings.experimental-features = "nix-command flakes"; # Enable flakes
   services.nix-daemon.enable = true; # Auto upgrade nix package and the daemon service.
-  nix.package = pkgs.nix; # idk
-  nix.registry.nixpkgs.flake = inputs.nixpkgs; # make `nix run nixpkgs#nixpkgs` use the same nixpkgs as the one used by this flake.
+  # nix.package = pkgs.nix; # idk
+  # nix.registry.nixpkgs.flake = inputs.nixpkgs; # make `nix run nixpkgs#nixpkgs` use the same nixpkgs as the one used by this flake.
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -43,12 +43,12 @@
   # Set NIX_PATH 
   # Based on this: https://nixos-and-flakes.thiscute.world/best-practices/nix-path-and-flake-registry
   # environment.etc."nix/inputs/nixpkgs".source = "${inputs.nixpkgs}";
-  nix.nixPath = lib.mkForce [
-    { darwin-config = "$HOME/.nixpkgs/darwin-configuration.nix"; }
-    # { nixpkgs = "/etc/nix/inputs/nixpkgs"; }
-    { nixpkgs = "${inputs.nixpkgs}"; }
-    # "/nix/var/nix/profiles/per-user/root/channels" # We probably don't need this anymore.
-  ];
+  # nix.nixPath = lib.mkForce [
+  #   { darwin-config = "$HOME/.nixpkgs/darwin-configuration.nix"; }
+  #   # { nixpkgs = "/etc/nix/inputs/nixpkgs"; }
+  #   { nixpkgs = "${inputs.nixpkgs}"; }
+  #   # "/nix/var/nix/profiles/per-user/root/channels" # We probably don't need this anymore.
+  # ];
 
   # do garbage collection monthly
   nix.gc = {

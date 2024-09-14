@@ -1,5 +1,7 @@
 # Config
 
+NOTE: Incomplete readme, please refer to the flake.nix for now to understand how this all works.
+
 ## Nixos Rebuild
 
 sudo nixos-rebuild switch --flake ".#nixos" -v
