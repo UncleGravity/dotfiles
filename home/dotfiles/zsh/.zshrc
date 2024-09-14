@@ -186,6 +186,12 @@ alias zshrst="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
 # git
 alias lg="lazygit"
 
+# ai chat
+# Use XDG_CONFIG_HOME to store aichat config
+# Issue: https://github.com/sigoden/aichat/issues/769
+export AICHAT_CONFIG_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/aichat
+export CLAUDE_API_KEY=${ANTHROPIC_API_KEY}
+alias ai="aichat"
 # Tmux aliases
 # alias t="tmux new-session -A -s $(basename $(pwd))"
 # alias t="tmux"
