@@ -1,9 +1,10 @@
 [[session]]
-name = "Downloads 📥"
-path = "~/Downloads"
-startup_command = "y"
-
-[[session]]
 name = "dotfiles"
 path = "~/Documents/.dotfiles"
-startup_command = "nvim -c ':Telescope find_files'"
+startup_command = "nvim ."
+# startup_command = "nvim -c ':Telescope find_files'"
+
+[[session]]
+name = "neovim config"
+path = "~/config/my-nvim"
+startup_command = "nvim ."
