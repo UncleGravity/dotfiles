@@ -4,9 +4,28 @@ let
   DOTFILES_DIR = ./dotfiles;
 
   commonPackages = with pkgs; [
+    # LSP
+    gopls # Go
+    lua-language-server # Lua
+    typescript-language-server # TS/JS (ts_ls)
+    vscode-langservers-extracted # HTML
+    pyright # Python
+    clang-tools # C (clangd)
+    nixd # nix language server
+    zls # Zig
+
+    # Formatters
+    stylua
+    nodePackages.prettier
+    prettierd # HTML/CSS/JS/TS/Markdown/YAML
+    ruff # Python (imports/formatter/linter)
+    alejandra # nix formatter
+
     # Dev
+    clang
     gh # github cli
     pipx
+    uv
     bun
     just
     cargo
@@ -15,9 +34,6 @@ let
 
     # Nix
     direnv
-    nixd # nix language server (lsp)
-    nixpkgs-fmt # nix formatter
-    alejandra # nix formatter
 
     lazygit
     lazydocker
@@ -46,6 +62,7 @@ let
     eza # better ls/tree
     ripgrep # better grep
     ripgrep-all # ripgrep for all files
+    ast-grep # ripgrep for code
     bat # better cat
     zoxide # better cd
     delta # better diff
