@@ -31,7 +31,7 @@ if [ ! -f "$DECRYPTED_FILE" ] || [ ! -s "$DECRYPTED_FILE" ]; then
         return 1
     fi
 else
-#    echo "Decrypted secrets file already exists and is not empty."
+:   # echo "Decrypted secrets file already exists and is not empty."
 fi
 
 # Source the decrypted secrets file
