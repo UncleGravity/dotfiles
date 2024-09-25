@@ -6,20 +6,23 @@ let
   commonPackages = with pkgs; [
     # LSP
     gopls # Go
+    nodePackages.bash-language-server # Bash
     lua-language-server # Lua
     typescript-language-server # TS/JS (ts_ls)
     vscode-langservers-extracted # HTML
+    emmet-language-server # Emmet
     pyright # Python
     clang-tools # C (clangd)
     nixd # nix language server
     zls # Zig
 
     # Formatters
-    stylua
-    nodePackages.prettier
+    stylua # Lua
+    nodePackages.prettier # 
     prettierd # HTML/CSS/JS/TS/Markdown/YAML
     ruff # Python (imports/formatter/linter)
-    alejandra # nix formatter
+    alejandra # nix
+    shfmt # Bash
 
     # Dev
     clang
