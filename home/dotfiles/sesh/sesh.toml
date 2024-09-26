@@ -6,5 +6,5 @@ startup_command = "nvim ."
 
 [[session]]
 name = "neovim config"
-path = "~/config/my-nvim"
+path = "~/.config/my-nvim"
 startup_command = "nvim ."
