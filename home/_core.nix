@@ -6,12 +6,16 @@ let
   commonPackages = with pkgs; [
     # LSP
     gopls # Go
+    taplo # TOML
     nodePackages.bash-language-server # Bash
     lua-language-server # Lua
     typescript-language-server # TS/JS (ts_ls)
-    vscode-langservers-extracted # HTML
+    vscode-langservers-extracted # HTML/CSS/JSON
+    tailwindcss
+    tailwindcss-language-server # Tailwind
     emmet-language-server # Emmet
     pyright # Python
+    basedpyright # Python
     clang-tools # C (clangd)
     nixd # nix language server
     zls # Zig
@@ -25,6 +29,7 @@ let
     shfmt # Bash
 
     # Dev
+    gnumake
     clang
     gh # github cli
     pipx
@@ -146,6 +151,7 @@ in
   programs.neovim = {
     enable = true;
     defaultEditor = true;
+    package = inputs.neovim-nightly.packages.${pkgs.system}.default;
     extraConfig = ''
       set number relativenumber
 
