@@ -4,7 +4,7 @@ return {
   enabled = true,
   init = false,
   config = function()
-    local alpha = require("alpha")
+    local alpha = require 'alpha'
     local dashboard = require 'alpha.themes.dashboard'
     local v = vim.version()
     local version = ' v' .. v.major .. '.' .. v.minor .. '.' .. v.patch
@@ -41,20 +41,30 @@ return {
     -- dashboard.opts.layout[1].val = 8
 
     local function centerText(text, width)
+      width = width or vim.api.nvim_win_get_width(0)  -- Use window width if not provided
       local totalPadding = width - #text
       local leftPadding = math.floor(totalPadding / 2)
       local rightPadding = totalPadding - leftPadding
       return string.rep(' ', leftPadding) .. text .. string.rep(' ', rightPadding)
     end
 
-    dashboard.section.footer.val = {
-      centerText(version, 50),
-    }
-
     -- Send config to alpha
-		alpha.setup(dashboard.opts)
+    alpha.setup(dashboard.opts)
+    vim.cmd [[autocmd FileType alpha setlocal nofoldenable]] -- Disable folding on alpha buffer
 
-		-- Disable folding on alpha buffer
-		vim.cmd([[autocmd FileType alpha setlocal nofoldenable]])
+    vim.api.nvim_create_autocmd('User', {
+      once = true,
+      pattern = 'LazyVimStarted',
+      callback = function()
+        local stats = require('lazy').stats()
+        local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
+        local width = vim.api.nvim_win_get_width(0)  -- Get current window width
+        dashboard.section.footer.val = {
+          centerText(version, width),
+          centerText('⚡ Loaded ' .. stats.loaded .. '/' .. stats.count .. ' plugins in ' .. ms .. 'ms', width)
+        }
+        pcall(vim.cmd.AlphaRedraw)
+      end,
+    })
   end,
 }

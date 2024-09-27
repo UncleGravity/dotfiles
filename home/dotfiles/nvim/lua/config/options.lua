@@ -15,7 +15,7 @@ vim.opt.fillchars = { eob = ' ' } -- remove tilde symbol
 vim.g.disable_autoformat = true
 
 -- hide empty buffer
-vim.opt.hidden = true
+-- vim.opt.hidden = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10

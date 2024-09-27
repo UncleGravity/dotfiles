@@ -18,7 +18,7 @@ return { -- Useful plugin to show you pending keybinds.
       { '<leader>l', group = '[l]azy', icon = { icon = '󰒲', color = 'azure' } },
 
       -- Neotree
-      { mode = 'n', '<leader>e', ':Neotree float reveal toggle<CR>', desc = '[e]xplorer', icon = { icon = '󰙅', color = 'orange' } },
+      { mode = 'n', '<leader>e', ':Neotree reveal toggle<CR>', desc = '[e]xplorer', icon = { icon = '󰙅', color = 'orange' } },
 
       -- Lazy
       { mode = 'n', '<leader>ll', '<cmd>Lazy<cr>', desc = 'Open Lazy', icon = { icon = '󰒲', color = 'azure' } },

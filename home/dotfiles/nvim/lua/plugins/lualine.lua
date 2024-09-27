@@ -8,7 +8,7 @@ return {
     require('lualine').setup {
       extensions = { 'lazy' },
       options = {
-        -- theme = 'gruvbox-material',
+        theme = 'gruvbox-material',
         globalstatus = true,
         ignore_focus = { 'neo-tree' },
       },
@@ -49,22 +49,22 @@ return {
         },
       },
       -- Add tabline configuration
-      tabline = {
-        lualine_a = {
-          {
-            'buffers',
-            show_filename_only = true, -- Shows full path
-            mode = 2, -- Show buffer number
-            max_length = vim.o.columns, -- Maximum width of buffers component
-            -- use_mode_colors = true,
-            symbols = {
-              modified = ' ●',
-              alternate_file = '',
-              directory = '',
-            },
-          },
-        },
-      },
+      -- tabline = {
+      --   lualine_a = {
+      --     {
+      --       'buffers',
+      --       show_filename_only = true, -- Shows full path
+      --       mode = 2, -- Show buffer number
+      --       max_length = vim.o.columns, -- Maximum width of buffers component
+      --       -- use_mode_colors = true,
+      --       symbols = {
+      --         modified = ' ●',
+      --         alternate_file = '',
+      --         directory = '',
+      --       },
+      --     },
+      --   },
+      -- },
     }
   end,
 }

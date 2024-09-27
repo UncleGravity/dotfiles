@@ -7,7 +7,8 @@ let
     # LSP
     gopls # Go
     taplo # TOML
-    nodePackages.bash-language-server # Bash
+    # nodePackages.bash-language-server # Bash
+    bash-language-server
     lua-language-server # Lua
     typescript-language-server # TS/JS (ts_ls)
     vscode-langservers-extracted # HTML/CSS/JSON

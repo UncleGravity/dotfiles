@@ -5,6 +5,14 @@ return {
     opts = {},
   },
 
+  -- Theme switcher
+  {
+    'andrew-george/telescope-themes',
+    config = function()
+      require('telescope').load_extension 'themes'
+    end,
+  },
+
   -- NOTE: Highlight todo, notes, etc in comment
   {
     'folke/todo-comments.nvim',
@@ -35,11 +43,22 @@ return {
   -- Show open buffers on top bar
   {
     'echasnovski/mini.tabline',
-    -- version = false,
+    version = false,
+    -- enabled = false,
     event = 'VeryLazy',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       require('mini.tabline').setup()
+    end,
+  },
+
+  -- Closing a buffer won't close it's window
+  {
+    'echasnovski/mini.bufremove',
+    version = false,
+    config = function()
+      require('mini.bufremove').setup()
+      vim.keymap.set('n', '<leader>bd', function() require('mini.bufremove').delete(0) end, { desc = 'Delete Buffer (mini.bufremove)' })
     end,
   },
 }

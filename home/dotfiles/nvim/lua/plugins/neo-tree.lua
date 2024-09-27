@@ -14,7 +14,7 @@ return {
   -- },
 
   opts = {
-    position = 'float',
+    -- position = 'float',
     sources = {
       'filesystem',
       'document_symbols',

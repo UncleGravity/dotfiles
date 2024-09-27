@@ -232,6 +232,7 @@ return { -- LSP Configuration & Plugins
     -- nixpkgs: nodePackages.bash-language-server
     lspconfig.bashls.setup {
       capabilities = capabilities,
+      filetypes = {'sh', 'zsh'},
     }
 
     -- TOML
