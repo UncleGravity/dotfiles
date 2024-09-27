@@ -8,6 +8,7 @@ return {
   -- Theme switcher
   {
     'andrew-george/telescope-themes',
+    lazy = true,
     config = function()
       require('telescope').load_extension 'themes'
     end,
@@ -56,6 +57,7 @@ return {
   {
     'echasnovski/mini.bufremove',
     version = false,
+    event = 'VeryLazy',
     config = function()
       require('mini.bufremove').setup()
       vim.keymap.set('n', '<leader>bd', function() require('mini.bufremove').delete(0) end, { desc = 'Delete Buffer (mini.bufremove)' })

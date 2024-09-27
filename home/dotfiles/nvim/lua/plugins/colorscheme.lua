@@ -35,7 +35,7 @@ end
 return {
   {
     'rebelot/kanagawa.nvim',
-    lazy = false,
+    lazy = true,
     priority = 1000,
     opts = {
       commentStyle = { italic = false, bold = false },
@@ -136,6 +136,7 @@ return {
 
   {
     'ellisonleao/gruvbox.nvim',
+    lazy = true,
     priority = 1000,
     config = function()
       require('gruvbox').setup {

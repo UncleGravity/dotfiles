@@ -1,5 +1,6 @@
 return {
   'nvim-lualine/lualine.nvim',
+  event = "VeryLazy",
   dependencies = { 'nvim-tree/nvim-web-devicons' },
   config = function()
     local lazy_status = require 'lazy.status' -- to configure lazy pending updates count

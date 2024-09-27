@@ -1,6 +1,7 @@
 return { -- LSP Configuration & Plugins
   'neovim/nvim-lspconfig',
   -- enabled = false,
+  event = { "BufReadPost", "BufNewFile", "BufWritePre" },
   dependencies = {
     -- LSP progress bar
     { 'j-hui/fidget.nvim', opts = {} },

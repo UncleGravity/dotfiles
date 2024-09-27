@@ -1,7 +1,7 @@
 return { -- Autoformat
   'stevearc/conform.nvim',
   -- enabled = false,
-  lazy = false,
+  lazy = true,
   config = function()
     local conform = require 'conform'
 

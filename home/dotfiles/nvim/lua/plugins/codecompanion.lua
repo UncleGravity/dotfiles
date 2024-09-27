@@ -1,5 +1,7 @@
 return { -- AI
   'olimorris/codecompanion.nvim',
+  enabled = false,
+  lazy = true,
   event = "VeryLazy",
   dependencies = {
     'nvim-lua/plenary.nvim',
