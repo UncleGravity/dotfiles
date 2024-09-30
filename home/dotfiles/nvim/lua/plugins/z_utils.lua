@@ -14,7 +14,7 @@ return {
     end,
   },
 
-  -- NOTE: Highlight todo, notes, etc in comment
+  -- Highlight TODO, BUG, etc in comment. Like this:  NOTE:
   {
     'folke/todo-comments.nvim',
     event = 'VimEnter',
@@ -41,7 +41,7 @@ return {
     },
   },
 
-  -- Show open buffers on top bar
+  -- Show open buffers in top bar
   {
     'echasnovski/mini.tabline',
     version = false,
@@ -60,7 +60,30 @@ return {
     event = 'VeryLazy',
     config = function()
       require('mini.bufremove').setup()
-      vim.keymap.set('n', '<leader>bd', function() require('mini.bufremove').delete(0) end, { desc = 'Delete Buffer (mini.bufremove)' })
+      vim.keymap.set('n', '<leader>bd', function()
+        require('mini.bufremove').delete(0)
+      end, { desc = 'Delete Buffer (mini.bufremove)' })
     end,
   },
+
+  -- Plenary keybindings for profiling: just for troubleshooting
+  -- {
+  --   'nvim-lua/plenary.nvim',
+  --   keys = {
+  --     {
+  --       '<leader>ps',
+  --       function()
+  --         require'plenary.profile'.start("profile.log", { flame = true })
+  --       end,
+  --       desc = 'Start profiling',
+  --     },
+  --     {
+  --       '<leader>pe',
+  --       function()
+  --         require'plenary.profile'.stop()
+  --       end,
+  --       desc = 'Stop profiling',
+  --     },
+  --   },
+  -- },
 }

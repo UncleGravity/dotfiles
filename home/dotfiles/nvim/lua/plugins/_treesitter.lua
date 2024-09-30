@@ -1,5 +1,6 @@
 return { -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
+  -- enabled = false,
   version = false, -- use latest commit
   event = 'VeryLazy',
   build = ':TSUpdate',
@@ -34,6 +35,7 @@ return { -- Highlight, edit, and navigate code
       'vimdoc',
       'tmux',
       'dockerfile',
+      'regex',
 
       'csv',
       'markdown',
@@ -66,9 +68,9 @@ return { -- Highlight, edit, and navigate code
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
     -- Enable folding with treesitter
-    vim.wo.foldmethod = 'expr'
-    vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-    vim.wo.foldlevel = 99 -- Make sure nothing is folded on when opening a file 
+    -- vim.wo.foldmethod = 'expr'
+    -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    -- vim.wo.foldlevel = 99 -- Make sure nothing is folded on when opening a file
 
     -- Prefer git instead of curl in order to improve connectivity in some environments
     require('nvim-treesitter.install').prefer_git = true

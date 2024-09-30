@@ -1,5 +1,6 @@
 return { -- Autocompletion
   'hrsh7th/nvim-cmp',
+  -- enabled = false,
   version = false, -- use latest
   event = 'InsertEnter',
   dependencies = {

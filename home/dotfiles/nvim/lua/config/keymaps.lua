@@ -20,6 +20,10 @@ vim.keymap.set('i', '<A-k>', '<esc><cmd>m .-2<cr>==gi', { desc = 'Move Up' })
 vim.keymap.set('v', '<A-j>', ":m '>+1<cr>gv=gv", { desc = 'Move Down' })
 vim.keymap.set('v', '<A-k>', ":m '<-2<cr>gv=gv", { desc = 'Move Up' })
 
+-- Duplicate line(s) (just use yyp and dot to repeat)
+-- vim.keymap.set('n', '<A-S-j>', 'yyp', { desc = 'Duplicate line down' })
+-- vim.keymap.set('n', '<A-S-k>', 'yyP', { desc = 'Duplicate line up' })
+
 -- buffers
 vim.keymap.set('n', '<S-h>', '<cmd>bprevious<cr>', { desc = 'Prev Buffer' })
 vim.keymap.set('n', '<S-l>', '<cmd>bnext<cr>', { desc = 'Next Buffer' })
@@ -33,7 +37,7 @@ vim.opt.hlsearch = true
 vim.keymap.set({ 'i', 'n' }, '<esc>', '<cmd>noh<cr><esc>', { desc = 'Escape and Clear hlsearch' })
 
 -- save file
-vim.keymap.set({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+vim.keymap.set({ 'i', 'x', 'n', 's' }, '<C-s>', '<cmd>w<cr><esc>', { desc = 'Save File' })
 
 -- Diagnostic keymaps
 -- vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -65,33 +69,3 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit' })
 vim.keymap.set('n', '<leader>qw', '<cmd>wqa<cr>', { desc = 'Save and Quit' })
 
--- vim.api.nvim_create_autocmd("VimEnter", {
---     callback = function()
---       local wk = require("which-key")
---       wk.add({
---         -- { '<leader>a', group = '[A]vante', icon = { icon = '', color = 'azure' } },
---         { '<leader>c', group = '[C]ode' },
---         { '<leader>d', group = '[D]ocument' },
---         { '<leader>r', group = '[R]ename' },
---         { '<leader>s', group = '[S]earch', icon = { icon = '', color = 'azure' } },
---         { '<leader>w', group = '[W]orkspace' },
---         { '<leader>t', group = '[T]oggle' },
---         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
---         { '<leader>b', group = '[B]uffer' },
---         { '<leader>l', group = '[L]azy', icon = { icon = '󰒲', color = 'azure' } },
-
---         -- Neotree
---         { mode = 'n', '<leader>e', ':Neotree toggle<CR>', desc = 'Toggle NeoTree', icon = { icon = '󰙅', color = 'orange' } },
-
---         -- Lazy
---         { mode = 'n', '<leader>ll', '<cmd>Lazy<cr>', desc = 'Open Lazy', icon = { icon = '󰒲', color = 'azure' } },
---         { mode = 'n', '<leader>lg', '<cmd>LazyGit<cr>', desc = 'Open LazyGit', icon = { icon = '', color = 'azure' } },
-
---         -- Yazi
---         { mode = 'n', '<leader>y', '<cmd>Yazi<cr>', desc = 'Yazi', icon = { icon = '󰇥', color = 'azure' } },
-
---         -- Buffer
---         { mode = 'n', '<leader>bd', '<cmd>bdelete<CR>', desc = '[D]elete current buffer' },
---       })
---     end
---   })
