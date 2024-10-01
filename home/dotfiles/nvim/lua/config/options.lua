@@ -69,3 +69,4 @@ vim.opt.confirm = true -- Confirm to save changes before exiting modified buffer
 vim.opt.grepprg = 'rg --vimgrep'
 vim.opt.inccommand = 'nosplit' -- preview incremental substitute
 vim.opt.statusline = vim.opt.statusline + '%F'
+vim.opt.wrap = false
