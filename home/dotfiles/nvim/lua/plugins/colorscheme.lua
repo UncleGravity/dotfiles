@@ -177,7 +177,11 @@ return {
         dim_inactive = false,
         transparent_mode = true,
       }
-      vim.cmd 'colorscheme gruvbox'
+
+      -- Set highlight for MiniTablineFill
+      vim.api.nvim_set_hl(0, 'MiniTablineFill', { bg = '#282828' })
+
+      -- vim.cmd 'colorscheme gruvbox'
     end,
   },
 
@@ -192,14 +196,19 @@ return {
       vim.g.gruvbox_material_disable_italic_comment = 1
       vim.g.gruvbox_material_enable_italic = 0
       vim.g.gruvbox_material_enable_bold = 0
-      vim.g.gruvbox_material_transparent_background = 1
       -- Themes
-      -- vim.g.gruvbox_material_foreground = 'mix'
       vim.g.gruvbox_material_background = 'hard'
+      vim.g.gruvbox_material_foreground = 'dark'
       -- vim.g.gruvbox_material_ui_contrast = 'high' -- The contrast of line numbers, indent lines, etc.
       vim.g.gruvbox_material_float_style = 'dim' -- Background of floating windows
 
-      -- vim.cmd.colorscheme 'gruvbox-material'
+      vim.g.gruvbox_material_transparent_background = 2
+      vim.g.gruvbox_material_menu_selection_background = 'orange' -- options `'grey'`, `'red'`, `'orange'`, `'yellow'`, `'green'``'aqua'`, `'blue'`, `'purple'`
+      vim.g.gruvbox_material_current_word = 'high contrast background'
+      vim.g.gruvbox_material_inlay_hints_background = 'dimmed'
+      vim.g.gruvbox_material_disable_terminal_colors = 1 -- Use built in terminal colors
+
+      vim.cmd.colorscheme 'gruvbox-material'
 
       --------------------------------------------------------------------------------------
       -- Custom highlights
@@ -214,14 +223,14 @@ return {
             local isDarkTheme = vim.o.background == 'dark'
 
             local highlights_groups = {
-              FoldColumn = { bg = 'none', fg = palette.grey0[1] },
-              SignColumn = { bg = 'none' },
-              EndOfBuffer = { bg = 'none', fg = palette.grey0[1] },
-              Normal = { bg = 'none', fg = palette.fg0[1] },
-              NormalNC = { bg = 'none' },
-              NormalFloat = { bg = 'none', fg = palette.fg0[1] },
-              FloatBorder = { bg = 'none' },
-              FloatTitle = { bg = 'none', fg = palette.orange[1] },
+              -- FoldColumn = { bg = 'none', fg = palette.grey0[1] },
+              -- SignColumn = { bg = 'none' },
+              -- EndOfBuffer = { bg = 'none', fg = palette.grey0[1] },
+              -- Normal = { bg = 'none', fg = palette.fg0[1] },
+              -- NormalNC = { bg = 'none' },
+              -- NormalFloat = { bg = 'none', fg = palette.fg0[1] },
+              -- FloatBorder = { bg = 'none' },
+              -- FloatTitle = { bg = 'none', fg = palette.orange[1] },
               TelescopeTitle = { bg = 'none', fg = palette.fg0[1] },
               TelescopeBorder = { bg = 'none', fg = palette.fg0[1] },
               TelescopeNormal = { fg = 'none' },
@@ -233,11 +242,11 @@ return {
               TelescopePromptCounter = { bg = 'none', fg = palette.fg0[1] },
               TelescopeMatching = { bold = false, bg = 'none', fg = palette.green[1] },
               -- Visual = {bg = palette.bg_visual_red[1]},
-              Cursor = { bg = isDarkTheme and palette.bg_red[1] or palette.fg0[1], fg = palette.bg_dim[1] },
-              CursorReset = { bg = palette.fg0[1], fg = palette.bg_dim[1] },
+              -- Cursor = { bg = isDarkTheme and palette.orange[1] or palette.red[1], fg = palette.bg0[1] },
+              -- CursorReset = { bg = palette.fg0[1], fg = palette.bg_dim[1] },
               --   ColorColumn = { bg = palette.grey0[1] },
-              ColorColumn = { bg = palette.bg0[1] },
-              CursorLine = { bg = palette.bg5[1], blend = 25 },
+              -- ColorColumn = { bg = palette.bg0[1] },
+              -- CursorLine = { bg = palette.bg5[1], blend = 25 },
               -- GitSignsAdd = { bg = 'none', fg = palette.green[1] },
               -- GitSignsChange = { bg = 'none', fg = palette.yellow[1] },
               -- GitSignsDelete = { bg = 'none', fg = palette.red[1] },
@@ -246,7 +255,8 @@ return {
               -- DiffDelete = { bg = 'none', fg = palette.red[1] },
               -- DiffText = { bg = 'none', fg = palette.blue[1] },
               -- Make MatchParen more visible
-              MatchParen = { bg = palette.bg_yellow[1], fg = palette.bg0[1], bold = true },
+              MatchParen = { bg = palette.grey1[1], fg = palette.fg0[1], bold = true },
+              MiniTablineFill = { bg = palette.bg0[1] },
             }
 
             for group, styles in pairs(highlights_groups) do
@@ -258,41 +268,3 @@ return {
     end,
   },
 }
-
--- return {
---   'sainnhe/gruvbox-material',
---   priority = 1000,
---   config = function()
---     vim.o.background = 'dark' -- or "light" for light mode
---
---     vim.g.gruvbox_material_better_performance = 1
---
---     -- Fonts
---     vim.g.gruvbox_material_disable_italic_comment = 1
---     vim.g.gruvbox_material_enable_italic = 1
---     vim.g.gruvbox_material_enable_bold = 0
---     vim.g.gruvbox_material_transparent_background = 2
---
---     -- Themes
---     vim.g.gruvbox_material_foreground = 'hard'
---     vim.g.gruvbox_material_background = 'hard'
---     -- vim.g.gruvbox_material_ui_contrast = 'low' -- The contrast of line numbers, indent lines, etc.
---     vim.g.gruvbox_material_float_style = 'dim' -- Background of floating windows
---
---     vim.cmd('colorscheme gruvbox-material')
---
---     -- vim.cmd "let g:gruvbox_material_background= 'hard'"
---     -- vim.cmd 'let g:gruvbox_material_transparent_background=2'
---     -- vim.cmd "let g:gruvbox_material_cursor='red'"
---     -- vim.cmd 'let g:gruvbox_material_diagnostic_line_highlight=1'
---     -- -- vim.cmd("let g:gruvbox_material_diagnostic_virtual_text='colored'")
---     -- vim.cmd 'let g:gruvbox_material_enable_bold=1'
---     -- vim.cmd 'let g:gruvbox_material_enable_italic=1'
---     -- vim.cmd [[colorscheme gruvbox-material]] -- Set color scheme
---     --
---     -- changing bg and border colors
---     vim.api.nvim_set_hl(0, "FloatBorder", { link = "Normal" })
---     vim.api.nvim_set_hl(0, 'LspInfoBorder', { link = 'Normal' })
---     vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
---   end,
--- }
