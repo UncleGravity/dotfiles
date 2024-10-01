@@ -27,6 +27,7 @@
     # TODO Feel free to add your favorite apps here.
     casks = [
       # "google-chrome"
+      "alacritty"
       "cursor"
       "kitty"
       "wezterm"
