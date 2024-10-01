@@ -27,9 +27,9 @@ vim.opt.shiftwidth = 2 -- Number of spaces to use for each step of (auto)indent
 vim.opt.expandtab = true -- Use spaces instead of tabs
 vim.opt.smartindent = true -- Insert indents automatically
 
--- Enable mouse mode
+-- Enable mouse mode and mouse move events
 vim.opt.mouse = 'a'
-
+-- vim.opt.mousemoveevent = true -- could cause performance issues?
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 

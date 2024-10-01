@@ -1,5 +1,6 @@
 return {
   'lewis6991/gitsigns.nvim',
+  -- enabled = false,
   event = { 'BufReadPre', 'BufNewFile' },
   opts = {
     signs = {
@@ -56,6 +57,9 @@ return {
       map('n', '<leader>gD', function()
         gs.diffthis '~'
       end, 'Diff this ~')
+
+      -- Toggle word diff
+      map('n', '<leader>gw', gs.toggle_word_diff, 'Toggle word diff')
 
       -- Text object
       map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', 'Gitsigns select hunk')

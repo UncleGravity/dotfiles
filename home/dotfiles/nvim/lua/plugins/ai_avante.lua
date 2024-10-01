@@ -1,5 +1,6 @@
 return { -- AI
   'yetone/avante.nvim',
+  -- enabled = false,
   -- "UncleGravity/avante.nvim",
   -- branch = "multi-turn",
   event = 'VeryLazy',
@@ -18,7 +19,7 @@ return { -- AI
     -- }
   end,
   dependencies = {
-    "nvim-treesitter/nvim-treesitter",
+    'nvim-treesitter/nvim-treesitter',
     'nvim-tree/nvim-web-devicons',
     'stevearc/dressing.nvim',
     'nvim-lua/plenary.nvim',

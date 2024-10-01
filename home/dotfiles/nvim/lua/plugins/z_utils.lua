@@ -1,10 +1,12 @@
 return {
+  -------------------------------------------------------------------------------------------------
   -- Adds borders around ui popups
   {
     'stevearc/dressing.nvim',
     opts = {},
   },
 
+  -------------------------------------------------------------------------------------------------
   -- Theme switcher
   {
     'andrew-george/telescope-themes',
@@ -14,6 +16,7 @@ return {
     end,
   },
 
+  -------------------------------------------------------------------------------------------------
   -- Highlight TODO, BUG, etc in comment. Like this:  NOTE:
   {
     'folke/todo-comments.nvim',
@@ -22,6 +25,7 @@ return {
     opts = { signs = false },
   },
 
+  -------------------------------------------------------------------------------------------------
   -- Seamless navigation between TMUX & NVIM
   {
     'christoomey/vim-tmux-navigator',
@@ -41,6 +45,7 @@ return {
     },
   },
 
+  -------------------------------------------------------------------------------------------------
   -- Show open buffers in top bar
   {
     'echasnovski/mini.tabline',
@@ -53,6 +58,7 @@ return {
     end,
   },
 
+  -------------------------------------------------------------------------------------------------
   -- Closing a buffer won't close it's window
   {
     'echasnovski/mini.bufremove',

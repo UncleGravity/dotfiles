@@ -12,7 +12,6 @@ return { -- AI
     { 'echasnovski/mini.diff', version = false, opts = {} },
   },
   config = function()
-    -- Test comment: This is a configuration for CodeCompanion.nvim
     require('codecompanion').setup {
       display = {
         diff = {

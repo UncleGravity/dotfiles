@@ -1,7 +1,7 @@
 return {
   'goolord/alpha-nvim',
   event = 'VimEnter',
-  enabled = true,
+  -- enabled = false,
   init = false,
   config = function()
     local alpha = require 'alpha'
@@ -41,7 +41,7 @@ return {
     -- dashboard.opts.layout[1].val = 8
 
     local function centerText(text, width)
-      width = width or vim.api.nvim_win_get_width(0)  -- Use window width if not provided
+      width = width or vim.api.nvim_win_get_width(0) -- Use window width if not provided
       local totalPadding = width - #text
       local leftPadding = math.floor(totalPadding / 2)
       local rightPadding = totalPadding - leftPadding
@@ -58,10 +58,10 @@ return {
       callback = function()
         local stats = require('lazy').stats()
         local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
-        local width = vim.api.nvim_win_get_width(0)  -- Get current window width
+        local width = vim.api.nvim_win_get_width(0) -- Get current window width
         dashboard.section.footer.val = {
           centerText(version, width),
-          centerText('⚡ Loaded ' .. stats.loaded .. '/' .. stats.count .. ' plugins in ' .. ms .. 'ms', width)
+          centerText('⚡ Loaded ' .. stats.loaded .. '/' .. stats.count .. ' plugins in ' .. ms .. 'ms', width),
         }
         pcall(vim.cmd.AlphaRedraw)
       end,

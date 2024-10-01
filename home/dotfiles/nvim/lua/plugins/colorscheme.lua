@@ -1,3 +1,5 @@
+-- `:Telescope colorscheme` to view all installed colorschemes
+
 -- Taken from https://github.com/rachartier/tiny-inline-diagnostic.nvim
 local function hex_to_rgb(hex)
   if hex == nil or hex == 'None' then
@@ -35,7 +37,7 @@ end
 return {
   {
     'rebelot/kanagawa.nvim',
-    lazy = true,
+    lazy = false, -- Change this to false
     priority = 1000,
     opts = {
       commentStyle = { italic = false, bold = false },
@@ -126,13 +128,25 @@ return {
         }
       end,
     },
+    -- config = function()  -- Add this config function
+    --   vim.cmd('colorscheme kanagawa')
+    -- end,
   },
 
---   {
---     'mcchrish/zenbones.nvim',
---     dependencies = { 'rktjmp/lush.nvim' },
---     event = 'VeryLazy',
---   },
+  {
+    'folke/tokyonight.nvim',
+    priority = 1000, -- Make sure to load this before all the other start plugins.
+    init = function()
+      -- 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      -- vim.cmd.colorscheme 'tokyonight-night'
+    end,
+  },
+
+  --   {
+  --     'mcchrish/zenbones.nvim',
+  --     dependencies = { 'rktjmp/lush.nvim' },
+  --     event = 'VeryLazy',
+  --   },
 
   {
     'ellisonleao/gruvbox.nvim',
@@ -163,7 +177,7 @@ return {
         dim_inactive = false,
         transparent_mode = true,
       }
-    --   vim.cmd 'colorscheme gruvbox'
+      vim.cmd 'colorscheme gruvbox'
     end,
   },
 
@@ -185,7 +199,7 @@ return {
       -- vim.g.gruvbox_material_ui_contrast = 'high' -- The contrast of line numbers, indent lines, etc.
       vim.g.gruvbox_material_float_style = 'dim' -- Background of floating windows
 
-      vim.cmd.colorscheme 'gruvbox-material'
+      -- vim.cmd.colorscheme 'gruvbox-material'
 
       --------------------------------------------------------------------------------------
       -- Custom highlights
@@ -221,7 +235,7 @@ return {
               -- Visual = {bg = palette.bg_visual_red[1]},
               Cursor = { bg = isDarkTheme and palette.bg_red[1] or palette.fg0[1], fg = palette.bg_dim[1] },
               CursorReset = { bg = palette.fg0[1], fg = palette.bg_dim[1] },
-            --   ColorColumn = { bg = palette.grey0[1] },
+              --   ColorColumn = { bg = palette.grey0[1] },
               ColorColumn = { bg = palette.bg0[1] },
               CursorLine = { bg = palette.bg5[1], blend = 25 },
               -- GitSignsAdd = { bg = 'none', fg = palette.green[1] },

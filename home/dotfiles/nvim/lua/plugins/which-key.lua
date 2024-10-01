@@ -1,4 +1,5 @@
 return {
+  -- TODO: organize keybindings better
   'folke/which-key.nvim',
   event = 'VimEnter',
   opts_extend = { 'spec' },
@@ -13,7 +14,6 @@ return {
         { '<leader>a', group = '[a]i', icon = { icon = ' ', color = 'azure' } },
         { '<leader>g', group = '[g]it', mode = { 'n', 'v' }, icon = { icon = ' ', color = 'orange' } },
         { '<leader>l', group = '[l]azy', icon = { icon = '󰒲 ', color = 'azure' } },
-        -- { '<leader>gh', group = '[h]unks', mode = { 'n', 'v' }, icon = { icon = ' ', color = 'red' } },
         { '<leader>q', group = '[q]uit', icon = { icon = ' ', color = 'green' } },
         { '<leader>s', group = '[s]earch', icon = { icon = ' ', color = 'azure' } },
         { '<leader>w', group = '[w]orkspace' },

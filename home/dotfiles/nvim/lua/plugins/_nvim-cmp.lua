@@ -12,37 +12,46 @@ return { -- Autocompletion
         return 'make install_jsregexp'
       end)(),
       dependencies = {
-        -- `friendly-snippets` contains a variety of premade snippets.
-        --    See the README about individual language/framework/plugin snippets:
-        --    https://github.com/rafamadriz/friendly-snippets
-        -- {
-        --   'rafamadriz/friendly-snippets',
-        --   config = function()
-        --     require('luasnip.loaders.from_vscode').lazy_load()
-        --   end,
-        -- },
+        {
+          'rafamadriz/friendly-snippets',
+          config = function()
+            require('luasnip.loaders.from_vscode').lazy_load()
+          end,
+        },
       },
     },
+    -- Color Highlighting
+    {
+      'brenoprata10/nvim-highlight-colors',
+      event = 'BufRead',
+      config = function()
+        require('nvim-highlight-colors').setup {
+          render = 'virtual', ---@usage 'background'|'foreground'|'virtual'
+          virtual_symbol = '■', --- if render=virtual, set symbol
+          enable_tailwind = true, --- e.g. 'bg-blue-500'
+        }
+      end,
+    },
     'saadparwaiz1/cmp_luasnip',
-
-    -- Adds other completion capabilities.
-    --  nvim-cmp does not ship with all sources by default. They are split
-    --  into multiple repos for maintenance purposes.
     'hrsh7th/cmp-nvim-lsp',
     'hrsh7th/cmp-path',
+    'hrsh7th/cmp-buffer',
+    'onsails/lspkind.nvim',
   },
   config = function()
-    -- See `:help cmp`
     local cmp = require 'cmp'
     local luasnip = require 'luasnip'
+    local lspkind = require 'lspkind'
     luasnip.config.setup {}
 
     cmp.setup {
+
       snippet = {
         expand = function(args)
           luasnip.lsp_expand(args.body)
         end,
       },
+
       completion = { completeopt = 'menu,menuone,noinsert' },
 
       window = {
@@ -50,21 +59,17 @@ return { -- Autocompletion
           border = 'rounded',
           scrollbar = true,
         },
+
         documentation = { -- no border; native-style scrollbar
           border = 'rounded',
           scrollbar = '',
-          -- other options
         },
       },
 
-      -- For an understanding of why these mappings were
-      -- chosen, you will need to read `:help ins-completion`
-      --
-      -- No, but seriously. Please read `:help ins-completion`, it is really good!
+      -- Please read `:help ins-completion`, it is really good!
       mapping = cmp.mapping.preset.insert {
-        -- Select the [n]ext item
+        -- Move along the completion menu.
         ['<C-n>'] = cmp.mapping.select_next_item(),
-        -- Select the [p]revious item
         ['<C-p>'] = cmp.mapping.select_prev_item(),
 
         -- Scroll the documentation window [b]ack / [f]orward
@@ -72,23 +77,15 @@ return { -- Autocompletion
         ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
         -- Accept ([y]es) the completion.
-        --  This will auto-import if your LSP supports it.
-        --  This will expand snippets if the LSP sent a snippet.
         ['<C-y>'] = cmp.mapping.confirm { select = true },
-
-        -- If you prefer more traditional completion keymaps,
-        -- you can uncomment the following lines
-        --['<CR>'] = cmp.mapping.confirm { select = true },
+        ['<CR>'] = cmp.mapping.confirm { select = true },
         --['<Tab>'] = cmp.mapping.select_next_item(),
         --['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
         -- Manually trigger a completion from nvim-cmp.
-        --  Generally you don't need this, because nvim-cmp will display
-        --  completions whenever it has completion options available.
         ['<C-Space>'] = cmp.mapping.complete {},
 
-        -- Think of <c-l> as moving to the right of your snippet expansion.
-        --  So if you have a snippet that's like:
+        -- If you have a snippet that's like:
         --  function $name($args)
         --    $body
         --  end
@@ -112,7 +109,35 @@ return { -- Autocompletion
       sources = {
         { name = 'nvim_lsp' },
         { name = 'luasnip' },
+        { name = 'buffer' },
         { name = 'path' },
+        { name = 'lazydev' },
+      },
+      formatting = {
+        fields = { 'abbr', 'kind', 'menu' },
+        expandable_indicator = true,
+        format = function(entry, item)
+          -- Apply color to "color entries" (#fff, #000, etc.)
+          local color_item = require('nvim-highlight-colors').format(entry, { kind = item.kind })
+
+          -- Set the source name as the menu column
+          item.menu = entry.source.name
+
+          -- Apply lspkind formatting (icons)
+          item = lspkind.cmp_format {
+            mode = 'symbol_text',
+            ellipsis_char = '...',
+            show_labelDetails = true,
+          }(entry, item)
+
+          -- Apply built in color highlighting if available
+          if color_item.abbr_hl_group then
+            item.kind_hl_group = color_item.abbr_hl_group
+            item.kind = color_item.abbr
+          end
+
+          return item
+        end,
       },
     }
   end,

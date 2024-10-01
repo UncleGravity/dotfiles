@@ -1,7 +1,7 @@
 return { -- LSP Configuration & Plugins
   'neovim/nvim-lspconfig',
   -- enabled = false,
-  event = { "BufReadPost", "BufNewFile", "BufWritePre" },
+  event = { 'BufReadPost', 'BufNewFile', 'BufWritePre' },
   dependencies = {
     -- LSP progress bar
     { 'j-hui/fidget.nvim', opts = {} },
@@ -133,8 +133,9 @@ return { -- LSP Configuration & Plugins
     --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+    -- local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-    -- Add snippet support (optional?)
+    -- Add snippet support
     capabilities.textDocument.completion.completionItem.snippetSupport = true
 
     -----------------------------------------------------------------------------
@@ -233,7 +234,7 @@ return { -- LSP Configuration & Plugins
     -- nixpkgs: nodePackages.bash-language-server
     lspconfig.bashls.setup {
       capabilities = capabilities,
-      filetypes = {'sh', 'zsh'},
+      filetypes = { 'sh', 'zsh' },
     }
 
     -- TOML
