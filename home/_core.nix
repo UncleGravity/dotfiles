@@ -5,25 +5,24 @@ let
 
   commonPackages = with pkgs; [
     # LSP
-    gopls # Go
-    taplo # TOML
-    # nodePackages.bash-language-server # Bash
+    nixd # nix language server
     bash-language-server
-    lua-language-server # Lua
-    typescript-language-server # TS/JS (ts_ls)
+    clang-tools # C (clangd)
     vscode-langservers-extracted # HTML/CSS/JSON
+    typescript-language-server # TS/JS (ts_ls)
+    emmet-language-server # Emmet
     tailwindcss
     tailwindcss-language-server # Tailwind
-    emmet-language-server # Emmet
+    lua-language-server # Lua
     pyright # Python
     basedpyright # Python
-    clang-tools # C (clangd)
-    nixd # nix language server
+    gopls # Go
+    taplo # TOML
     zls # Zig
 
     # Formatters
     stylua # Lua
-    nodePackages.prettier # 
+    # nodePackages.prettier #
     prettierd # HTML/CSS/JS/TS/Markdown/YAML
     ruff # Python (imports/formatter/linter)
     alejandra # nix
@@ -110,8 +109,6 @@ let
   ];
 
   linuxOnlyPackages = with pkgs; [
-    llm # https://github.com/simonw/llm
-
     # USB Stuff
     usbutils
     cyme
