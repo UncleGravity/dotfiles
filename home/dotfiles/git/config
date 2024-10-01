@@ -19,3 +19,9 @@
 
 [delta "interactive"]
     keep-plus-minus-markers = false
+
+[diff]
+    tool = nvim
+
+[difftool "nvim"]
+    cmd = NVIM_APPNAME=my-nvim nvim -d $LOCAL $REMOTE
