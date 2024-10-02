@@ -1,7 +1,7 @@
 return { -- AI
   'olimorris/codecompanion.nvim',
   -- enabled = false,
-  -- lazy = true,
+  lazy = true,
   event = 'VeryLazy',
   dependencies = {
     'nvim-lua/plenary.nvim',
@@ -9,15 +9,15 @@ return { -- AI
     'hrsh7th/nvim-cmp', -- Optional: For using slash commands and variables in the chat buffer
     'nvim-telescope/telescope.nvim', -- Optional: For using slash commands
     { 'stevearc/dressing.nvim', opts = {} }, -- Optional: Improves the default Neovim UI
-    { 'echasnovski/mini.diff', version = false, opts = {} },
+    -- { 'echasnovski/mini.diff', version = false, opts = {} },
   },
   config = function()
     require('codecompanion').setup {
-      display = {
-        diff = {
-          provider = 'mini_diff',
-        },
-      },
+      -- display = {
+      --   diff = {
+      --     provider = 'mini_diff',
+      --   },
+      -- },
       strategies = {
         chat = {
           adapter = 'anthropic',

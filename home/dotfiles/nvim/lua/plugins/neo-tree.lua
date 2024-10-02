@@ -45,6 +45,7 @@ return {
           end,
           desc = 'Copy Path to Clipboard',
         },
+        ['Z'] = { 'expand_all_nodes', desc = 'Open All Nodes' },
         ['O'] = {
           function(state)
             require('lazy.util').open(state.tree:get_node().path, { system = true })

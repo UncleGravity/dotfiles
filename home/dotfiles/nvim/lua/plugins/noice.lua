@@ -6,7 +6,13 @@ return {
     -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
     'MunifTanjim/nui.nvim',
     --   If not available, we use `mini` as the fallback
-    'rcarriga/nvim-notify',
+    {
+      'rcarriga/nvim-notify',
+      opts = {
+        -- If I don't add background_colour, nvim-notify complains
+        background_colour = '#000000',
+      }
+    },
   },
   opts = {
     lsp = {
@@ -52,11 +58,5 @@ return {
     --   vim.cmd [[messages clear]]
     -- end
     require('noice').setup(opts)
-
-    -- Add nvim-notify configuration
-    -- If I don't add background_colour, nvim-notify complains
-    require('notify').setup {
-      background_colour = '#000000',
-    }
   end,
 }
