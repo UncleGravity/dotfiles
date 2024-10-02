@@ -24,4 +24,4 @@
     tool = nvim
 
 [difftool "nvim"]
-    cmd = NVIM_APPNAME=my-nvim nvim -d $LOCAL $REMOTE
+    cmd = nvim -d $LOCAL $REMOTE
