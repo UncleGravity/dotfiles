@@ -205,8 +205,10 @@ return {
       vim.g.gruvbox_material_transparent_background = 2
       vim.g.gruvbox_material_menu_selection_background = 'orange' -- options `'grey'`, `'red'`, `'orange'`, `'yellow'`, `'green'``'aqua'`, `'blue'`, `'purple'`
       vim.g.gruvbox_material_current_word = 'high contrast background'
-      vim.g.gruvbox_material_inlay_hints_background = 'dimmed'
       vim.g.gruvbox_material_disable_terminal_colors = 1 -- Use built in terminal colors
+
+      vim.g.gruvbox_material_diagnostic_virtual_text = 'colored'
+      vim.g.material_diagnostic_text_highlight = 1
 
       vim.cmd.colorscheme 'gruvbox-material'
 
@@ -242,7 +244,7 @@ return {
               TelescopePromptCounter = { bg = 'none', fg = palette.fg0[1] },
               TelescopeMatching = { bold = false, bg = 'none', fg = palette.green[1] },
               -- Visual = {bg = palette.bg_visual_red[1]},
-              -- Cursor = { bg = isDarkTheme and palette.orange[1] or palette.red[1], fg = palette.bg0[1] },
+              Cursor = { bg = isDarkTheme and palette.orange[1] or palette.red[1], fg = palette.bg0[1] },
               -- CursorReset = { bg = palette.fg0[1], fg = palette.bg_dim[1] },
               --   ColorColumn = { bg = palette.grey0[1] },
               -- ColorColumn = { bg = palette.bg0[1] },
@@ -255,7 +257,7 @@ return {
               -- DiffDelete = { bg = 'none', fg = palette.red[1] },
               -- DiffText = { bg = 'none', fg = palette.blue[1] },
               -- Make MatchParen more visible
-              MatchParen = { bg = palette.grey1[1], fg = palette.fg0[1], bold = true },
+              -- MatchParen = { bg = palette.grey2[1], fg = palette.orange[1], bold = true },
               MiniTablineFill = { bg = palette.bg0[1] },
             }
 
