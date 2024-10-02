@@ -36,7 +36,7 @@ return { -- LSP Configuration & Plugins
           { '<leader>L', group = '[L]SP', icon = { icon = ' ', color = 'azure' } },
         }
 
-        -- Jump to the definition of the word under your cursor. To jump back, press <C-t>. 
+        -- Jump to the definition of the word under your cursor. To jump back, press <C-t>.
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         map('<leader>LD', require('telescope.builtin').lsp_definitions, 'Goto [D]efinition')
 
@@ -160,17 +160,9 @@ return { -- LSP Configuration & Plugins
     -- List: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
     local lspconfig = require 'lspconfig'
 
-    -- Common options for all LSP servers
-    local common_options = {
-      capabilities = capabilities,
-      settings = {
-        -- inlay_hints = {
-        --   enabled = true,
-        -- },
-      },
-    }
     -- Lua
-    lspconfig.lua_ls.setup(vim.tbl_deep_extend('force', common_options, {
+    lspconfig.lua_ls.setup {
+      capabilities = capabilities,
       settings = {
         Lua = {
           completion = {
@@ -178,17 +170,20 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
-    }))
+    }
 
     -----------------------------------------------------------------------------
     -- nixpkgs: vscode-langservers-extracted
 
     -- HTML
-    lspconfig.html.setup(common_options)
+    lspconfig.html.setup {
+      capabilities = capabilities,
+    }
 
     -- CSS
     -- Don't attach to CSS files that contain @tailwind directives
-    lspconfig.cssls.setup(vim.tbl_deep_extend('force', common_options, {
+    lspconfig.cssls.setup {
+      capabilities = capabilities,
       on_attach = function(client, bufnr)
         local file_content = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), '\n')
 
@@ -198,7 +193,7 @@ return { -- LSP Configuration & Plugins
           vim.lsp.buf_detach_client(bufnr, client.id)
         end
       end,
-    }))
+    }
 
     -----------------------------------------------------------------------------
 
