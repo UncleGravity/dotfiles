@@ -96,8 +96,12 @@ return { -- Fancy vscode like scroll bar
           'textwidth',
           'trail',
         },
-        -- diagnostics_error_symbol = '!',
-        diagnostics_severities = { vim.diagnostic.severity.ERROR },
+        diagnostics_error_symbol = '󰅚 ',
+        diagnostics_warn_symbol = ' ',
+        diagnostics_severities = {
+          vim.diagnostic.severity.ERROR,
+          vim.diagnostic.severity.WARN,
+        },
       }
 
       -- require('scrollview.contrib.gitsigns').setup() -- Enable gitsigns on scrollbar

@@ -22,7 +22,6 @@ return { -- LSP Configuration & Plugins
   },
   config = function()
     --  This function gets run when an LSP attaches to a particular buffer.
-    --  For example, opening `main.rs` is associated with `rust_analyzer`)
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
@@ -37,13 +36,11 @@ return { -- LSP Configuration & Plugins
           { '<leader>L', group = '[L]SP', icon = { icon = ' ', color = 'azure' } },
         }
 
-        -- Jump to the definition of the word under your cursor.
-        --  This is where a variable was first declared, or where a function is defined, etc.
-        --  To jump back, press <C-t>.
+        -- Jump to the definition of the word under your cursor. To jump back, press <C-t>. 
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         map('<leader>LD', require('telescope.builtin').lsp_definitions, 'Goto [D]efinition')
 
-        -- Find references for the word under your cursor.
+        -- Find references
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
         map('<leader>LR', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
@@ -55,15 +52,15 @@ return { -- LSP Configuration & Plugins
         -- Jump to the type of the word under your cursor.
         --  Useful when you're not sure what type a variable is and you want to see
         --  the definition of its *type*, not where it was *defined*.
-        map('<leader>Lt', require('telescope.builtin').lsp_type_definitions, '[t]ype definition')
+        map('<leader>Lt', require('telescope.builtin').lsp_type_definitions, 'Goto [t]ype definition')
 
         -- Fuzzy find all the symbols in your current document.
         --  Symbols are things like variables, functions, types, etc.
-        map('<leader>Lb', require('telescope.builtin').lsp_document_symbols, '[b]uffer symbols')
+        map('<leader>Lb', require('telescope.builtin').lsp_document_symbols, 'list [b]uffer symbols')
 
         -- Fuzzy find all the symbols in your current workspace.
         --  Similar to document symbols, except searches over your entire project.
-        map('<leader>Lp', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[p]roject symbols')
+        map('<leader>Lp', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'list [p]roject symbols')
 
         -- Rename the variable under your cursor.
         --  Most Language Servers support renaming across files, etc.
@@ -138,14 +135,42 @@ return { -- LSP Configuration & Plugins
     -- Add snippet support
     capabilities.textDocument.completion.completionItem.snippetSupport = true
 
+    -- Diagnostic configuration
+    vim.diagnostic.config {
+      underline = true,
+      update_in_insert = false,
+      virtual_text = {
+        spacing = 4,
+        source = 'if_many',
+        prefix = '●',
+      },
+      severity_sort = true,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = '󰅚 ',
+          [vim.diagnostic.severity.WARN] = ' ',
+          [vim.diagnostic.severity.HINT] = ' ',
+          [vim.diagnostic.severity.INFO] = ' ',
+        },
+      },
+    }
+
     -----------------------------------------------------------------------------
     -- LSP servers
     -- List: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
     local lspconfig = require 'lspconfig'
 
-    -- Lua
-    lspconfig.lua_ls.setup {
+    -- Common options for all LSP servers
+    local common_options = {
       capabilities = capabilities,
+      settings = {
+        -- inlay_hints = {
+        --   enabled = true,
+        -- },
+      },
+    }
+    -- Lua
+    lspconfig.lua_ls.setup(vim.tbl_deep_extend('force', common_options, {
       settings = {
         Lua = {
           completion = {
@@ -153,20 +178,17 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
-    }
+    }))
 
     -----------------------------------------------------------------------------
     -- nixpkgs: vscode-langservers-extracted
 
     -- HTML
-    lspconfig.html.setup {
-      capabilities = capabilities,
-    }
+    lspconfig.html.setup(common_options)
 
     -- CSS
     -- Don't attach to CSS files that contain @tailwind directives
-    lspconfig.cssls.setup {
-      capabilities = capabilities,
+    lspconfig.cssls.setup(vim.tbl_deep_extend('force', common_options, {
       on_attach = function(client, bufnr)
         local file_content = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), '\n')
 
@@ -176,12 +198,7 @@ return { -- LSP Configuration & Plugins
           vim.lsp.buf_detach_client(bufnr, client.id)
         end
       end,
-    }
-
-    -- JSON
-    lspconfig.jsonls.setup {
-      capabilities = capabilities,
-    }
+    }))
 
     -----------------------------------------------------------------------------
 
@@ -231,7 +248,7 @@ return { -- LSP Configuration & Plugins
     }
 
     -- Bash
-    -- nixpkgs: nodePackages.bash-language-server
+    -- nixpkgs: bash-language-server
     lspconfig.bashls.setup {
       capabilities = capabilities,
       filetypes = { 'sh', 'zsh' },
