@@ -1,6 +1,7 @@
 return {
   -- TODO: organize keybindings better
   'folke/which-key.nvim',
+  commit = '8600b0029896ad2e36eb27a0808614ab8a0c057a',
   event = 'VimEnter',
   opts_extend = { 'spec' },
   opts = {
