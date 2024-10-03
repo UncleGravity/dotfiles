@@ -28,3 +28,9 @@ sudo nixos-rebuild switch --flake ".?submodules=1#nixos" -v
     - First run: `nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#BENGKUI`
     - Subsequent runs: `darwin-rebuild switch --flake .#BENGKUI`
 
+## Nvim Config
+After cloning, run:
+````bash
+ln -s <path-to-this-repo>/home/dotfiles/nvim ~/.config/my-nim
+NVIM_APPNAME=my-nim nvim
+```
