@@ -19,6 +19,7 @@ return { -- LSP Configuration & Plugins
       },
     },
     { 'Bilal2453/luvit-meta', lazy = true }, -- Lua types
+    { 'smjonas/inc-rename.nvim', opts = {} },
   },
   config = function()
     --  This function gets run when an LSP attaches to a particular buffer.
@@ -64,7 +65,8 @@ return { -- LSP Configuration & Plugins
 
         -- Rename the variable under your cursor.
         --  Most Language Servers support renaming across files, etc.
-        map('<leader>Lr', vim.lsp.buf.rename, '[r]ename')
+        -- map('<leader>Lr', vim.lsp.buf.rename, '[r]ename')
+        map('<leader>Lr', ':IncRename ', '[r]ename')
 
         -- Execute a code action, usually your cursor needs to be on top of an error
         -- or a suggestion from your LSP for this to activate.

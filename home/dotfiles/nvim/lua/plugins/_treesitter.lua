@@ -2,7 +2,8 @@ return { -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
   -- enabled = false,
   version = false, -- use latest commit
-  event = 'VeryLazy',
+  event = { 'BufReadPre', 'BufNewFile' },
+  lazy = vim.fn.argc(-1) == 0, -- load treesitter early when opening a file from the cmdline
   build = ':TSUpdate',
   opts = {
     ensure_installed = {
@@ -47,6 +48,8 @@ return { -- Highlight, edit, and navigate code
       'rust',
       'zig',
       'sql',
+      'java',
+      'kotlin',
     },
     -- Autoinstall languages that are not installed
     auto_install = true,
@@ -63,14 +66,23 @@ return { -- Highlight, edit, and navigate code
         node_decremental = '-',
       },
     },
+    textobjects = {
+      move = {
+        enable = true,
+        goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer', [']a'] = '@parameter.inner' },
+        goto_next_end = { [']F'] = '@function.outer', [']C'] = '@class.outer', [']A'] = '@parameter.inner' },
+        goto_previous_start = { ['[f'] = '@function.outer', ['[c'] = '@class.outer', ['[a'] = '@parameter.inner' },
+        goto_previous_end = { ['[F'] = '@function.outer', ['[C'] = '@class.outer', ['[A'] = '@parameter.inner' },
+      },
+    },
   },
   config = function(_, opts)
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
     -- Enable folding with treesitter
-    -- vim.wo.foldmethod = 'expr'
-    -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-    -- vim.wo.foldlevel = 99 -- Make sure nothing is folded on when opening a file
+    vim.wo.foldmethod = 'expr'
+    vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    vim.wo.foldlevel = 99 -- Make sure nothing is folded on when opening a file
 
     -- Prefer git instead of curl in order to improve connectivity in some environments
     require('nvim-treesitter.install').prefer_git = true

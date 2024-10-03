@@ -37,6 +37,7 @@ return { -- Autocompletion
     'hrsh7th/cmp-path',
     'hrsh7th/cmp-buffer',
     'onsails/lspkind.nvim',
+    'hrsh7th/cmp-cmdline', -- Add this line
   },
   config = function()
     local cmp = require 'cmp'
@@ -45,7 +46,6 @@ return { -- Autocompletion
     luasnip.config.setup {}
 
     cmp.setup {
-
       snippet = {
         expand = function(args)
           luasnip.lsp_expand(args.body)
@@ -131,7 +131,7 @@ return { -- Autocompletion
           }(entry, item)
 
           -- Apply built in color highlighting if available
-          if color_item.abbr_hl_group then
+          if color_item and color_item.abbr_hl_group then
             item.kind_hl_group = color_item.abbr_hl_group
             item.kind = color_item.abbr
           end
@@ -140,5 +140,28 @@ return { -- Autocompletion
         end,
       },
     }
+
+    -- Set up cmdline completion for '/'
+    -- cmp.setup.cmdline('/', {
+    --   mapping = cmp.mapping.preset.cmdline(),
+    --   sources = {
+    --     { name = 'buffer' }
+    --   }
+    -- })
+
+    -- Set up cmdline completion for ':'
+    cmp.setup.cmdline(':', {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = cmp.config.sources({
+        { name = 'path' },
+      }, {
+        {
+          name = 'cmdline',
+          option = {
+            ignore_cmds = { 'Man', '!' },
+          },
+        },
+      }),
+    })
   end,
 }

@@ -35,6 +35,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
         pickers = {
           find_files = {
             -- find_command = { 'fd', '--type=f', '--hidden', '--exclude', '.git' },
+            -- Reason: Show most recently modified files first
             find_command = { 'rg', '--files', '--sortr=modified', '--hidden', '--glob', '!.git/' },
           },
           buffers = {
