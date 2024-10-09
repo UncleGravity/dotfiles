@@ -29,6 +29,7 @@ let
     shfmt # Bash
 
     # Dev
+    helix
     gnumake
     clang
     gh # github cli
@@ -87,7 +88,7 @@ let
     # yazi # file manager
     exiftool # read exif data
     # unar # archive extractor
-    p7zip
+    # p7zip
     glow # markdown viewer
 
     gum # cli util
@@ -100,7 +101,7 @@ let
     # termshark # wireshark for terminal
 
     # Fonts
-    meslo-lgs-nf # Nerd Font for powerlevel10k
+    # meslo-lgs-nf # Nerd Font for powerlevel10k
     (pkgs.nerdfonts.override { fonts = [ "Meslo" "JetBrainsMono" ]; }) # Nerd Font with more icons
   ];
 
@@ -185,6 +186,10 @@ in
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
+    # ".config/nvim" = {
+    #   source = "${DOTFILES_DIR}/nvim";
+    #   recursive = true;
+    # };
     ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
     # Collects all home-manager completions into a single directory
     # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix

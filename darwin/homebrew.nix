@@ -15,7 +15,6 @@
     ];
 
     # `brew install`
-    # TODO Feel free to add your favorite apps here.
     brews = [
       # "aria2"  # download tool
       "cyme"
@@ -24,7 +23,6 @@
     ];
 
     # `brew install --cask`
-    # TODO Feel free to add your favorite apps here.
     casks = [
       # "google-chrome"
       "alacritty"
@@ -32,6 +30,7 @@
       "kitty"
       "wezterm"
       "hammerspoon"
+      "macfuse"
 
       # TODO: Move to nix-darwin: services.karabiner-elements.enable. 
       # https://github.com/LnL7/nix-darwin/blob/master/modules/services/karabiner-elements/default.nix
