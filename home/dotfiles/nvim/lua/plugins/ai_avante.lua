@@ -12,12 +12,6 @@ return { -- AI
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = 'make',
   -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
-  config = function()
-    require('avante').setup()
-    -- require('which-key').add {
-    --   { '<leader>a', group = '[A]vante', icon = { icon = '', color = 'azure' } },
-    -- }
-  end,
   dependencies = {
     'nvim-treesitter/nvim-treesitter',
     'nvim-tree/nvim-web-devicons',

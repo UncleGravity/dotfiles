@@ -21,6 +21,7 @@ return {
       -- 'buffers',
       -- 'git_status',
     },
+    popup_border_style = "single",
     open_files_do_not_replace_types = { 'terminal', 'Trouble', 'trouble', 'qf', 'Outline', 'Avante', 'AvanteInput', 'codecompanion' },
     filesystem = {
       bind_to_cwd = false,

@@ -20,6 +20,7 @@ return { -- LSP Configuration & Plugins
     },
     { 'Bilal2453/luvit-meta', lazy = true }, -- Lua types
     { 'smjonas/inc-rename.nvim', opts = {} },
+    { 'https://git.sr.ht/~whynothugo/lsp_lines.nvim' },
   },
   config = function()
     --  This function gets run when an LSP attaches to a particular buffer.
@@ -33,9 +34,6 @@ return { -- LSP Configuration & Plugins
 
         -----------------------------------------------------------------------------
         -- Keybindings
-        require('which-key').add {
-          { '<leader>L', group = '[L]SP', icon = { icon = ' ', color = 'azure' } },
-        }
 
         -- Jump to the definition of the word under your cursor. To jump back, press <C-t>.
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
@@ -61,7 +59,10 @@ return { -- LSP Configuration & Plugins
 
         -- Fuzzy find all the symbols in your current workspace.
         --  Similar to document symbols, except searches over your entire project.
-        map('<leader>Lp', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'list [p]roject symbols')
+        map('<leader>Ls', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'list [p]roject symbols')
+
+        -- Show diagnostics for the current line in a floating window
+        map('<leader>Lp', vim.diagnostic.open_float, '[P]review diagnostics in floatinng window')
 
         -- Rename the variable under your cursor.
         --  Most Language Servers support renaming across files, etc.
@@ -156,6 +157,23 @@ return { -- LSP Configuration & Plugins
         },
       },
     }
+
+    -----------------------------------------------------------------------------
+    -- lsp_lines.nvim
+    require('lsp_lines').setup()
+    vim.diagnostic.config { virtual_text = false }
+    vim.keymap.set('n', '<Leader>LL', require('lsp_lines').toggle, { desc = 'Toggle lsp_lines' })
+
+    -- Disable lsp_lines on floating windows (like lazy.nvim)
+    vim.api.nvim_create_autocmd('WinEnter', {
+      callback = function()
+        local floating = vim.api.nvim_win_get_config(0).relative ~= ''
+        vim.diagnostic.config {
+          virtual_text = floating,
+          virtual_lines = not floating,
+        }
+      end,
+    })
 
     -----------------------------------------------------------------------------
     -- LSP servers

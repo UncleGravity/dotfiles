@@ -74,7 +74,7 @@ return { -- Fancy vscode like scroll bar
     -- enabled = false,
     config = function()
       require('scrollview').setup {
-        excluded_filetypes = { 'nerdtree', 'neo-tree', 'codecompanion', 'Avante', 'AvanteInput', 'trouble', 'lazygit', 'alpha', 'TelescopePrompt' },
+        excluded_filetypes = { 'nerdtree', 'neo-tree', 'codecompanion', 'Avante', 'AvanteInput', 'trouble', 'lazygit', 'alpha', 'TelescopePrompt', 'ministarter' },
         current_only = true,
         always_show = true,
         base = 'right',

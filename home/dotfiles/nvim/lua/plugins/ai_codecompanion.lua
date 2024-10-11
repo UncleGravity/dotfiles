@@ -13,11 +13,16 @@ return { -- AI
   },
   config = function()
     require('codecompanion').setup {
-      -- display = {
-      --   diff = {
-      --     provider = 'mini_diff',
-      --   },
-      -- },
+      display = {
+        chat = {
+          window = {
+            layout = "float",
+          }
+        }
+        -- diff = {
+        --   provider = 'mini_diff',
+        -- },
+      },
       strategies = {
         chat = {
           adapter = 'anthropic',

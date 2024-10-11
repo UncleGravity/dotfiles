@@ -4,7 +4,8 @@ return { -- Fuzzy Finder (files, lsp, etc)
   {
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    version = false,
+    -- branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       {
@@ -44,8 +45,10 @@ return { -- Fuzzy Finder (files, lsp, etc)
             theme = 'dropdown',
             mappings = {
               i = {
-                -- BUG: Doesn't work for currenly open buffer
                 ['<c-d>'] = require('telescope.actions').delete_buffer,
+              },
+              n = {
+                ['d'] = require('telescope.actions').delete_buffer,
               },
             },
           },

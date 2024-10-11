@@ -37,6 +37,7 @@ end
 return {
   {
     'rebelot/kanagawa.nvim',
+    enabled = false,
     lazy = false, -- Change this to false
     priority = 1000,
     opts = {
@@ -135,6 +136,7 @@ return {
 
   {
     'folke/tokyonight.nvim',
+    enabled = false,
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
@@ -142,14 +144,16 @@ return {
     end,
   },
 
-  --   {
-  --     'mcchrish/zenbones.nvim',
-  --     dependencies = { 'rktjmp/lush.nvim' },
-  --     event = 'VeryLazy',
-  --   },
+  {
+    'mcchrish/zenbones.nvim',
+    enabled = false,
+    dependencies = { 'rktjmp/lush.nvim' },
+    event = 'VeryLazy',
+  },
 
   {
     'ellisonleao/gruvbox.nvim',
+    enabled = false,
     lazy = false,
     priority = 1000,
     config = function()
@@ -209,8 +213,12 @@ return {
 
       vim.g.gruvbox_material_diagnostic_virtual_text = 'colored'
       vim.g.material_diagnostic_text_highlight = 1
-
+      vim.g.gruvbox_material_diagnostic_line_highlight = 1
       vim.cmd.colorscheme 'gruvbox-material'
+      vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' }) -- fix de background color border
+
+      -- Set window separator width
+      -- vim.opt.fillchars:append { vert = '█', horiz = '█', horizup = '█', horizdown = '█', vertleft = '█', vertright = '█' }
 
       --------------------------------------------------------------------------------------
       -- Custom highlights
@@ -233,6 +241,7 @@ return {
               -- NormalFloat = { bg = 'none', fg = palette.fg0[1] },
               -- FloatBorder = { bg = 'none' },
               -- FloatTitle = { bg = 'none', fg = palette.orange[1] },
+              WinSeparator = { fg = palette.grey1[1], bold = true },
               TelescopeTitle = { bg = 'none', fg = palette.fg0[1] },
               TelescopeBorder = { bg = 'none', fg = palette.fg0[1] },
               TelescopeNormal = { fg = 'none' },
@@ -248,7 +257,7 @@ return {
               -- CursorReset = { bg = palette.fg0[1], fg = palette.bg_dim[1] },
               --   ColorColumn = { bg = palette.grey0[1] },
               -- ColorColumn = { bg = palette.bg0[1] },
-              -- CursorLine = { bg = palette.bg5[1], blend = 25 },
+              CursorLine = { bg = palette.bg5[1], blend = 25 },
               -- GitSignsAdd = { bg = 'none', fg = palette.green[1] },
               -- GitSignsChange = { bg = 'none', fg = palette.yellow[1] },
               -- GitSignsDelete = { bg = 'none', fg = palette.red[1] },
@@ -256,9 +265,10 @@ return {
               -- DiffChange = { bg = 'none', fg = palette.yellow[1] },
               -- DiffDelete = { bg = 'none', fg = palette.red[1] },
               -- DiffText = { bg = 'none', fg = palette.blue[1] },
-              -- Make MatchParen more visible
               -- MatchParen = { bg = palette.grey2[1], fg = palette.orange[1], bold = true },
-              MiniTablineFill = { bg = palette.bg0[1] },
+              -- MiniTablineFill = { bg = palette.bg0[1] },
+              MiniIndentscopeSymbol = { fg = palette.bg5[1] },
+              -- MiniIndentscopeSymbolOff = { fg = palette.bg0[1] },
             }
 
             for group, styles in pairs(highlights_groups) do

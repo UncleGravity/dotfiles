@@ -6,11 +6,11 @@ vim.g.loaded_netrwPlugin = 1
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
-vim.opt.number = true
+-- vim.opt.number = true
 -- vim.opt.relativenumber = true
-vim.opt.signcolumn = 'yes' -- show sign column so that text doesn't shift
-vim.opt.cursorline = true -- Show which line the cursor is on
-vim.opt.fillchars = { eob = ' ' } -- remove tilde symbol
+-- vim.opt.signcolumn = 'yes' -- show sign column so that text doesn't shift
+-- vim.opt.cursorline = true -- Show which line the cursor is on
+-- vim.opt.fillchars = { eob = ' ' } -- remove tilde symbol
 -- vim.opt.cmdheight = 1
 vim.g.disable_autoformat = true
 
@@ -25,26 +25,26 @@ vim.opt.tabstop = 2 -- 2 spaces for tabs (prettier default)
 vim.opt.softtabstop = 2 -- Number of spaces that a <Tab> counts for while performing editing operations
 vim.opt.shiftwidth = 2 -- Number of spaces to use for each step of (auto)indent
 vim.opt.expandtab = true -- Use spaces instead of tabs
-vim.opt.smartindent = true -- Insert indents automatically
+-- vim.opt.smartindent = true -- Insert indents automatically
 
 -- Enable mouse mode and mouse move events
-vim.opt.mouse = 'a'
+-- vim.opt.mouse = 'a'
 -- vim.opt.mousemoveevent = true -- could cause performance issues?
 -- Don't show the mode, since it's already in the status line
-vim.opt.showmode = false
+-- vim.opt.showmode = false
 
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
 
 -- search settings
-vim.opt.ignorecase = true -- ignore case when searching
-vim.opt.smartcase = true -- if you include mixed case in your search, assumes you want case-sensitive
-vim.opt.inccommand = 'split' -- Preview substitutions live, as you type!
+-- vim.opt.ignorecase = true -- ignore case when searching
+-- vim.opt.smartcase = true -- if you include mixed case in your search, assumes you want case-sensitive
+-- vim.opt.inccommand = 'split' -- Preview substitutions live, as you type!
 
-vim.opt.undofile = true -- Save undo history
-vim.opt.updatetime = 250 -- Decrease update time
-vim.opt.termguicolors = true -- turn on termguicolors for some colorschemes to work
+-- vim.opt.undofile = true -- Save undo history
+vim.opt.updatetime = 1000 -- Decrease update time
+-- vim.opt.termguicolors = true -- turn on termguicolors for some colorschemes to work
 -- vim.opt.background = 'dark' -- colorschemes that can be light or dark will be made dark
 vim.opt.backspace = 'indent,eol,start' -- allow backspace on indent, end of line or insert mode start position
 
@@ -54,8 +54,8 @@ vim.opt.backspace = 'indent,eol,start' -- allow backspace on indent, end of line
 vim.opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus' -- Sync with system clipboard
 
 -- split windows
-vim.opt.splitright = true -- split vertical window to the right
-vim.opt.splitbelow = true -- split horizontal window to the bottom
+-- vim.opt.splitright = true -- split vertical window to the right
+-- vim.opt.splitbelow = true -- split horizontal window to the bottom
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
@@ -69,4 +69,4 @@ vim.opt.confirm = true -- Confirm to save changes before exiting modified buffer
 vim.opt.grepprg = 'rg --vimgrep'
 vim.opt.inccommand = 'nosplit' -- preview incremental substitute
 vim.opt.statusline = vim.opt.statusline + '%F'
-vim.opt.wrap = false
+-- vim.opt.wrap = false

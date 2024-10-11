@@ -4,6 +4,7 @@ return { -- Autocompletion
   version = false, -- use latest
   event = 'InsertEnter',
   dependencies = {
+
     -- Snippet Engine & its associated nvim-cmp source
     {
       'L3MON4D3/LuaSnip',
@@ -12,6 +13,7 @@ return { -- Autocompletion
         return 'make install_jsregexp'
       end)(),
       dependencies = {
+        'saadparwaiz1/cmp_luasnip',
         {
           'rafamadriz/friendly-snippets',
           config = function()
@@ -20,6 +22,7 @@ return { -- Autocompletion
         },
       },
     },
+
     -- Color Highlighting
     {
       'brenoprata10/nvim-highlight-colors',
@@ -32,12 +35,14 @@ return { -- Autocompletion
         }
       end,
     },
-    'saadparwaiz1/cmp_luasnip',
-    'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/cmp-path',
-    'hrsh7th/cmp-buffer',
-    'onsails/lspkind.nvim',
-    'hrsh7th/cmp-cmdline', -- Add this line
+
+    -- Other dependencies
+    'hrsh7th/cmp-nvim-lsp', -- lsp completions
+    'hrsh7th/cmp-path', -- local paths completions
+    'hrsh7th/cmp-buffer', -- current buffer completions
+    'onsails/lspkind.nvim', -- icons for 'kind' column
+    'hrsh7th/cmp-cmdline', -- command line completions
+    'hrsh7th/cmp-nvim-lsp-signature-help', -- show missing function arguments
   },
   config = function()
     local cmp = require 'cmp'
@@ -55,15 +60,19 @@ return { -- Autocompletion
       completion = { completeopt = 'menu,menuone,noinsert' },
 
       window = {
-        completion = { -- rounded border; thin-style scrollbar
-          border = 'rounded',
-          scrollbar = true,
-        },
-
-        documentation = { -- no border; native-style scrollbar
-          border = 'rounded',
-          scrollbar = '',
-        },
+        completion = cmp.config.window.bordered(),
+        documentation = cmp.config.window.bordered(),
+        -- completion = {
+        --   border = 'rounded',
+        --   scrollbar = true,
+        --   winhighlight = 'Normal:Normal,FloatBorder:Normal,CursorLine:Visual,Search:None',
+        -- },
+        --
+        -- documentation = {
+        --   border = 'rounded',
+        --   scrollbar = '',
+        --   winhighlight = 'Normal:Normal,FloatBorder:Normal,CursorLine:Visual,Search:None',
+        -- },
       },
 
       -- Please read `:help ins-completion`, it is really good!
@@ -71,6 +80,8 @@ return { -- Autocompletion
         -- Move along the completion menu.
         ['<C-n>'] = cmp.mapping.select_next_item(),
         ['<C-p>'] = cmp.mapping.select_prev_item(),
+        ['<Tab>'] = cmp.mapping.select_next_item(),
+        ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
         -- Scroll the documentation window [b]ack / [f]orward
         ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -78,9 +89,7 @@ return { -- Autocompletion
 
         -- Accept ([y]es) the completion.
         ['<C-y>'] = cmp.mapping.confirm { select = true },
-        ['<CR>'] = cmp.mapping.confirm { select = true },
-        --['<Tab>'] = cmp.mapping.select_next_item(),
-        --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+        -- ['<CR>'] = cmp.mapping.confirm { select = true },
 
         -- Manually trigger a completion from nvim-cmp.
         ['<C-Space>'] = cmp.mapping.complete {},
@@ -108,6 +117,7 @@ return { -- Autocompletion
       },
       sources = {
         { name = 'nvim_lsp' },
+        -- { name = 'nvim_lsp_signature_help' }, -- function arg popups while typing
         { name = 'luasnip' },
         { name = 'buffer' },
         { name = 'path' },

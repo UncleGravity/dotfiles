@@ -10,7 +10,8 @@ return {
     require('lualine').setup {
       extensions = { 'lazy' },
       options = {
-        theme = 'gruvbox-material',
+        -- theme = 'gruvbox-material',
+        theme = 'auto',
         globalstatus = true,
         ignore_focus = { 'neo-tree' },
       },
@@ -25,6 +26,11 @@ return {
           { 'branch' },
           { 'diff' },
           { 'diagnostics' },
+          -- {
+          --   require('noice').api.statusline.mode.get,
+          --   cond = require('noice').api.statusline.mode.has,
+          --   color = { fg = '#ff9e64' },
+          -- },
           -- {
           --   'buffers',
           --   -- show_filename_only = false, -- Shows shortened relative path when set to false.
