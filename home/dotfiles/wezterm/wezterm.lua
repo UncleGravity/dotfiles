@@ -13,7 +13,8 @@ end
 -- THEME
 -- config.color_scheme = "Catppuccin Mocha"
 -- config.color_scheme = 'Gruvbox Dark (Gogh)'
-config.color_scheme = "Gruvbox Dark (Gogh)"
+-- config.color_scheme = "Gruvbox Dark (Gogh)"
+config.color_scheme = "Gruvbox Material (Gogh)"
 
 -- FONT
 config.font = wezterm.font("MesloLGS Nerd Font")
