@@ -28,6 +28,9 @@ let
     alejandra # nix
     shfmt # Bash
 
+    # Debuggers
+    vscode-js-debug
+
     # Dev
     helix
     gnumake
@@ -61,7 +64,6 @@ let
 
     # tmux
     tmux
-    twm
     sesh
     zellij
 
@@ -235,17 +237,11 @@ in
       source = "${DOTFILES_DIR}/aichat";
       recursive = true; # Allows the directory to be writable, since aichat will create files in it
     };
-    ".config/twm" = {
-      source = "${DOTFILES_DIR}/twm";
-    };
     ".config/sesh" = {
       source = "${DOTFILES_DIR}/sesh";
     };
     ".config/zellij" = {
       source = "${DOTFILES_DIR}/zellij";
-    };
-    ".config/yabai" = lib.mkIf pkgs.stdenv.isDarwin {
-      source = "${DOTFILES_DIR}/yabai";
     };
   };
 

@@ -4,7 +4,7 @@ return { -- Fancy vscode like scroll bar
     enabled = false,
     version = false,
     -- lazy = true,
-    -- event = 'VeryLazy',
+    event = 'BufReadPre',
     config = function()
       require('satellite').setup {
         current_only = true,
@@ -16,7 +16,7 @@ return { -- Fancy vscode like scroll bar
           cursor = {
             enable = true,
             -- Supports any number of symbols
-            symbols = { '󰩷' },
+            symbols = { '▄' },
             -- symbols = { '⎺', '⎻', '⎼', '⎽' },
             -- symbols = { '⎻', '⎼' }
             -- Highlights:
@@ -30,7 +30,7 @@ return { -- Fancy vscode like scroll bar
           },
           diagnostic = {
             enable = true,
-            signs = { '-', '=', '≡' },
+            signs = { ' ' },
             min_severity = vim.diagnostic.severity.HINT,
             -- Highlights:
             -- - SatelliteDiagnosticError (default links to DiagnosticError)
@@ -58,6 +58,7 @@ return { -- Fancy vscode like scroll bar
             -- SatelliteMark (default links to Normal)
           },
           quickfix = {
+            enable = true,
             signs = { '-', '=', '≡' },
             -- Highlights:
             -- SatelliteQuickfix (default links to WarningMsg)
@@ -66,15 +67,33 @@ return { -- Fancy vscode like scroll bar
       }
 
       -- Set a more visible highlight for SatelliteCursor
-      vim.api.nvim_set_hl(0, 'SatelliteCursor', { fg = '#FF0000', bold = true })
+      vim.api.nvim_set_hl(0, 'SatelliteCursor', { fg = '#FFFF00', bold = true })
     end,
   },
   {
     'dstein64/nvim-scrollview',
     -- enabled = false,
+    event = 'BufReadPre',
     config = function()
       require('scrollview').setup {
-        excluded_filetypes = { 'nerdtree', 'neo-tree', 'codecompanion', 'Avante', 'AvanteInput', 'trouble', 'lazygit', 'alpha', 'TelescopePrompt', 'ministarter' },
+        excluded_filetypes = {
+          'nerdtree',
+          'neo-tree',
+          'codecompanion',
+          'Avante',
+          'AvanteInput',
+          'trouble',
+          'lazygit',
+          'alpha',
+          'TelescopePrompt',
+          'ministarter',
+          'dapui_scopes',
+          'dapui_breakpoints',
+          'dapui_stacks',
+          'dapui_watches',
+          'dapui-repl',
+          'dapui_console',
+        },
         current_only = true,
         always_show = true,
         base = 'right',
@@ -93,7 +112,7 @@ return { -- Fancy vscode like scroll bar
           'quickfix',
           'search',
           'spell',
-          'textwidth',
+          -- 'textwidth',
           'trail',
         },
         diagnostics_error_symbol = '󰅚 ',
@@ -102,6 +121,7 @@ return { -- Fancy vscode like scroll bar
           vim.diagnostic.severity.ERROR,
           vim.diagnostic.severity.WARN,
         },
+        scrollview_floating_windows = true,
       }
 
       -- require('scrollview.contrib.gitsigns').setup() -- Enable gitsigns on scrollbar
