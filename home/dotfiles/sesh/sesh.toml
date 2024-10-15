@@ -1,10 +1,10 @@
 [[session]]
 name = "dotfiles"
-path = "~/Documents/.dotfiles"
+path = "~/nix/"
 startup_command = "nvim"
 # startup_command = "nvim -c ':Telescope find_files'"
 
 [[session]]
 name = "neovim config"
-path = "~/.config/my-nvim"
+path = "~/.config/nvim/"
 startup_command = "nvim"

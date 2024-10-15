@@ -213,8 +213,9 @@ alias du="dua"
 alias df="duf --hide-mp '/dev, *ystem*, /private*, /nix*'"
 
 # export NVIM_APPNAME=lazyvim
-export NVIM_APPNAME=my-nvim
+# export NVIM_APPNAME=my-nvim
 # alias nvim="NVIM_APPNAME=lazyvim nvim"
+export EDITOR=nvim
 
 # ==================================================================================================
 # OS Specific

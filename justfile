@@ -45,6 +45,9 @@ sync:
             ;;
     esac
     echo "✅ System configuration rebuilt successfully!"
+    echo "🔗 Creating symlink for Neovim configuration..."
+    ln -sfn ~/nix/home/dotfiles/nvim ~/.config/nvim
+    echo "✅ Neovim configuration symlink created successfully!"
 
 # Update flake inputs
 update:
@@ -75,6 +78,14 @@ prune:
     @echo "✂️  Pruning unused nix store paths..."
     nix-store --gc
     @echo "✅ Pruning completed!"
+
+###############################################################
+# Quick Test - Neovim
+###############################################################
+
+nvim-test:
+  rm -rf ${HOME}.config/nvim
+  ln -sfn $(pwd)/home/dotfiles/nvim ${HOME}/.config/nvim
 
 # List system generations
 list-generations:

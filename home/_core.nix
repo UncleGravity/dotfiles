@@ -3,6 +3,17 @@
 let
   DOTFILES_DIR = ./dotfiles;
 
+
+  # Trying to symlink the nvim config from the flake dir to the home dir,
+  # But make it writable
+  # More info: https://github.com/nix-community/home-manager/issues/676
+  # HOME = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+  # lib.meta = {
+  #     configPath = "${HOME}/nix/";
+  #     mkMutableSymlink = path: config.lib.file.mkOutOfStoreSymlink
+  #       (config.lib.meta.configPath + lib.string.removePrefix (toString inputs.self) (toString path));
+  #   };
+
   commonPackages = with pkgs; [
     # LSP
     nixd # nix language server
@@ -32,6 +43,7 @@ let
     vscode-js-debug
 
     # Dev
+    inputs.neovim-nightly.packages.${pkgs.system}.default
     helix
     gnumake
     clang
@@ -88,6 +100,7 @@ let
     fx # better json parser
 
     # yazi # file manager
+    inputs.yazi.packages.${pkgs.system}.default
     exiftool # read exif data
     # unar # archive extractor
     # p7zip
@@ -141,39 +154,6 @@ in
   programs.wezterm = {
     enable = true;
     # enableZshIntegration = true;
-  };
-
-  programs.yazi = {
-    enable = true;
-    package = inputs.yazi.packages.${pkgs.system}.default;
-    # enableZshIntegration = true;
-  };
-
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    package = inputs.neovim-nightly.packages.${pkgs.system}.default;
-    extraConfig = ''
-      set number relativenumber
-
-      " Clipboard configuration
-      let g:clipboard = {
-        \   'name': 'clipboard-jh',
-        \   'copy': {
-        \      '+': 'cb copy',
-        \      '*': 'cb copy',
-        \    },
-        \   'paste': {
-        \      '+': 'cb paste',
-        \      '*': 'cb paste',
-        \   },
-        \   'cache_enabled': 0,
-        \ }
-      set clipboard+=unnamedplus
-    '';
-
-    # OR
-    #extraConfig = lib.fileContents ../path/to/your/init.vim;
   };
 
   programs.direnv = {
