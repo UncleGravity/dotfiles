@@ -110,8 +110,6 @@ return { -- Highlight, edit, and navigate code
           [']b'] = { query = '@block.outer', desc = 'Next block' },
           [']f'] = { query = '@call.outer', desc = 'Next function call' },
           [']l'] = { query = '@loop.outer', desc = 'Next loop' },
-
-          [']z'] = { query = '@fold', query_group = 'folds', desc = 'Next fold' },
         },
         goto_previous_start = {
           -- ['[m'] = { query = '@function.outer', desc = 'Prev function def start' },

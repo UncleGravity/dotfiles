@@ -1,10 +1,13 @@
 return { -- Autocompletion
-  'hrsh7th/nvim-cmp',
+  -- 'hrsh7th/nvim-cmp',
+  'iguanacucumber/magazine.nvim',
+  name = 'nvim-cmp',
   -- enabled = false,
   version = false, -- use latest
   event = 'InsertEnter',
   dependencies = {
 
+    -----------------------------------------------------------------------------------------------
     -- Snippet Engine & its associated nvim-cmp source
     {
       'L3MON4D3/LuaSnip',
@@ -21,8 +24,13 @@ return { -- Autocompletion
           end,
         },
       },
+      opts = {
+        history = true, -- don't lose snip navigation
+        delete_check_events = 'TextChanged', -- Check if the current snippet was deleted.
+      },
     },
 
+    -----------------------------------------------------------------------------------------------
     -- Color Highlighting
     {
       'brenoprata10/nvim-highlight-colors',
@@ -42,22 +50,26 @@ return { -- Autocompletion
     'hrsh7th/cmp-buffer', -- current buffer completions
     'onsails/lspkind.nvim', -- icons for 'kind' column
     'hrsh7th/cmp-cmdline', -- command line completions
-    'hrsh7th/cmp-nvim-lsp-signature-help', -- show missing function arguments
   },
+
+  -----------------------------------------------------------------------------------------------
+  -- CMP config
   config = function()
     local cmp = require 'cmp'
     local luasnip = require 'luasnip'
+    local defaults = require 'cmp.config.default'()
     local lspkind = require 'lspkind'
-    luasnip.config.setup {}
 
     cmp.setup {
+      -- Don't preselect
+      preselect = cmp.PreselectMode.None,
+      completion = { completeopt = 'menu,menuone,noinsert,noselect' },
+
       snippet = {
         expand = function(args)
           luasnip.lsp_expand(args.body)
         end,
       },
-
-      completion = { completeopt = 'menu,menuone,noinsert' },
 
       window = {
         completion = cmp.config.window.bordered(),
@@ -80,7 +92,15 @@ return { -- Autocompletion
         -- Move along the completion menu.
         ['<C-n>'] = cmp.mapping.select_next_item(),
         ['<C-p>'] = cmp.mapping.select_prev_item(),
-        ['<Tab>'] = cmp.mapping.select_next_item(),
+        ['<Tab>'] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item()
+          elseif luasnip.expand_or_locally_jumpable() then
+            luasnip.expand_or_jump()
+          else
+            fallback()
+          end
+        end, { 'i', 's' }),
         ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
         -- Scroll the documentation window [b]ack / [f]orward
@@ -88,19 +108,18 @@ return { -- Autocompletion
         ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
         -- Accept ([y]es) the completion.
-        ['<C-y>'] = cmp.mapping.confirm { select = true },
-        -- ['<CR>'] = cmp.mapping.confirm { select = true },
+        ['<C-y>'] = cmp.mapping.confirm {
+          select = true,
+          behavior = cmp.ConfirmBehavior.Replace,
+        },
+        ['<CR>'] = cmp.mapping.confirm {
+          behavior = cmp.ConfirmBehavior.Replace,
+        },
 
         -- Manually trigger a completion from nvim-cmp.
         ['<C-Space>'] = cmp.mapping.complete {},
 
-        -- If you have a snippet that's like:
-        --  function $name($args)
-        --    $body
-        --  end
-        --
-        -- <c-l> will move you to the right of each of the expansion locations.
-        -- <c-h> is similar, except moving you backwards.
+        -- navigate around snippets
         ['<C-l>'] = cmp.mapping(function()
           if luasnip.expand_or_locally_jumpable() then
             luasnip.expand_or_jump()
@@ -111,19 +130,23 @@ return { -- Autocompletion
             luasnip.jump(-1)
           end
         end, { 'i', 's' }),
+        ['<C-j'] = cmp.mapping(function()
+          if luasnip.choice_active() then
+            luasnip.change_choice(1)
+          end
+        end, { 'i', 's' }),
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
       sources = {
-        { name = 'nvim_lsp' },
-        -- { name = 'nvim_lsp_signature_help' }, -- function arg popups while typing
+        { name = 'nvim_lsp', keyword_length = 1 },
         { name = 'luasnip' },
         { name = 'buffer' },
         { name = 'path' },
         { name = 'lazydev' },
       },
-      formatting = {
+      formatting = { -- Make completion menu look nice
         fields = { 'abbr', 'kind', 'menu' },
         expandable_indicator = true,
         format = function(entry, item)
@@ -131,7 +154,8 @@ return { -- Autocompletion
           local color_item = require('nvim-highlight-colors').format(entry, { kind = item.kind })
 
           -- Set the source name as the menu column
-          item.menu = entry.source.name
+          item.menu = '[' .. entry.source.name .. ']'
+          item.menu_hl_group = 'Conceal'
 
           -- Apply lspkind formatting (icons)
           item = lspkind.cmp_format {
@@ -149,7 +173,11 @@ return { -- Autocompletion
           return item
         end,
       },
+      sorting = defaults.sorting,
     }
+
+    -----------------------------------------------------------------------------------------------
+    --- Command Line Completions
 
     -- Set up cmdline completion for '/'
     -- cmp.setup.cmdline('/', {

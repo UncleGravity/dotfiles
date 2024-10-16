@@ -91,7 +91,7 @@ return { -- Fancy vscode like scroll bar
           'dapui_breakpoints',
           'dapui_stacks',
           'dapui_watches',
-          'dapui-repl',
+          'dap-repl',
           'dapui_console',
         },
         current_only = true,
