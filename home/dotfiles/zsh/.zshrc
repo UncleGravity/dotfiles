@@ -180,7 +180,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-alias zshconfig="nvim $HOME/Documents/.dotfiles/"
 alias zshrst="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
 
 # git
@@ -281,7 +280,6 @@ fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 autoload -Uz compinit
-compinit -d "${ZDOTDIR}/.zcompdump"
 
 eval "$(zoxide init --cmd cd zsh)" # this goes after compinit, according to the docs
 

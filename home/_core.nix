@@ -1,8 +1,12 @@
-{ config, pkgs, lib, inputs, username, ... }:
-
-let
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  username,
+  ...
+}: let
   DOTFILES_DIR = ./dotfiles;
-
 
   # Trying to symlink the nvim config from the flake dir to the home dir,
   # But make it writable
@@ -41,6 +45,7 @@ let
 
     # Debuggers
     vscode-js-debug
+    delve # go
 
     # Dev
     inputs.neovim-nightly.packages.${pkgs.system}.default
@@ -117,7 +122,7 @@ let
 
     # Fonts
     # meslo-lgs-nf # Nerd Font for powerlevel10k
-    (pkgs.nerdfonts.override { fonts = [ "Meslo" "JetBrainsMono" ]; }) # Nerd Font with more icons
+    (pkgs.nerdfonts.override {fonts = ["Meslo" "JetBrainsMono"];}) # Nerd Font with more icons
   ];
 
   darwinOnlyPackages = with pkgs; [
@@ -129,17 +134,24 @@ let
     usbutils
     cyme
   ];
-in
-{
+in {
   imports = [
     # ./zsh.nix
   ];
 
   home.username = username;
-  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+  home.homeDirectory =
+    if pkgs.stdenv.isDarwin
+    then "/Users/${username}"
+    else "/home/${username}";
 
-  home.packages = commonPackages
-    ++ (if pkgs.stdenv.isDarwin then darwinOnlyPackages else linuxOnlyPackages);
+  home.packages =
+    commonPackages
+    ++ (
+      if pkgs.stdenv.isDarwin
+      then darwinOnlyPackages
+      else linuxOnlyPackages
+    );
 
   programs.zsh = {
     enable = true;
@@ -173,20 +185,6 @@ in
     #   recursive = true;
     # };
     ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
-    # Collects all home-manager completions into a single directory
-    # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
-    # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
-    ".config/zsh/auto-completions" = {
-      source = pkgs.runCommand "vendored-zsh-completions" { } ''
-        set -euo pipefail
-        mkdir -p $out
-        ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
-          ${lib.escapeShellArgs config.home.packages} \
-          | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
-          | xargs -0 cp -t $out/
-      '';
-      recursive = true;
-    };
     ".config/git" = {
       source = "${DOTFILES_DIR}/git";
     };
@@ -222,6 +220,32 @@ in
     };
     ".config/zellij" = {
       source = "${DOTFILES_DIR}/zellij";
+    };
+
+    # Collects all home-manager completions into a single directory
+    # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
+    # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
+    ".config/zsh/auto-completions" = {
+      source = pkgs.runCommand "vendored-zsh-completions" {} ''
+        set -euo pipefail
+        mkdir -p $out
+        ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
+          ${lib.escapeShellArgs config.home.packages} \
+          | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
+          | xargs -0 cp -t $out/
+
+        # TODO: Why Doesn't this work?
+        # cp ${pkgs.zig-shell-completions}/share/zsh/site-functions/_zig $out/
+
+      '';
+      recursive = true;
+    };
+
+    # Remember to source this script in your zsh config
+    ".config/zsh/nix.zsh" = {
+      source = pkgs.writeText "nix.zsh" ''
+        eval "$(direnv hook zsh)"
+      '';
     };
   };
 
