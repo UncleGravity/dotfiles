@@ -11,8 +11,9 @@ wrap_code: false                 # Enables or disables wrapping of code blocks
 clients:
 - type: openai
 - type: claude
-- type: ollama
-  api_base: http://localhost:11434
+- type: openai-compatible
+  name: ollama
+  api_base: http://localhost:11434/v1  
   models:
     - name: gemma2:27b
     - name: deepseek-coder-v2
