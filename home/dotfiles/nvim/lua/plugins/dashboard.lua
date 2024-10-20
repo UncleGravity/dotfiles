@@ -59,35 +59,3 @@ return {
     })
   end,
 }
-
--- return {
---   "echasnovski/mini.starter",
---   -- enabled = false,
---   event = "VimEnter",
---   lazy = false,
---   config = true,
---   opts = function()
---     local logo = [[
--- ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
--- ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
--- ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
--- ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
--- ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
--- ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝
---     ]]
-
---     return {
---       header = logo,
---       items = {},
---       footer = '',
---       -- footer = function()
---       --   local stats = require("lazy").stats()
---       --   local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
---       --   local v = vim.version()
---       --   local version = " v" .. v.major .. "." .. v.minor .. "." .. v.patch
---       --   return version .. " ⚡ Neovim loaded " .. stats.count .. " plugins in " .. ms .. "ms"
---       -- end,
---       -- query_updaters = "abcdefghijklmnopqrstuvwxyz",
---     }
---   end,
--- }

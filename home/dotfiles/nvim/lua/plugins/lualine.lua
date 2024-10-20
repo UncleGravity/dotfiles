@@ -18,9 +18,6 @@ return {
       sections = {
         lualine_a = {
           { 'mode' },
-          --------------
-
-          ----------------
         },
         lualine_b = {
           { 'branch' },
@@ -30,16 +27,6 @@ return {
           --   require('noice').api.statusline.mode.get,
           --   cond = require('noice').api.statusline.mode.has,
           --   color = { fg = '#ff9e64' },
-          -- },
-          -- {
-          --   'buffers',
-          --   -- show_filename_only = false, -- Shows shortened relative path when set to false.
-          --   -- use_mode_colors = true,
-          --   symbols = {
-          --     modified = ' ●', -- Text to show when the buffer is modified
-          --     alternate_file = '', -- Text to show to identify the alternate file
-          --     directory = '', -- Text to show when the buffer is a directory
-          --   },
           -- },
         },
         lualine_c = {
@@ -52,27 +39,9 @@ return {
             color = { fg = '#ff9e64' },
           },
           { 'encoding' },
-          -- { 'fileformat' },
           { 'filetype' },
         },
       },
-      -- Add tabline configuration
-      -- tabline = {
-      --   lualine_a = {
-      --     {
-      --       'buffers',
-      --       show_filename_only = true, -- Shows full path
-      --       mode = 2, -- Show buffer number
-      --       max_length = vim.o.columns, -- Maximum width of buffers component
-      --       -- use_mode_colors = true,
-      --       symbols = {
-      --         modified = ' ●',
-      --         alternate_file = '',
-      --         directory = '',
-      --       },
-      --     },
-      --   },
-      -- },
     }
   end,
 }

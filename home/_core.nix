@@ -244,6 +244,7 @@ in {
     # Remember to source this script in your zsh config
     ".config/zsh/nix.zsh" = {
       source = pkgs.writeText "nix.zsh" ''
+        export CODELLDB_PATH="${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb"
         eval "$(direnv hook zsh)"
       '';
     };

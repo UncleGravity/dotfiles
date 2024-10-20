@@ -59,10 +59,10 @@ return { -- LSP Configuration & Plugins
 
         -- Fuzzy find all the symbols in your current workspace.
         --  Similar to document symbols, except searches over your entire project.
-        map('<leader>Ls', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'list [p]roject symbols')
+        map('<leader>Ls', require('telescope.builtin').lsp_dynamic_workspace_symbols, 'list project [s]ymbols')
 
         -- Show diagnostics for the current line in a floating window
-        map('<leader>Lp', vim.diagnostic.open_float, '[P]review diagnostics in floatinng window')
+        map('<leader>Lp', vim.diagnostic.open_float, '[P]review current line diagnostics')
 
         -- Rename the variable under your cursor.
         --  Most Language Servers support renaming across files, etc.
@@ -73,49 +73,13 @@ return { -- LSP Configuration & Plugins
         -- or a suggestion from your LSP for this to activate.
         map('<leader>La', vim.lsp.buf.code_action, 'Code [a]ction')
 
-        -- Opens a popup that displays documentation about the word under your cursor
-        --  See `:help K` for why this keymap.
-        map('K', vim.lsp.buf.hover, 'Hover Documentation')
-
-        -- WARN: This is not Goto Definition, this is Goto Declaration.
-        --  For example, in C this would take you to the header.
+        map('K', vim.lsp.buf.hover, 'Hover Documentation') --  See `:help K`
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-
-        -----------------------------------------------------------------------------
-        -- Highlighting on cursor hold
-
-        -- The following two autocommands are used to highlight references of the
-        -- word under your cursor when your cursor rests there for a little while.
-        --    See `:help CursorHold` for information about when this is executed
-        --
-        -- When you move your cursor, the highlights will be cleared (the second autocommand).
-        local client = vim.lsp.get_client_by_id(event.data.client_id)
-        if client and client.server_capabilities.documentHighlightProvider then
-          local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
-          vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
-            buffer = event.buf,
-            group = highlight_augroup,
-            callback = vim.lsp.buf.document_highlight,
-          })
-
-          vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
-            buffer = event.buf,
-            group = highlight_augroup,
-            callback = vim.lsp.buf.clear_references,
-          })
-
-          vim.api.nvim_create_autocmd('LspDetach', {
-            group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
-            callback = function(event2)
-              vim.lsp.buf.clear_references()
-              vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
-            end,
-          })
-        end
 
         -----------------------------------------------------------------------------
         -- Inlay hints
         -- This may be unwanted, since they displace some of your code
+        local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
           map('<leader>Lh', function()
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
@@ -160,6 +124,7 @@ return { -- LSP Configuration & Plugins
 
     -----------------------------------------------------------------------------
     -- lsp_lines.nvim
+    -- Comment this block to remove feature
     require('lsp_lines').setup()
     vim.diagnostic.config { virtual_text = false }
     vim.keymap.set('n', '<Leader>LL', require('lsp_lines').toggle, { desc = 'Toggle lsp_lines' })
@@ -259,6 +224,12 @@ return { -- LSP Configuration & Plugins
     -- Zig
     -- nixpkgs: zls
     lspconfig.zls.setup {
+      capabilities = capabilities,
+    }
+
+    -- Go
+    -- nixpkgs: zls
+    lspconfig.gopls.setup {
       capabilities = capabilities,
     }
 

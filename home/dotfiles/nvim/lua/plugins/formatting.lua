@@ -9,10 +9,13 @@ return { -- Autoformat
       formatters_by_ft = {
         -- List of formatters here:
         -- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
+        c = { 'clang-format' },
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' }, -- Using ruff through LSP
         nix = { 'alejandra' },
         bash = { 'shfmt' },
+        zig = { 'zigfmt' },
+        go = { 'gofmt' },
 
         typescript = { 'prettierd' },
         javascript = { 'prettierd' },
