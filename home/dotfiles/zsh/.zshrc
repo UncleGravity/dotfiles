@@ -25,9 +25,9 @@ if [[ ! -f "$ZINIT_LAST_UPDATE_FILE" ]] || (( $(date +%s) - $(cat "$ZINIT_LAST_U
 fi
 
 # ==================================================================================================
-# DEV
+# NIX
 # ==================================================================================================
-eval "$(direnv hook zsh)" # Without this, direnv will not work (actually I'll just set this on home.nix)
+source "$HOME/.config/zsh/nix.zsh" # This file is created by nix!
 
 # ==================================================================================================
 # Powerlevel10k Instant Prompt
@@ -280,6 +280,7 @@ fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 autoload -Uz compinit
+compinit -u -C -d "${ZDOTDIR:-$HOME}/.zcompdump"
 
 eval "$(zoxide init --cmd cd zsh)" # this goes after compinit, according to the docs
 
