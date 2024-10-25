@@ -60,6 +60,8 @@ return { -- Autocompletion
     local defaults = require 'cmp.config.default'()
     local lspkind = require 'lspkind'
 
+    vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' }) -- fix de background color border
+
     cmp.setup {
       -- Don't preselect
       preselect = cmp.PreselectMode.None,
@@ -92,16 +94,16 @@ return { -- Autocompletion
         -- Move along the completion menu.
         ['<C-n>'] = cmp.mapping.select_next_item(),
         ['<C-p>'] = cmp.mapping.select_prev_item(),
-        ['<Tab>'] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item()
-          elseif luasnip.expand_or_locally_jumpable() then
-            luasnip.expand_or_jump()
-          else
-            fallback()
-          end
-        end, { 'i', 's' }),
-        ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+        -- ['<Tab>'] = cmp.mapping(function(fallback)
+        --   if cmp.visible() then
+        --     cmp.select_next_item()
+        --   elseif luasnip.expand_or_locally_jumpable() then
+        --     luasnip.expand_or_jump()
+        --   else
+        --     fallback()
+        --   end
+        -- end, { 'i', 's' }),
+        -- ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
         -- Scroll the documentation window [b]ack / [f]orward
         ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -140,7 +142,11 @@ return { -- Autocompletion
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
       sources = {
-        { name = 'nvim_lsp', keyword_length = 1 },
+        {
+          name = 'nvim_lsp',
+          keyword_length = 1,
+          option = { markdown_oxide = { keyword_pattern = [[\(\k\| \|\/\|#\)\+]] } },
+        },
         { name = 'luasnip' },
         { name = 'buffer' },
         { name = 'path' },
