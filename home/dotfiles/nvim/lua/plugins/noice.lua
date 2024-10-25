@@ -156,5 +156,7 @@ return {
     --   vim.cmd [[messages clear]]
     -- end
     require('noice').setup(opts)
+    vim.api.nvim_set_hl(0, 'NoiceCmdlinePopupBorder', { link = 'Normal' }) -- fix de background color border
+    -- vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' })
   end,
 }
