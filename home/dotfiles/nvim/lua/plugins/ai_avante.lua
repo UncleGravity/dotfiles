@@ -33,6 +33,11 @@ return { -- AI
           -- required for Windows users
           use_absolute_path = true,
         },
+        windows = {
+          ask = {
+            floating = true,
+          },
+        },
       },
     },
     --- The below is optional, make sure to setup it properly if you have lazy=true

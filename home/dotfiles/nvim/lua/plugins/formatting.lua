@@ -13,6 +13,7 @@ return { -- Autoformat
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' }, -- Using ruff through LSP
         nix = { 'alejandra' },
+        -- nix = { 'nixfmt' },
         bash = { 'shfmt' },
         zig = { 'zigfmt' },
         go = { 'gofmt' },

@@ -34,6 +34,7 @@
     gopls # Go
     taplo # TOML
     zls # Zig
+    markdown-oxide # Markdown (for Personal Knowledge Management (PKM))
 
     # Formatters
     stylua # Lua

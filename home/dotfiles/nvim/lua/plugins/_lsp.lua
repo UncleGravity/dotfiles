@@ -246,6 +246,27 @@ return { -- LSP Configuration & Plugins
       capabilities = capabilities,
     }
 
+    -- Markdown
+    -- nixpkgs: marksman
+    -- lspconfig.marksman.setup {
+    --   capabilities = capabilities,
+    -- }
+
+    -- Markdown
+    -- nixpkgs: markdown-oxide
+    lspconfig.markdown_oxide.setup {
+      -- Ensure that dynamicRegistration is enabled! This allows the LS to take into account actions like the
+      -- Create Unresolved File code action, resolving completions for unindexed code blocks, ...
+      capabilities = vim.tbl_deep_extend('force', capabilities, {
+        workspace = {
+          didChangeWatchedFiles = {
+            dynamicRegistration = true,
+          },
+        },
+      }),
+      -- on_attach = on_attach, -- configure your on attach config
+    }
+
     -- TODO:
     -- SQL
     -- Docker Compose https://github.com/microsoft/compose-language-service
