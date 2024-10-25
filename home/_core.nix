@@ -80,6 +80,8 @@
 
     # goodies -------------------------
 
+    fzf
+
     # tmux
     tmux
     sesh
@@ -90,7 +92,7 @@
     btop # better top
     eza # better ls/tree
     ripgrep # better grep
-    ripgrep-all # ripgrep for all files
+    # ripgrep-all # ripgrep for all files (Disabled: https://github.com/NixOS/nixpkgs/issues/350367)
     ast-grep # ripgrep for code
     bat # better cat
     zoxide # better cd
@@ -115,8 +117,8 @@
     gum # cli util
     clipboard-jh # clipboard manager (cb)
 
-    tldr
-    # tlrc # tldr in rust
+    # tldr
+    tlrc # tldr in rust
 
     # hacking
     # termshark # wireshark for terminal
@@ -159,10 +161,10 @@ in {
     dotDir = ".config/zsh";
   };
 
-  programs.fzf = {
-    enable = true;
-    # enableZshIntegration = true;
-  };
+  # programs.fzf = {
+  #   enable = true;
+  #   # enableZshIntegration = true;
+  # };
 
   programs.wezterm = {
     enable = true;
