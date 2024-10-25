@@ -122,7 +122,7 @@ return {
   -- Better a/i textobjects
   {
     'echasnovski/mini.ai',
-
+    event = 'VeryLazy',
     version = false,
     dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
     config = function()
@@ -168,6 +168,7 @@ return {
   -- Mini.surround
   {
     'echasnovski/mini.surround',
+    event = 'VeryLazy',
     opts = {
       mappngs = {
         add = 'sa',
@@ -186,7 +187,8 @@ return {
 
   {
     'echasnovski/mini.indentscope',
-    -- version = false,
+    version = false,
+    event = 'VeryLazy',
     config = function()
       require('mini.indentscope').setup {
         draw = {

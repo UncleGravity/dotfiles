@@ -21,6 +21,7 @@ return {
     -- Fancy UI
     {
       'rcarriga/nvim-dap-ui',
+      lazy = true,
       keys = {
         {
           '<leader>de',
@@ -51,6 +52,7 @@ return {
     -- Virtual text.
     {
       'theHamsta/nvim-dap-virtual-text',
+      lazy = true,
       opts = { virt_text_pos = 'eol' },
     },
   },
