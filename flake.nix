@@ -19,13 +19,13 @@
     };
     
     # Use yazi nightly
-    yazi = {
-      url = "github:sxyazi/yazi";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
+    # yazi = {
+    #   url = "github:sxyazi/yazi";
+    #   inputs = {
+    #     nixpkgs.follows = "nixpkgs";
+    #     flake-utils.follows = "flake-utils";
+    #   };
+    # };
 
     # Use Zig nightly
     zig = {

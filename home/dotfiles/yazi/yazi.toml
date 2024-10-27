@@ -14,7 +14,7 @@ run  = "git"
 
 [manager]
 ratio          = [ 1, 4, 3 ]
-sort_by        = "alphabetical"
+sort_by        = "modified"
 sort_sensitive = false
 sort_reverse   = true
 sort_dir_first = false
@@ -150,7 +150,8 @@ cd_origin = "top-center"
 cd_offset = [ 0, 2, 50, 3 ]
 
 # create
-create_title  = [ "Create:", "Create (dir):" ]
+# create_title  = [ "Create:", "Create (dir):" ] # Only applies to yazi nightly
+create_title  = "Create:"
 create_origin = "top-center"
 create_offset = [ 0, 2, 50, 3 ]
 

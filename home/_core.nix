@@ -50,6 +50,7 @@
 
     # Dev
     inputs.neovim-nightly.packages.${pkgs.system}.default
+    inputs.zig.packages.${pkgs.system}.master
     helix
     gnumake
     clang
@@ -59,7 +60,6 @@
     bun
     just
     cargo
-    inputs.zig.packages.${pkgs.system}.master
     go
 
     # Nix
@@ -92,7 +92,7 @@
     btop # better top
     eza # better ls/tree
     ripgrep # better grep
-    # ripgrep-all # ripgrep for all files (Disabled: https://github.com/NixOS/nixpkgs/issues/350367)
+    ripgrep-all # ripgrep for all files
     ast-grep # ripgrep for code
     bat # better cat
     zoxide # better cd
@@ -108,7 +108,8 @@
     fx # better json parser
 
     # yazi # file manager
-    inputs.yazi.packages.${pkgs.system}.default
+    # inputs.yazi.packages.${pkgs.system}.default
+    yazi
     exiftool # read exif data
     # unar # archive extractor
     # p7zip
