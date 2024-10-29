@@ -12,6 +12,7 @@ return {
         -- { "<leader>c", group = "code" },
         -- { "<leader>f", group = "file/find" },
         { '<leader>a', group = '[a]i', icon = { icon = ' ', color = 'azure' } },
+        { '<leader>d', group = '[d]ebug', icon = { icon = ' ', color = 'red' } },
         { '<leader>g', group = '[g]it', mode = { 'n', 'v' }, icon = { icon = ' ', color = 'orange' } },
         { '<leader>l', group = '[l]azy', icon = { icon = '󰒲 ', color = 'azure' } },
         { '<leader>q', group = '[q]uit', icon = { icon = ' ', color = 'green' } },
@@ -26,6 +27,7 @@ return {
         {
           '<leader>b',
           group = '[b]uffer',
+          icon = { icon = '󰓩 ', color = 'orange' },
           expand = function()
             return require('which-key.extras').expand.buf()
           end,
