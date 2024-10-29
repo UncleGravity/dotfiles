@@ -233,6 +233,18 @@ return { -- LSP Configuration & Plugins
       capabilities = capabilities,
     }
 
+    -- Rust
+    -- nixpkgs: rust-analyzer
+    lspconfig.rust_analyzer.setup {
+      settings = {
+        ['rust-analyzer'] = {
+          diagnostics = {
+            enable = true,
+          },
+        },
+      },
+    }
+
     -- Bash
     -- nixpkgs: bash-language-server
     lspconfig.bashls.setup {

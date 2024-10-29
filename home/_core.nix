@@ -34,6 +34,7 @@
     gopls # Go
     taplo # TOML
     zls # Zig
+    rust-analyzer # Rust
     markdown-oxide # Markdown (for Personal Knowledge Management (PKM))
 
     # Formatters
@@ -60,6 +61,7 @@
     bun
     just
     cargo
+    rustc
     go
 
     # Nix
@@ -168,7 +170,7 @@ in {
   # };
 
   programs.wezterm = {
-    enable = true;
+    enable = !pkgs.stdenv.isDarwin;
     # enableZshIntegration = true;
   };
 
