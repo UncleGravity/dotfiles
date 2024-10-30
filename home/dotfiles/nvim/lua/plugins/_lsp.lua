@@ -32,7 +32,7 @@ return { -- LSP Configuration & Plugins
           vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
-        -----------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
         -- Keybindings
 
         -- Jump to the definition of the word under your cursor. To jump back, press <C-t>.
@@ -76,7 +76,7 @@ return { -- LSP Configuration & Plugins
         map('K', vim.lsp.buf.hover, 'Hover Documentation') --  See `:help K`
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-        -----------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
         -- Inlay hints
         -- This may be unwanted, since they displace some of your code
         local client = vim.lsp.get_client_by_id(event.data.client_id)
@@ -88,7 +88,62 @@ return { -- LSP Configuration & Plugins
       end,
     })
 
-    -----------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- Diagnostic configuration + lsp_lines (disabled by default)
+    require('lsp_lines').setup()
+
+    -- Diagnostic display configuration
+    local config = {
+      lines_enabled = false, -- disable lsp_lines by default
+      text = {
+        spacing = 4,
+        source = 'if_many',
+        prefix = '●',
+      },
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = '', -- '󰅚 ',
+          [vim.diagnostic.severity.WARN] = '', -- ' ',
+          [vim.diagnostic.severity.HINT] = '', -- ' ',
+          [vim.diagnostic.severity.INFO] = '', -- ' ',
+        },
+      },
+    }
+
+    -- Apply diagnostic settings
+    local function update_diagnostics()
+      vim.diagnostic.config {
+        underline = false,
+        update_in_insert = false,
+        virtual_text = not config.lines_enabled and config.text or false,
+        virtual_lines = config.lines_enabled,
+        severity_sort = true,
+        signs = config.signs,
+      }
+    end
+
+    -- Initial setup
+    update_diagnostics()
+
+    -- Toggle between virtual_text and lsp_lines
+    vim.keymap.set('n', '<Leader>LL', function()
+      config.lines_enabled = not config.lines_enabled
+      update_diagnostics()
+    end, { desc = 'Toggle lsp_lines' })
+
+    -- Disable diagnostics in floating windows (to avoid LSP on things like lazy.nvim)
+    vim.api.nvim_create_autocmd('WinEnter', {
+      callback = function()
+        local floating = vim.api.nvim_win_get_config(0).relative ~= ''
+        if floating then
+          vim.diagnostic.enable(false)
+        else
+          vim.diagnostic.enable(false)
+        end
+      end,
+    })
+
+    -----------------------------------------------------------------------------------------------
     -- Capabilities
 
     -- LSP servers and clients are able to communicate to each other what features they support.
@@ -102,45 +157,7 @@ return { -- LSP Configuration & Plugins
     -- Add snippet support
     capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-    -- Diagnostic configuration
-    vim.diagnostic.config {
-      underline = true,
-      update_in_insert = false,
-      virtual_text = {
-        spacing = 4,
-        source = 'if_many',
-        prefix = '●',
-      },
-      severity_sort = true,
-      signs = {
-        text = {
-          [vim.diagnostic.severity.ERROR] = '󰅚 ',
-          [vim.diagnostic.severity.WARN] = ' ',
-          [vim.diagnostic.severity.HINT] = ' ',
-          [vim.diagnostic.severity.INFO] = ' ',
-        },
-      },
-    }
-
-    -----------------------------------------------------------------------------
-    -- lsp_lines.nvim
-    -- Comment this block to remove feature
-    require('lsp_lines').setup()
-    vim.diagnostic.config { virtual_text = false }
-    vim.keymap.set('n', '<Leader>LL', require('lsp_lines').toggle, { desc = 'Toggle lsp_lines' })
-
-    -- Disable lsp_lines on floating windows (like lazy.nvim)
-    vim.api.nvim_create_autocmd('WinEnter', {
-      callback = function()
-        local floating = vim.api.nvim_win_get_config(0).relative ~= ''
-        vim.diagnostic.config {
-          virtual_text = floating,
-          virtual_lines = not floating,
-        }
-      end,
-    })
-
-    -----------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- LSP servers
     -- List: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
     local lspconfig = require 'lspconfig'
@@ -157,7 +174,7 @@ return { -- LSP Configuration & Plugins
       },
     }
 
-    -----------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- nixpkgs: vscode-langservers-extracted
 
     -- HTML
@@ -180,7 +197,7 @@ return { -- LSP Configuration & Plugins
       end,
     }
 
-    -----------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
     -- JavaScript/TypeScript
     -- nixpkgs: typescript-language-server
