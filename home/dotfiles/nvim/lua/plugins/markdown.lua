@@ -20,6 +20,9 @@ return {
     local treesitter_configs = require 'nvim-treesitter.configs'
     local existing_config = treesitter_configs.get_module 'markdown'
 
+    -- Add custom keybind for MDTaskToggle
+    vim.keymap.set('n', '<leader>mt', '<cmd>MDTaskToggle<cr>', { desc = 'Toggle markdown task' })
+
     -- Merge our markdown settings with any existing ones
     local markdown_config = vim.tbl_deep_extend('force', existing_config or {}, {
       enable = true,
