@@ -14,6 +14,8 @@ return {
         theme = 'auto',
         globalstatus = true,
         ignore_focus = { 'neo-tree' },
+        -- component_separators = { left = '', right = '' },
+        -- section_separators = { left = '', right = '' },
       },
       sections = {
         lualine_a = {
@@ -23,15 +25,14 @@ return {
           { 'branch' },
           { 'diff' },
           { 'diagnostics' },
-          -- {
-          --   require('noice').api.statusline.mode.get,
-          --   cond = require('noice').api.statusline.mode.has,
-          --   color = { fg = '#ff9e64' },
-          -- },
-        },
-        lualine_c = {
+          { -- Show @recording messages
+            require('noice').api.statusline.mode.get,
+            cond = require('noice').api.statusline.mode.has,
+            color = { fg = '#ff9e64' },
+          },
           { 'filename', path = 3 },
         },
+        lualine_c = {},
         lualine_x = {
           {
             lazy_status.updates,
