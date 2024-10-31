@@ -20,6 +20,7 @@ return {
         { '<leader>u', group = '[u]i', icon = { icon = '󰙵 ', color = 'cyan' } },
         { '<leader>x', group = 'diagnostics/quickfi[x]', icon = { icon = '󱖫 ', color = 'green' } },
         { '<leader>L', group = '[L]SP', icon = { icon = ' ', color = 'azure' } },
+        { '<leader>m', group = '[m]arkdown', icon = { icon = ' ', color = 'azure' } },
         { '[', group = 'prev' },
         { ']', group = 'next' },
         { 'g', group = 'goto' },
