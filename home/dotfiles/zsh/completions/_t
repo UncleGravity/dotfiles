@@ -11,6 +11,8 @@ function _t() {
     'kill:Kill a session'
     'switch:Switch to a session'
     'ks:Kill current session and switch to another'
+    'edit:Edit scrollback buffer in nvim'
+    'e:Edit scrollback buffer in nvim'
   )
   sessions=(${(f)"$(tmux list-sessions -F '#S' 2>/dev/null)"})
 
@@ -24,7 +26,7 @@ function _t() {
       ;;
     args)
       case $words[1] in
-        new|a|attach|kill|switch|ks)
+        new|a|attach|kill|switch|ks|edit|e)
           _describe -t sessions 'tmux sessions' sessions
           ;;
       esac

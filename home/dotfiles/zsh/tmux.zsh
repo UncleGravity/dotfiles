@@ -8,6 +8,7 @@
 #
 # Actions:
 #   ls                     List all tmux sessions
+#   edit|e                 Edit the tmux scrollback buffer in nvim
 #   new [session_name]     Create a new tmux session
 #   a|attach [session_name] Attach to a tmux session
 #   kill [session_name]    Kill a specific tmux session
@@ -27,6 +28,10 @@ function t() {
   case "$action" in
     ls)
       tmux list-sessions
+      ;;
+    edit|e)
+      # Capture entire scrollback buffer and open in nvim with cursor at the end
+      tmux capture-pane -JpS- | nvim - +
       ;;
     new)
       if [[ -z "$session_name" ]]; then
@@ -73,7 +78,7 @@ function t() {
       ;;
     *)
       echo "Usage: t <action> [args]"
-      echo "Actions: ls, new, attach (a), kill, switch, ks"
+      echo "Actions: ls, new, attach (a), kill, switch, ks, edit (e)"
       return 1
       ;;
   esac
