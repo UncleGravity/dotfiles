@@ -46,7 +46,12 @@ sync:
     esac
     echo "✅ System configuration rebuilt successfully!"
     echo "🔗 Creating symlink for Neovim configuration..."
-    ln -sfn ~/nix/home/dotfiles/nvim ~/.config/nvim
+    ln -sfn ~/nix/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+
+    echo "🗑️ Deleting zcompdump file"
+    # To speed up zsh init, I don't reload the zsh completion cache every time I start zsh.
+    # Therefore, each time we add new completions, we need to delete the zcompdump file to it regenerates.
+    rm -f "${XDG_CONFIG_HOME:-$HOME/.config}"/zsh/.zcompdump
     echo "✅ Neovim configuration symlink created successfully!"
 
 # Update flake inputs
