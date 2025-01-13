@@ -27,6 +27,7 @@
       # "google-chrome"
       "alacritty"
       "cursor"
+      "ghostty"
       "kitty"
       "wezterm"
       "hammerspoon"
