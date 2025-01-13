@@ -46,12 +46,14 @@
     shfmt # Bash
 
     # Debuggers
+    lldb # installs lldb-dap for clang/cpp/zig/rust
     vscode-js-debug
     delve # go
 
     # Dev
     inputs.neovim-nightly.packages.${pkgs.system}.default
     inputs.zig.packages.${pkgs.system}.master
+    # zig
     helix
     gnumake
     clang
@@ -63,6 +65,8 @@
     cargo
     rustc
     go
+    arduino-cli
+    gh
 
     # Nix
     direnv
@@ -115,7 +119,7 @@
     exiftool # read exif data
     # unar # archive extractor
     # p7zip
-    glow # markdown viewer
+    # glow # markdown viewer
 
     gum # cli util
     clipboard-jh # clipboard manager (cb)
@@ -127,8 +131,8 @@
     # termshark # wireshark for terminal
 
     # Fonts
-    # meslo-lgs-nf # Nerd Font for powerlevel10k
-    (pkgs.nerdfonts.override {fonts = ["Meslo" "JetBrainsMono"];}) # Nerd Font with more icons
+    nerd-fonts.meslo-lg
+    nerd-fonts.jetbrains-mono
   ];
 
   darwinOnlyPackages = with pkgs; [
@@ -231,6 +235,7 @@ in {
     # Collects all home-manager completions into a single directory
     # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
     # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
+    # TODO: Is this even necessary?
     ".config/zsh/auto-completions" = {
       source = pkgs.runCommand "vendored-zsh-completions" {} ''
         set -euo pipefail
@@ -250,7 +255,6 @@ in {
     # Remember to source this script in your zsh config
     ".config/zsh/nix.zsh" = {
       source = pkgs.writeText "nix.zsh" ''
-        export CODELLDB_PATH="${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb"
         eval "$(direnv hook zsh)"
       '';
     };

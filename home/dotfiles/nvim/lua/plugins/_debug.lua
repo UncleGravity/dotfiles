@@ -184,26 +184,25 @@ return {
       }
     end
     -----------------------------------------------------------------------------------------------
-    -- C configurations.
-    dap.adapters.codelldb = {
-      type = 'server',
-      port = '${port}',
-      executable = {
-        command = os.getenv 'CODELLDB_PATH',
-        args = { '--port', '${port}' },
-      },
+    -- C-ish configurations.
+    -- Debugger: "lldb-dap", installed with nix (lldb)
+    dap.adapters.lldb = {
+      name = 'lldb',
+      type = 'executable',
+      command = io.popen('which lldb-dap'):read '*l',
     }
 
     dap.configurations.c = {
       {
         name = 'Launch file',
-        type = 'codelldb',
+        type = 'lldb',
         request = 'launch',
         program = function()
           return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
         end,
         cwd = '${workspaceFolder}',
         stopOnEntry = false,
+        args = {},
       },
     }
 
