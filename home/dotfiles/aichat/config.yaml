@@ -17,3 +17,4 @@ clients:
   models:
     - name: gemma2:27b
     - name: deepseek-coder-v2
+    - name: hf.co/bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q6_K_L
