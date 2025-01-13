@@ -1,6 +1,6 @@
 return { -- AI
   'olimorris/codecompanion.nvim',
-  -- enabled = false,
+  enabled = false,
   lazy = true,
   event = 'VeryLazy',
   dependencies = {

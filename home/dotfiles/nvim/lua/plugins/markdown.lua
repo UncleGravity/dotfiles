@@ -15,11 +15,11 @@ return {
       go_prev_heading = '[[', -- (string|boolean) set cursor to previous section heading
     },
   },
-  on_attach = function(bufnr)
-    vim.keymap.set('n', '<leader>mt', '<cmd>MDTaskToggle<cr>', { 
+
+  config = function(_, opts)
+    require('markdown').setup(opts)
+    vim.keymap.set('n', '<leader>mt', '<cmd>MDTaskToggle<cr>', {
       desc = 'Toggle markdown task',
-      buffer = bufnr 
     })
   end,
 }
-
