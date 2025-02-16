@@ -12,16 +12,15 @@ desc = "Yank to clipboard"
 
 # [max-preview.yazi] Maximize preview
 [[manager.prepend_keymap]]
-on   = [ "T" ]
-run  = "plugin --sync max-preview"
+on   = "T"
+run  = "plugin max-preview"
 desc = "Maximize or restore preview"
 
 # [hide-preview.yazi] Toggle preview section
 [[manager.prepend_keymap]]
-on   = [ ">" ]
-run  = "plugin --sync hide-preview"
+on   = ">"
+run  = "plugin hide-preview"
 desc = "Hide or show preview"
-
 # [fg.yazi]
 # [[manager.prepend_keymap]]
 # on   = [ "F","G" ]
@@ -83,8 +82,8 @@ keymap = [
 	{ on = "<PageUp>",     run = "arrow -100%", desc = "Move cursor up one page" },
 	{ on = "<PageDown>",   run = "arrow 100%",  desc = "Move cursor down one page" },
 
-	{ on = [ "g", "g" ], run = "arrow -99999999", desc = "Move cursor to the top" },
-	{ on = "G",          run = "arrow 99999999",  desc = "Move cursor to the bottom" },
+	{ on = [ "g", "g" ], run = "arrow top", desc = "Move cursor to the top" },
+	{ on = "G",          run = "arrow bottom",  desc = "Move cursor to the bottom" },
 
 	# Navigation
 	{ on = "h", run = "leave", desc = "Go back to the parent directory" },
