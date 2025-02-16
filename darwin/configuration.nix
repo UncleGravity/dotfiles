@@ -33,7 +33,6 @@
   #  Nix
   #############################################################
   nix.settings.experimental-features = "nix-command flakes"; # Enable flakes
-  services.nix-daemon.enable = true; # Auto upgrade nix package and the daemon service.
   # nix.package = pkgs.nix; # idk
   # nix.registry.nixpkgs.flake = inputs.nixpkgs; # make `nix run nixpkgs#nixpkgs` use the same nixpkgs as the one used by this flake.
 
