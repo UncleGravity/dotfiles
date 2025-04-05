@@ -203,9 +203,6 @@ alias ai="aichat"
 
 [ -f "$HOME/.config/zsh/tmux.zsh" ] && source "$HOME/.config/zsh/tmux.zsh"
 
-alias zj="zellij"
-alias zjc="zellij --layout compact"
-
 alias ff="fastfetch"
 
 alias du="dua"
@@ -222,10 +219,14 @@ export EDITOR=nvim
 case "$(uname -s)" in
   Darwin)
     export XDG_CONFIG_HOME="$HOME/.config"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
     
     [ -f "${HOME}/.config/zsh/macos/vm.zsh" ] && source "${HOME}/.config/zsh/macos/vm.zsh"
     [ -f "${HOME}/.config/zsh/macos/dev.zsh" ] && source "${HOME}/.config/zsh/macos/dev.zsh"
+
+    # Use 1Password SSH Agent
+    mkdir -p "$HOME/.1password"
+    [ -L "$HOME/.1password/agent.sock" ] || ln -s "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" "$HOME/.1password/agent.sock"
+    export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
     ;;
   Linux)
     alias dbox="distrobox"

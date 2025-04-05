@@ -7,8 +7,9 @@
   #############################################################
   #  Host & User config
   #############################################################
-  # networking.hostName = hostname;
-  # networking.computerName = hostname;
+  networking.hostName = hostname;
+  networking.localHostName = hostname;
+  networking.computerName = hostname;
   # system.defaults.smb.NetBIOSName = hostname;
 
   users.users."${username}" = {
@@ -174,15 +175,13 @@
   };
 
   # Add ability to used TouchID for sudo authentication
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
+  security.pam.services.sudo_local.reattach = true; # TMUX fix https://github.com/LnL7/nix-darwin/pull/787
 
-  # ^ Won't work on TMUX unless we add this
-  #https://github.com/LnL7/nix-darwin/pull/787
-  environment.etc."pam.d/sudo_local".text = ''
-    # Managed by Nix Darwin
-    auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so ignore_ssh
-    auth       sufficient     pam_tid.so
-  '';
+  # Karabiner-Elements
+  # TODO: Broken for now, install with homebrew instead.
+  # https://github.com/nix-darwin/nix-darwin/issues/1041
+  # services.karabiner-elements.enable = true;
 
   #############################################################
   #  Zsh

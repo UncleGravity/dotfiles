@@ -1,14 +1,13 @@
 # Managing Encrypted Secrets for Zsh
 
-This system uses Age encryption with GitHub SSH keys to securely manage secrets for your Zsh environment.
+This system uses Age encryption with 1Password SSH keys to securely manage secrets for your Zsh environment.
 
 ## File Structure
 
 - `secrets.age`: Encrypted secrets file
 - `secrets.sh`: Temporary decrypted secrets file (NOT tracked in version control)
-- `_decrypt.sh`: Script to decrypt secrets
-- `_update.sh`: Script to update encrypted secrets
-- `_rotate.sh`: Script to re-encrypt secrets with updated GitHub keys
+- `_decrypt.sh`: Decrypts secrets.age into secrets.sh
+- `_update.sh`: Updates secrets.sh with new secrets
 
 ## Usage
 
@@ -49,19 +48,8 @@ The `_decrypt.sh` script is automatically sourced in your `.zshrc`. It will:
 4. The script will automatically re-encrypt the changes and update `secrets.age`.
 5. Commit the updated `secrets.age` file.
 
-### Rotating Keys
-
-When updating your GitHub SSH keys or setting up a new machine:
-
-1. Run `_rotate.sh` to re-encrypt `secrets.age` with your current GitHub SSH keys:
-   ```
-   ./zsh/secrets/_rotate.sh
-   ```
-2. Commit the updated `secrets.age` file.
-
 ## Security Notes
 
 - Never commit `secrets.sh` to version control.
-- Ensure your GitHub account and SSH keys are secure.
-- Regularly update your secrets and rotate your GitHub SSH keys.
+- Ensure your 1Password account is secure.
 - The `_update.sh` script temporarily creates a `secrets.sh` file but deletes it after encryption.

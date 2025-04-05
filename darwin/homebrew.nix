@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, username, ... }:
 
 {
   homebrew = {
@@ -16,25 +16,27 @@
 
     # `brew install`
     brews = [
-      # "aria2"  # download tool
-      "cyme"
-      "lsusb"
       "hackrf"
     ];
 
     # `brew install --cask`
     casks = [
-      # "google-chrome"
-      "alacritty"
+      "anki"
+      "google-chrome"
       "cursor"
       "ghostty"
       "kitty"
-      "wezterm"
+      "kicad"
       "hammerspoon"
-      "macfuse"
+      "raycast"
+      "obsidian"
+      "private-internet-access"
+      "freedom"
+      "discord"
+      "microsoft-teams"
+      "nrfutil"
 
-      # TODO: Move to nix-darwin: services.karabiner-elements.enable. 
-      # https://github.com/LnL7/nix-darwin/blob/master/modules/services/karabiner-elements/default.nix
+      # TODO: Move to nix-darwin: services.karabiner-elements.enable 
       "karabiner-elements" 
     ];
   };

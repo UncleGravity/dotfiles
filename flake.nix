@@ -16,16 +16,7 @@
       # https://daiderd.com/nix-darwin/manual/index.html
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    
-    # Use yazi nightly
-    # yazi = {
-    #   url = "github:sxyazi/yazi";
-    #   inputs = {
-    #     nixpkgs.follows = "nixpkgs";
-    #     flake-utils.follows = "flake-utils";
-    #   };
-    # };
+    }; 
 
     # Use Zig nightly
     zig = {
@@ -45,14 +36,23 @@
       };
     };
 
+    # Use nix-homebrew - Installs homebrew with nix. 
+    # Does not manage formulae, just installs homebrew.
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
-  outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:
   let
       nixosUser = "angel";
       nixosHostname = "nixos";
-      darwinUser = "useradmin";
-      darwinHostname = "BENGKUI";
+      workDarwinUser = "useradmin";
+      workDarwinHostname = "BENGKUI";
+      personalDarwinUser = "angel";
+      personalDarwinHostname = "BASURA";
       piUser = "pi";
     in
     {
@@ -79,25 +79,75 @@
       ];
     };
 
-    # Darwin (macOS)
-    darwinConfigurations.${darwinHostname} = darwin.lib.darwinSystem {
+    # Darwin (macOS) - Work
+    darwinConfigurations.${workDarwinHostname} = darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       specialArgs = {
         inherit inputs;
-        username = darwinUser;
-        hostname = darwinHostname;
+        username = workDarwinUser;
+        hostname = workDarwinHostname;
       };
       modules = [
         ./darwin/configuration.nix
+
+        # Home-Manager
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = {
             inherit inputs;
-            username = darwinUser;
+            username = workDarwinUser;
           };
-          home-manager.users.${darwinUser} = import ./darwin/home.nix;
+          home-manager.users.${workDarwinUser} = import ./darwin/home.nix;
+        }
+
+        # Nix-Homebrew
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          # Configure nix-homebrew
+          nix-homebrew = {
+            enable = true;
+            user = workDarwinUser;
+            autoMigrate = true;
+          };
+        }
+      ];
+    };
+
+    # Darwin (macOS) - Personal
+    darwinConfigurations.${personalDarwinHostname} = darwin.lib.darwinSystem {
+      system = "x86_64-darwin";
+      specialArgs = {
+        inherit inputs;
+        username = personalDarwinUser;
+        hostname = personalDarwinHostname;
+      };
+      modules = [
+        # For now, reusing the existing ones:
+        ./darwin/configuration.nix
+
+        # Home-Manager
+        home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            username = personalDarwinUser;
+          };
+          # For now, reusing the existing one:
+          home-manager.users.${personalDarwinUser} = import ./darwin/home.nix;
+        }
+
+        # Nix-Homebrew
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          nix-homebrew = {
+            enable = true;
+            user = personalDarwinUser;
+            autoMigrate = true;
+          };
         }
       ];
     };

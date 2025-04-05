@@ -16,21 +16,33 @@ sudo nixos-rebuild switch --flake ".?submodules=1#nixos" -v
 2. Git clone this repo
 3. cd into repo
 4. Build new systsem:
-    - run `nix run home-manager/master -- switch --flake .#pi`
-    - Subsequent runs: `home-manager switch --flake .#pi`
+   - run `nix run home-manager/master -- switch --flake .#pi`
+   - Subsequent runs: `home-manager switch --flake .#pi`
 
 ## For Darwin (macOS)
 
 1. Install Nix (Determinate Installer)
-2. Git clone this repo
-3. cd into repo
-4. Build your new system:
-    - First run: `nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#BENGKUI`
-    - Subsequent runs: `darwin-rebuild switch --flake .#BENGKUI`
-
-## Nvim Config
-After cloning, run:
-````bash
-ln -s <path-to-this-repo>/home/dotfiles/nvim ~/.config/my-nim
-NVIM_APPNAME=my-nim nvim
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
+Probably best to reboot after this.
+
+2. Install 1Password
+- [Download GUI](https://1password.com/downloads/mac)
+- Download CLI with nix: `nix shell nixpkgs#onepassword-cli`
+
+3. Git clone this repo
+```bash
+git clone git@github.com:UncleGravity/dotfiles.git ~/nix
+cd ~/nix
+```
+
+4. Build your new system:
+   - First run: 
+   ```bash
+   nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>
+   ```
+   - Subsequent runs: 
+   ```bash
+   darwin-rebuild switch --flake .#<new-hostname>
+   ```

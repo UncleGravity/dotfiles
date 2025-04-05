@@ -21,3 +21,4 @@ secrets.sh
 # Backup files
 *.bak
 *.backup
+.aider*

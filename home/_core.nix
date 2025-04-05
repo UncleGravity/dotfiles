@@ -50,23 +50,28 @@
     vscode-js-debug
     delve # go
 
-    # Dev
-    inputs.neovim-nightly.packages.${pkgs.system}.default
+    # Compilers
+    clang
     inputs.zig.packages.${pkgs.system}.master
     # zig
-    helix
-    gnumake
-    clang
-    gh # github cli
-    pipx
     uv
     bun
-    just
+    go
     cargo
     rustc
-    go
     arduino-cli
-    gh
+
+    # Dev
+    inputs.neovim-nightly.packages.${pkgs.system}.default
+    helix
+    gnumake
+    gh # github cli
+    just
+    android-tools # adb/fastboot
+    # nrfutil
+    usbutils # lsusb
+    cyme # lsusb but better
+    ngrok
 
     # Nix
     direnv
@@ -75,23 +80,27 @@
     lazydocker
 
     # Security
+    _1password-cli 
     age
     binwalk
-    rizin
-    radare2
+    # rizin
+    # radare2
 
     # AI
     aichat
     ollama
+    claude-code
+    # goose-cli
+    # aider-chat
 
     # goodies -------------------------
 
+    yazi # file manager
     fzf
 
     # tmux
     tmux
     sesh
-    zellij
 
     # replacements
     fastfetch # better neofetch
@@ -107,28 +116,15 @@
     gping # better ping
     duf # better df
     dua # better du/ncdu
+    tlrc # tldr in rust
 
     #JSON
     jq # json parser
     fq # everything else parser
     fx # better json parser
 
-    # yazi # file manager
-    # inputs.yazi.packages.${pkgs.system}.default
-    yazi
-    exiftool # read exif data
-    # unar # archive extractor
-    # p7zip
-    # glow # markdown viewer
-
     gum # cli util
     clipboard-jh # clipboard manager (cb)
-
-    # tldr
-    tlrc # tldr in rust
-
-    # hacking
-    # termshark # wireshark for terminal
 
     # Fonts
     nerd-fonts.meslo-lg
@@ -137,6 +133,7 @@
 
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
+    mactop
   ];
 
   linuxOnlyPackages = with pkgs; [
@@ -186,6 +183,7 @@ in {
 
   # DOTFILES
   home.file = {
+    ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
     ".config/zsh" = {
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
@@ -194,7 +192,6 @@ in {
     #   source = "${DOTFILES_DIR}/nvim";
     #   recursive = true;
     # };
-    ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
     ".config/git" = {
       source = "${DOTFILES_DIR}/git";
     };
@@ -213,9 +210,6 @@ in {
     ".hammerspoon/" = {
       source = "${DOTFILES_DIR}/hammerspoon";
     };
-    ".config/alacritty" = {
-      source = "${DOTFILES_DIR}/alacritty";
-    };
     ".config/tmux" = {
       source = "${DOTFILES_DIR}/tmux";
       recursive = true; # This allows the directory to be writable, since tpm will create files in it
@@ -227,9 +221,6 @@ in {
     };
     ".config/sesh" = {
       source = "${DOTFILES_DIR}/sesh";
-    };
-    ".config/zellij" = {
-      source = "${DOTFILES_DIR}/zellij";
     };
 
     # Collects all home-manager completions into a single directory
@@ -278,6 +269,7 @@ in {
   #
   home.sessionVariables = {
     # EDITOR = "emacs";
+    PINGA = "pinga";
   };
 
   # programs.home-manager.enable = true; # Let Home Manager install and manage itself.

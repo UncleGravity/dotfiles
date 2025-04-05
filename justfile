@@ -46,7 +46,7 @@ sync:
     esac
     echo "✅ System configuration rebuilt successfully!"
     echo "🔗 Creating symlink for Neovim configuration..."
-    ln -sfn ~/nix/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+    ln -sfn $(pwd)/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
 
     echo "🗑️ Deleting zcompdump file"
     # To speed up zsh init, I don't reload the zsh completion cache every time I start zsh.
@@ -84,14 +84,6 @@ prune:
     nix-store --gc
     @echo "✅ Pruning completed!"
 
-###############################################################
-# Quick Test - Neovim
-###############################################################
-
-nvim-test:
-  rm -rf ${HOME}.config/nvim
-  ln -sfn $(pwd)/home/dotfiles/nvim ${HOME}/.config/nvim
-
 # List system generations
 list-generations:
     #!/usr/bin/env bash
@@ -126,3 +118,25 @@ status:
 help:
     @just --list
     @echo "Run 'just <command>' to execute a command."
+
+###############################################################
+# Secrets Management
+###############################################################
+
+# Update secrets (decrypt, edit, re-encrypt)
+secrets-update:
+    @echo "🔑 Updating secrets..."
+    @./home/dotfiles/zsh/secrets/_update.sh
+    @echo "🗑️ Removing old secrets.sh so it regenerates on next zsh start"
+    @rm "$HOME/.config/zsh/secrets/secrets.sh"
+    @echo "🔄 Resyncing Nix"
+    @just sync
+    @echo "🔄 Restarting zsh"
+    @zsh -c "source ~/.config/zsh/.zshrc"
+    @echo "✅ Secrets updated and re-encrypted."
+
+# Rotate secrets (re-encrypt with current GitHub keys)
+secrets-rotate:
+    @echo "🔄 Rotating secrets keys..."
+    @./home/dotfiles/zsh/secrets/_rotate.sh
+    @echo "✅ Secrets re-encrypted with updated keys."
