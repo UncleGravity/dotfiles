@@ -88,7 +88,7 @@
         hostname = workDarwinHostname;
       };
       modules = [
-        ./darwin/configuration.nix
+        ./darwin/config-bengkui.nix
 
         # Home-Manager
         home-manager.darwinModules.home-manager
@@ -99,7 +99,7 @@
             inherit inputs;
             username = workDarwinUser;
           };
-          home-manager.users.${workDarwinUser} = import ./darwin/home.nix;
+          home-manager.users.${workDarwinUser} = import ./darwin/home-bengkui.nix;
         }
 
         # Nix-Homebrew
@@ -125,7 +125,7 @@
       };
       modules = [
         # For now, reusing the existing ones:
-        ./darwin/configuration.nix
+        ./darwin/config-basura.nix
 
         # Home-Manager
         home-manager.darwinModules.home-manager
@@ -137,7 +137,7 @@
             username = personalDarwinUser;
           };
           # For now, reusing the existing one:
-          home-manager.users.${personalDarwinUser} = import ./darwin/home.nix;
+          home-manager.users.${personalDarwinUser} = import ./darwin/home-basura.nix;
         }
 
         # Nix-Homebrew
