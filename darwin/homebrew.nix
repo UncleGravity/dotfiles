@@ -11,7 +11,6 @@
     };
 
     taps = [
-      "homebrew/services"
     ];
 
     # `brew install`
