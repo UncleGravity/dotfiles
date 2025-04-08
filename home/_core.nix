@@ -134,7 +134,7 @@
 
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
-    mactop
+    # mactop
   ];
 
   linuxOnlyPackages = with pkgs; [
