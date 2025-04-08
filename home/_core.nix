@@ -20,6 +20,7 @@
 
   commonPackages = with pkgs; [
     # LSP
+    tree-sitter
     nixd # nix language server
     bash-language-server
     clang-tools # C (clangd)
@@ -165,11 +166,6 @@ in {
     dotDir = ".config/zsh";
   };
 
-  # programs.fzf = {
-  #   enable = true;
-  #   # enableZshIntegration = true;
-  # };
-
   programs.wezterm = {
     enable = !pkgs.stdenv.isDarwin;
     # enableZshIntegration = true;
@@ -180,6 +176,10 @@ in {
     # enableZshIntegration = true;
     nix-direnv.enable = true;
   };
+
+  # TODO:
+  # https://samasaur1.github.io/blog/jdks-on-nix-darwin
+  # programs.java.enable = true;
 
   # DOTFILES
   home.file = {
@@ -269,7 +269,6 @@ in {
   #
   home.sessionVariables = {
     # EDITOR = "emacs";
-    PINGA = "pinga";
   };
 
   # programs.home-manager.enable = true; # Let Home Manager install and manage itself.
