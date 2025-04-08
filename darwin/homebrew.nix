@@ -15,7 +15,7 @@
 
     # `brew install`
     brews = [
-      "hackrf"
+      # "hackrf"
     ];
 
     # `brew install --cask`
