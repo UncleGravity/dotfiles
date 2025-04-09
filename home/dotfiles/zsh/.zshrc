@@ -265,7 +265,9 @@ zstyle ':completion:*' rehash true # automatically update cache (keep completion
 
 # Load missing completions for macOS
 if [[ "$(uname)" == "Darwin" ]]; then
-  [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions) # Homebrew
+  # Add ~/.scripts to PATH if it exists
+  [[ -d "$HOME/.scripts" ]] && export PATH="$HOME/.scripts:$PATH"
+  # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions) # Homebrew
   [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh) # Cursor
   [[ -d /Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions ]] && fpath+=(/Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions) # Kitty
 else

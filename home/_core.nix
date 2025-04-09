@@ -184,6 +184,10 @@ in {
   # DOTFILES
   home.file = {
     ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
+    ".scripts/" = {
+      source = "${DOTFILES_DIR}/scripts";
+      recursive = true;
+    };
     ".config/zsh" = {
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it

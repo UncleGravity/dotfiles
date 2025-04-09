@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# decrypt
+
+# Check if more than one argument is provided
+if [ "$#" -gt 1 ]; then
+    echo "Usage: $0 [encrypted_file]" >&2
+    echo "Decrypts the specified file or reads from stdin if no file is given." >&2
+    exit 1
+fi
+
+INPUT_SOURCE=""
+# If an argument is provided, use it as the source file
+if [ "$#" -eq 1 ]; then
+    SOURCE_FILE="$1"
+    # Check if the source file exists
+    if [ ! -f "$SOURCE_FILE" ]; then
+        echo "Error: File '$SOURCE_FILE' not found." >&2
+        exit 1
+    fi
+    INPUT_SOURCE="$SOURCE_FILE"
+# If no argument is provided, use stdin ('-')
+else
+    INPUT_SOURCE="-"
+fi
+
+# Read the private key from 1Password using process substitution <(...)
+# and pass it as the identity file to age.
+# -d: decrypt
+# -i <(...): read identity (private key) from the process substitution file
+# INPUT_SOURCE will be either the filename or '-' for stdin
+age -d -i <(op read "op://Personal/Master SSH Key/private key") "$INPUT_SOURCE"
+
+# Check if age failed (exit status != 0)
+if [ $? -ne 0 ]; then
+    echo "Error during decryption." >&2
+    exit 1
+fi
