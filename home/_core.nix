@@ -7,6 +7,7 @@
   ...
 }: let
   DOTFILES_DIR = ./dotfiles;
+  SCRIPTS_DIR = ./scripts;
 
   # Trying to symlink the nvim config from the flake dir to the home dir,
   # But make it writable
@@ -63,6 +64,7 @@
     arduino-cli
 
     # Dev
+    git
     inputs.neovim-nightly.packages.${pkgs.system}.default
     helix
     gnumake
@@ -93,6 +95,12 @@
     claude-code
     # goose-cli
     # aider-chat
+
+    # Backup
+    restic
+    autorestic
+    borgbackup
+    borgmatic
 
     # goodies -------------------------
 
@@ -135,12 +143,12 @@
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
     # mactop
+    tart
+    # quickemu
+    # colima
   ];
 
   linuxOnlyPackages = with pkgs; [
-    # USB Stuff
-    usbutils
-    cyme
   ];
 in {
   imports = [
@@ -185,7 +193,7 @@ in {
   home.file = {
     ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
     ".scripts/" = {
-      source = "${DOTFILES_DIR}/scripts";
+      source = "${SCRIPTS_DIR}";
       recursive = true;
     };
     ".config/zsh" = {
