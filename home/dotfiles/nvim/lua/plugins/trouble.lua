@@ -1,6 +1,6 @@
 return {
   'folke/trouble.nvim',
-  -- enabled = false,
+  enabled = false,
   event = 'VeryLazy',
   opts = {}, -- for default options, refer to the configuration section for custom setup.
   c = 'Trouble',

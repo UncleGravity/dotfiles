@@ -22,13 +22,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
-      --  View all telescope searchable tags:
-      --  :Telescope help_tags
-      --
-      -- Shoe Telescope keybindings:
-      --  - Insert mode: <c-/>
-      --  - Normal mode: ?
-
       require('telescope').setup {
         defaults = {
           -- initial_mode = 'normal',
@@ -86,49 +79,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
           prompt_title = 'Live Grep in Open Files',
         }
       end, { desc = '[/] in Open Files' })
-
-      -- Shortcut for searching your Neovim configuration files
-      vim.keymap.set('n', '<leader>sN', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[N]eovim files' })
-    end,
-  },
-
-  ---------------------------------------------
-  -- Extension: Undo
-  {
-    'debugloop/telescope-undo.nvim',
-    dependencies = { -- note how they're inverted to above example
-      {
-        'nvim-telescope/telescope.nvim',
-        dependencies = { 'nvim-lua/plenary.nvim' },
-      },
-    },
-    keys = {
-      { -- lazy style key map
-        '<leader>su',
-        '<cmd>lll histors<cr>',
-        desc = '[u]ndo history',
-      },
-    },
-    opts = {
-      -- don't use `defaults = { }` here, do this in the main telescope spec
-      extensions = {
-        undo = {
-          side_by_side = true,
-          layout_strategy = 'vertical',
-          layout_config = {
-            preview_height = 0.8,
-          },
-        },
-      },
-    },
-    config = function(_, opts)
-      -- Calling telescope's setup from multiple specs does not hurt, it will happily merge the
-      -- configs for us. We won't use data, as everything is in it's own namespace (telescope
-      -- defaults, as well as each extension).
-      require('telescope').setup(opts)
-      require('telescope').load_extension 'undo'
     end,
   },
 }

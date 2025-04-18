@@ -1,4 +1,4 @@
--- bootstrap lazy
+-- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
@@ -24,9 +24,9 @@ require('lazy').setup({
     enabled = true,
     notify = false,
   },
-  change_detection = {
-    notify = false,
-  },
+  -- change_detection = {
+  --   notify = false,
+  -- },
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
