@@ -227,6 +227,11 @@ case "$(uname -s)" in
     mkdir -p "$HOME/.1password"
     [ -L "$HOME/.1password/agent.sock" ] || ln -s "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" "$HOME/.1password/agent.sock"
     export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+
+    # Use limavm as docker host (no docker desktop needed, ew)
+    if command -v limactl &> /dev/null; then
+        export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
+    fi
     ;;
   Linux)
     alias dbox="distrobox"

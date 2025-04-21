@@ -65,6 +65,7 @@
 
     # Dev
     git
+    wget
     inputs.neovim-nightly.packages.${pkgs.system}.default
     helix
     gnumake
@@ -72,8 +73,13 @@
     just
     android-tools # adb/fastboot
     # nrfutil
+
+    # USB
     usbutils # lsusb
     cyme # lsusb but better
+
+    # Web
+    # httpie
     ngrok
 
     # Nix
@@ -142,10 +148,10 @@
 
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
-    # mactop
-    tart
-    # quickemu
-    # colima
+    mactop
+    lima
+    docker
+    podman
   ];
 
   linuxOnlyPackages = with pkgs; [
