@@ -43,6 +43,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Add newt flake input
+    newt = {
+      url = "github:fosrl/newt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:

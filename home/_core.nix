@@ -81,12 +81,20 @@
     # Web
     # httpie
     ngrok
+    (inputs.newt.packages.${pkgs.system}.default.overrideAttrs (oldAttrs: {
+      vendorHash = "sha256-8VlT9cy2uNhQPiUpr1jJuQSgUR6TtlbQ+etran2Htxs=";
+    })) # pangolin client (doesn't build without hardcoding the hash)
+    hcloud # hetzner cli
+    flyctl # fly.io cli
+    doctl # digital ocean cli
+    awscli2
 
     # Nix
     direnv
 
     lazygit
     lazydocker
+    ctop
 
     # Security
     _1password-cli 
@@ -144,12 +152,14 @@
     # Fonts
     nerd-fonts.meslo-lg
     nerd-fonts.jetbrains-mono
+
   ];
 
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
     mactop
     lima
+    colima
     docker
     podman
   ];

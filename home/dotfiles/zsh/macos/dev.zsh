@@ -11,9 +11,9 @@ export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
 # Ruby version manager setup
-export GEM_HOME=$HOME/.gem
-export PATH=$GEM_HOME/bin:$PATH
-eval "$(rbenv init - zsh)"
+# export GEM_HOME=$HOME/.gem
+# export PATH=$GEM_HOME/bin:$PATH
+# eval "$(rbenv init - zsh)"
 
 # N Package Manager Setup
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).

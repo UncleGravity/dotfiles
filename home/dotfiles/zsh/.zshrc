@@ -229,9 +229,9 @@ case "$(uname -s)" in
     export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
 
     # Use limavm as docker host (no docker desktop needed, ew)
-    if command -v limactl &> /dev/null; then
-        export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
-    fi
+    # if command -v limactl &> /dev/null; then
+    #     export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
+    # fi
     ;;
   Linux)
     alias dbox="distrobox"
