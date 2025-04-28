@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+NTFY_URL="https://ntfy.angel.pizza/default"
+MESSAGE=""
+
+# Check for piped input first
+if ! [ -t 0 ]; then
+    MESSAGE=$(cat)
+
+# Check for arguments if no piped input
+elif [ "$#" -gt 0 ]; then
+    MESSAGE="$*"
+# Default message if no pipe and no arguments
+else
+    MESSAGE="PING"
+fi
+
+# Send the notification
+curl -d "$MESSAGE" "$NTFY_URL" 

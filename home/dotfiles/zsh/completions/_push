@@ -1,0 +1,21 @@
+#compdef push
+
+_push_devices() {
+  local devices
+  devices=$(curl -s \
+    --form-string "token=${PUSHOVER_APP_KEY_DEFAULT}" \
+    --form-string "user=${PUSHOVER_USER_KEY}" \
+    https://api.pushover.net/1/users/validate.json | jq -r '.devices[]')
+  _values 'device' ${(f)devices}
+}
+
+_arguments \
+  '(-m --message)'{-m,--message}'[Notification message]:message:' \
+  '(-i --image)'{-i,--image}'[Attach an image]:image:_files' \
+  '(-t --title)'{-t,--title}'[Notification title]:title:' \
+  '(-u --url)'{-u,--url}'[Include a URL]:url:' \
+  '(-T --url-title)'{-T,--url-title}'[Title for the URL]:url_title:' \
+  '(-S --timestamp)'{-S,--timestamp}'[Unix timestamp]:timestamp:_integer' \
+  '(-d --device)'{-d,--device}'[Target device]:device:_push_devices' \
+  '(-h --help)'{-h,--help}'[Show help]' \
+  '*:message:'
