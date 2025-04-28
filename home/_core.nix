@@ -87,7 +87,7 @@
     hcloud # hetzner cli
     flyctl # fly.io cli
     doctl # digital ocean cli
-    awscli2
+    awscli2 #aws
 
     # Nix
     direnv
@@ -116,9 +116,8 @@
     borgbackup
     borgmatic
 
-    # goodies -------------------------
-
-    yazi # file manager
+    # file manager
+    yazi 
     fzf
 
     # tmux

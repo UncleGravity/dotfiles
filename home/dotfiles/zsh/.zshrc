@@ -297,7 +297,6 @@ eval "$(zoxide init --cmd cd zsh)" # this goes after compinit, according to the 
 compdef _gnu_generic fzf # https://github.com/junegunn/fzf/issues/3349
 compdef _gnu_generic lazygit
 compdef _gnu_generic file
-compdef _gnu_generic devenv
 # compdef _gnu_generic SOME_OTHER_COMMAND
 
 # Weird issue with delta completion, I have to load it manually
