@@ -43,125 +43,88 @@
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:
   let
-      nixosUser = "angel";
-      nixosHostname = "nixos";
-      workDarwinUser = "useradmin";
-      workDarwinHostname = "BENGKUI";
-      personalDarwinUser = "angel";
-      personalDarwinHostname = "BASURA";
-      piUser = "pi";
-    in
-    {
-    # NixOS VM (nixos + home-manager)
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "aarch64-linux";
+    mkHomeManagerConfig = { username, hostname }: {
+      home-manager.extraSpecialArgs = {
+        inherit inputs;
+        username = username;
+      };
+      home-manager.useGlobalPkgs = true;
+      home-manager.useUserPackages = true;
+      # This assumes that the home.nix file is in the machines/${hostname} directory.
+      # ie. This only works for a single user.
+      home-manager.users.${username} = import ./machines/${hostname}/home.nix;
+    };
+
+    mkNixos = { system, username, hostname }: nixpkgs.lib.nixosSystem {
+      inherit system;
       specialArgs = {
         inherit inputs;
-        username = nixosUser;
-        hostname = nixosHostname;
-      };  
+        inherit username hostname;
+      };
       modules = [
-        # ./nixos/configuration.nix # System Config (nixos)
-        ./machines/nixos/configuration.nix
+        ./machines/${hostname}/configuration.nix
         home-manager.nixosModules.home-manager
+        (mkHomeManagerConfig { inherit username hostname; })
+      ];
+    };
+
+    mkDarwin = { system, username, hostname }: darwin.lib.darwinSystem {
+      inherit system;
+      specialArgs = {
+        inherit inputs;
+        inherit username hostname;
+      };
+      modules = [
+        ./machines/${hostname}/configuration.nix
+        home-manager.darwinModules.home-manager
+        (mkHomeManagerConfig { inherit username hostname; })
+        nix-homebrew.darwinModules.nix-homebrew
         {
-          home-manager.extraSpecialArgs = { 
-            inherit inputs;
-            username = nixosUser;
+          nix-homebrew = {
+            enable = true;
+            user = username; # Assuming username is the same as nix-homebrew user
+            autoMigrate = true;
           };
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          # home-manager.users.${nixosUser} = import ./nixos/home.nix; # User Config (home-manager)
-          home-manager.users.${nixosUser} = import ./machines/nixos/home.nix;
         }
       ];
+    };
+
+    mkHomeManagerSystem = { pkgs, username   }: home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      extraSpecialArgs = {
+        inherit inputs;
+        inherit username;
+      };
+      modules = [ ./machines/${username}/home.nix ];
+    };
+
+  in
+  {
+    # NixOS VM (nixos + home-manager)
+    nixosConfigurations.nixos = mkNixos {
+      system = "aarch64-linux";
+      username = "angel";
+      hostname = "nixos";
     };
 
     # Darwin - BENGKUI
-    darwinConfigurations.${workDarwinHostname} = darwin.lib.darwinSystem {
+    darwinConfigurations.BENGKUI = mkDarwin {
       system = "aarch64-darwin";
-      specialArgs = {
-        inherit inputs;
-        username = workDarwinUser;
-        hostname = workDarwinHostname;
-      };
-      modules = [
-        # ./darwin/config-bengkui.nix
-        ./machines/bengkui/configuration.nix
-
-        # Home-Manager
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs;
-            username = workDarwinUser;
-          };
-          # home-manager.users.${workDarwinUser} = import ./darwin/home-bengkui.nix;
-          home-manager.users.${workDarwinUser} = import ./machines/bengkui/home.nix;
-        }
-
-        # Nix-Homebrew
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          # Configure nix-homebrew
-          nix-homebrew = {
-            enable = true;
-            user = workDarwinUser;
-            autoMigrate = true;
-          };
-        }
-      ];
+      username = "useradmin";
+      hostname = "BENGKUI";
     };
 
     # Darwin - BASURA
-    darwinConfigurations.${personalDarwinHostname} = darwin.lib.darwinSystem {
+    darwinConfigurations.BASURA = mkDarwin {
       system = "x86_64-darwin";
-      specialArgs = {
-        inherit inputs;
-        username = personalDarwinUser;
-        hostname = personalDarwinHostname;
-      };
-      modules = [
-        # For now, reusing the existing ones:
-        # ./darwin/config-basura.nix
-        ./machines/basura/configuration.nix
-        # Home-Manager
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs;
-            username = personalDarwinUser;
-          };
-          # For now, reusing the existing one:
-          # home-manager.users.${personalDarwinUser} = import ./darwin/home-basura.nix;
-          home-manager.users.${personalDarwinUser} = import ./machines/basura/home.nix;
-        }
-
-        # Nix-Homebrew
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            enable = true;
-            user = personalDarwinUser;
-            autoMigrate = true;
-          };
-        }
-      ];
+      username = "angel";
+      hostname = "BASURA";
     };
 
     # Raspberry Pi (home-manager only)
-    homeConfigurations.${piUser} = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations.pi = mkHomeManagerSystem {
       pkgs = nixpkgs.legacyPackages."aarch64-linux";
-      extraSpecialArgs = { 
-        inherit inputs; 
-        username = piUser;
-      };
-      # modules = [ ./pi/home.nix ]; # User Config (home-manager)
-      modules = [ ./machines/pi/home.nix ];
+      username = "pi";
     };
 
   };
