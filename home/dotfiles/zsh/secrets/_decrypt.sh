@@ -14,7 +14,7 @@ decrypt_secrets() {
     fi
 
     # Decrypt using op to fetch the key
-    if ! op read "op://Personal/Master SSH Key/private key" | age -d -i - "$SECRETS_FILE" > "$DECRYPTED_FILE"; then
+    if ! op read "op://Personal/master-ssh-key/private key" | age -d -i - "$SECRETS_FILE" > "$DECRYPTED_FILE"; then
         echo "Error: Decryption failed. Check if 'op' is logged in and the secret path is correct." >&2
         # Clean up potentially partially written file
         rm -f "$DECRYPTED_FILE"

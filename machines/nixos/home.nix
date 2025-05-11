@@ -1,7 +1,7 @@
 { config, pkgs, inputs, ... }:
 
 let
-  ROOT_DIR = ../.;
+  ROOT_DIR = ../../.;
   HOME_MODULES_DIR = "${ROOT_DIR}/home";
 in
 {

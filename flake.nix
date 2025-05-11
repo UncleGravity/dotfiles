@@ -2,23 +2,21 @@
   description = "Nixos config flake";
 
   inputs = {
-    # https://nixos.org/nixpkgs/manual/
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
     home-manager = {
-      # https://nix-community.github.io/home-manager/options.xhtml
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nix-darwin
     darwin = {
-      # https://daiderd.com/nix-darwin/manual/index.html
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     }; 
 
-    # Use Zig nightly
+    # Zig nightly
     zig = {
       url = "github:mitchellh/zig-overlay";
       inputs = {
@@ -27,7 +25,6 @@
       };
     };
 
-    # Use Neovim nightly
     neovim-nightly = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs = {
@@ -42,13 +39,6 @@
       url = "github:zhaofengli/nix-homebrew";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Add newt flake input
-    newt = {
-      url = "github:fosrl/newt";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:
@@ -71,7 +61,8 @@
         hostname = nixosHostname;
       };  
       modules = [
-        ./nixos/configuration.nix # System Config (nixos)
+        # ./nixos/configuration.nix # System Config (nixos)
+        ./machines/nixos/configuration.nix
         home-manager.nixosModules.home-manager
         {
           home-manager.extraSpecialArgs = { 
@@ -80,12 +71,13 @@
           };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.${nixosUser} = import ./nixos/home.nix; # User Config (home-manager)
+          # home-manager.users.${nixosUser} = import ./nixos/home.nix; # User Config (home-manager)
+          home-manager.users.${nixosUser} = import ./machines/nixos/home.nix;
         }
       ];
     };
 
-    # Darwin (macOS) - Work
+    # Darwin - BENGKUI
     darwinConfigurations.${workDarwinHostname} = darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       specialArgs = {
@@ -94,7 +86,8 @@
         hostname = workDarwinHostname;
       };
       modules = [
-        ./darwin/config-bengkui.nix
+        # ./darwin/config-bengkui.nix
+        ./machines/bengkui/configuration.nix
 
         # Home-Manager
         home-manager.darwinModules.home-manager
@@ -105,7 +98,8 @@
             inherit inputs;
             username = workDarwinUser;
           };
-          home-manager.users.${workDarwinUser} = import ./darwin/home-bengkui.nix;
+          # home-manager.users.${workDarwinUser} = import ./darwin/home-bengkui.nix;
+          home-manager.users.${workDarwinUser} = import ./machines/bengkui/home.nix;
         }
 
         # Nix-Homebrew
@@ -121,7 +115,7 @@
       ];
     };
 
-    # Darwin (macOS) - Personal
+    # Darwin - BASURA
     darwinConfigurations.${personalDarwinHostname} = darwin.lib.darwinSystem {
       system = "x86_64-darwin";
       specialArgs = {
@@ -131,8 +125,8 @@
       };
       modules = [
         # For now, reusing the existing ones:
-        ./darwin/config-basura.nix
-
+        # ./darwin/config-basura.nix
+        ./machines/basura/configuration.nix
         # Home-Manager
         home-manager.darwinModules.home-manager
         {
@@ -143,7 +137,8 @@
             username = personalDarwinUser;
           };
           # For now, reusing the existing one:
-          home-manager.users.${personalDarwinUser} = import ./darwin/home-basura.nix;
+          # home-manager.users.${personalDarwinUser} = import ./darwin/home-basura.nix;
+          home-manager.users.${personalDarwinUser} = import ./machines/basura/home.nix;
         }
 
         # Nix-Homebrew
@@ -165,7 +160,8 @@
         inherit inputs; 
         username = piUser;
       };
-      modules = [ ./pi/home.nix ]; # User Config (home-manager)
+      # modules = [ ./pi/home.nix ]; # User Config (home-manager)
+      modules = [ ./machines/pi/home.nix ];
     };
 
   };

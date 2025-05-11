@@ -275,26 +275,6 @@
         "type": "github"
       }
     },
-    "newt": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1744076273,
-        "narHash": "sha256-cVBtD+Q04M8JY/iFqPwRwYHMZvaNezmtNgJ/SSQgyAk=",
-        "owner": "fosrl",
-        "repo": "newt",
-        "rev": "3b166c465db8e1515e57b14df5f2b47025af3468",
-        "type": "github"
-      },
-      "original": {
-        "owner": "fosrl",
-        "repo": "newt",
-        "type": "github"
-      }
-    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -370,7 +350,6 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "neovim-nightly": "neovim-nightly",
-        "newt": "newt",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs_2",
         "zig": "zig"

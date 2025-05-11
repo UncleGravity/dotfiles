@@ -30,7 +30,7 @@ fi
 # -R <(...): read recipients file (public keys) from the process substitution
 # -e: encrypt (implied when -R is used)
 # INPUT_SOURCE will be either the filename or '-' for stdin
-age -R <(op read "op://Personal/Master SSH Key/public key") "$INPUT_SOURCE"
+age -R <(op read "op://Personal/master-ssh-key/public key") "$INPUT_SOURCE"
 
 # Check if age failed (exit status != 0)
 # Note: We check age's exit status directly now, not the whole pipeline

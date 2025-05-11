@@ -81,9 +81,6 @@
     # Web
     # httpie
     ngrok
-    (inputs.newt.packages.${pkgs.system}.default.overrideAttrs (oldAttrs: {
-      vendorHash = "sha256-8VlT9cy2uNhQPiUpr1jJuQSgUR6TtlbQ+etran2Htxs=";
-    })) # pangolin client (doesn't build without hardcoding the hash)
     hcloud # hetzner cli
     flyctl # fly.io cli
     doctl # digital ocean cli
@@ -99,6 +96,7 @@
     # Security
     _1password-cli 
     age
+    sops
     binwalk
     # rizin
     # radare2
@@ -254,21 +252,21 @@ in {
     # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
     # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
     # TODO: Is this even necessary?
-    ".config/zsh/auto-completions" = {
-      source = pkgs.runCommand "vendored-zsh-completions" {} ''
-        set -euo pipefail
-        mkdir -p $out
-        ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
-          ${lib.escapeShellArgs config.home.packages} \
-          | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
-          | xargs -0 cp -t $out/
+    # ".config/zsh/auto-completions" = {
+    #   source = pkgs.runCommand "vendored-zsh-completions" {} ''
+    #     set -euo pipefail
+    #     mkdir -p $out
+    #     ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
+    #       ${lib.escapeShellArgs config.home.packages} \
+    #       | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
+    #       | xargs -0 cp -t $out/
 
-        # TODO: Why Doesn't this work?
-        # cp ${pkgs.zig-shell-completions}/share/zsh/site-functions/_zig $out/
+    #     # TODO: Why Doesn't this work?
+    #     # cp ${pkgs.zig-shell-completions}/share/zsh/site-functions/_zig $out/
 
-      '';
-      recursive = true;
-    };
+    #   '';
+    #   recursive = true;
+    # };
 
     # Remember to source this script in your zsh config
     ".config/zsh/nix.zsh" = {

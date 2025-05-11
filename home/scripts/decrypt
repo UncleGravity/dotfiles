@@ -29,7 +29,7 @@ fi
 # -d: decrypt
 # -i <(...): read identity (private key) from the process substitution file
 # INPUT_SOURCE will be either the filename or '-' for stdin
-age -d -i <(op read "op://Personal/Master SSH Key/private key") "$INPUT_SOURCE"
+age -d -i <(op read "op://Personal/master-ssh-key/private key") "$INPUT_SOURCE"
 
 # Check if age failed (exit status != 0)
 if [ $? -ne 0 ]; then

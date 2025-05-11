@@ -3,8 +3,8 @@
 
 {
   imports = [
-    ./config-default.nix # Import common settings
-    ./homebrew.nix
+    ../default-configuration-darwin.nix # Import common settings
+    ../default-homebrew.nix
   ];
 
   # --- Overrides or Machine-Specific Settings ---
@@ -16,5 +16,5 @@
   # Example: Override a specific system default for this machine
   # system.defaults.dock.autohide = false; # Keep the dock visible on this machine
 
-  system.stateVersion = 6; # Don't change this
+  system.stateVersion = 4; # Don't change this
 }
