@@ -8,8 +8,8 @@ let
 in
 {
   imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+    [
+      ./hardware.nix
       ./escape-hatch.nix
       ./hackrf.nix
     ];

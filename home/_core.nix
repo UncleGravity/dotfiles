@@ -85,6 +85,7 @@
     flyctl # fly.io cli
     doctl # digital ocean cli
     awscli2 #aws
+    # tailscale
 
     # Nix
     direnv
@@ -105,12 +106,14 @@
     aichat
     ollama
     claude-code
+    codex
     # goose-cli
     # aider-chat
 
     # Backup
     restic
     autorestic
+    rustic
     borgbackup
     borgmatic
 
@@ -231,9 +234,6 @@ in {
     };
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
-    };
-    ".hammerspoon/" = {
-      source = "${DOTFILES_DIR}/hammerspoon";
     };
     ".config/tmux" = {
       source = "${DOTFILES_DIR}/tmux";

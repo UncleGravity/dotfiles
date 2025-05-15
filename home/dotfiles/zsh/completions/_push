@@ -10,12 +10,12 @@ _push_devices() {
 }
 
 _arguments \
-  '(-m --message)'{-m,--message}'[Notification message]:message:' \
-  '(-i --image)'{-i,--image}'[Attach an image]:image:_files' \
-  '(-t --title)'{-t,--title}'[Notification title]:title:' \
-  '(-u --url)'{-u,--url}'[Include a URL]:url:' \
-  '(-T --url-title)'{-T,--url-title}'[Title for the URL]:url_title:' \
-  '(-S --timestamp)'{-S,--timestamp}'[Unix timestamp]:timestamp:_integer' \
-  '(-d --device)'{-d,--device}'[Target device]:device:_push_devices' \
-  '(-h --help)'{-h,--help}'[Show help]' \
+  '--message[Notification message]:message:' \
+  '--image[Attach an image]:image:_files' \
+  '--title[Notification title]:title:' \
+  '--url[Include a URL]:url:' \
+  '--url-title[Title for the URL]:url_title:' \
+  '--timestamp[Unix timestamp]:timestamp:_integer' \
+  '--device[Target device]:device:_push_devices' \
+  '--help[Show help]' \
   '*:message:'

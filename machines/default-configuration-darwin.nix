@@ -160,8 +160,14 @@
     # which noticeably slows down shell startup. Run compinit from user zshrc instead.
     # This is (I think) mostly necessary because I am using a custom zshrc file instead of letting nix manage it.
     enableGlobalCompInit = lib.mkDefault false;
+    # environment.pathsToLink = [ "/share/zsh" ];
   };
 
   environment.shells = lib.mkDefault [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 
+
+  #############################################################
+  #  Tailscale 
+  #############################################################
+  # services.tailscale.enable = true;
 }

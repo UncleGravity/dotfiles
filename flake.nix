@@ -14,7 +14,7 @@
     darwin = {
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
-    }; 
+    };
 
     # Zig nightly
     zig = {
@@ -29,11 +29,10 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        # flake-utils.follows = "flake-utils";
       };
     };
 
-    # Use nix-homebrew - Installs homebrew with nix. 
+    # Use nix-homebrew - Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
     nix-homebrew = {
       url = "github:zhaofengli/nix-homebrew";
@@ -43,6 +42,13 @@
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:
   let
+    systems = {
+      aarch64-linux = "aarch64-linux";
+      aarch64-darwin = "aarch64-darwin";
+      x86_64-linux = "x86_64-linux";
+      x86_64-darwin = "x86_64-darwin";
+    };
+
     mkHomeManagerConfig = { username, hostname }: {
       home-manager.extraSpecialArgs = {
         inherit inputs;
@@ -62,8 +68,8 @@
         inherit username hostname;
       };
       modules = [
-        ./machines/${hostname}/configuration.nix
         home-manager.nixosModules.home-manager
+        ./machines/${hostname}/configuration.nix
         (mkHomeManagerConfig { inherit username hostname; })
       ];
     };
@@ -102,21 +108,21 @@
   {
     # NixOS VM (nixos + home-manager)
     nixosConfigurations.nixos = mkNixos {
-      system = "aarch64-linux";
+      system = systems.aarch64-linux;
       username = "angel";
       hostname = "nixos";
     };
 
     # Darwin - BENGKUI
     darwinConfigurations.BENGKUI = mkDarwin {
-      system = "aarch64-darwin";
+      system = systems.aarch64-darwin;
       username = "useradmin";
       hostname = "BENGKUI";
     };
 
     # Darwin - BASURA
     darwinConfigurations.BASURA = mkDarwin {
-      system = "x86_64-darwin";
+      system = systems.x86_64-darwin;
       username = "angel";
       hostname = "BASURA";
     };

@@ -16,6 +16,7 @@
     # `brew install`
     brews = [
       # "hackrf"
+      # fuse-t
     ];
 
     # `brew install --cask`
@@ -26,7 +27,6 @@
       "ghostty"
       "kitty"
       "kicad"
-      "hammerspoon"
       "raycast"
       "obsidian"
       "private-internet-access"
