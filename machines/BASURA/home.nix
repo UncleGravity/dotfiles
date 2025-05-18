@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, homeStateVersion, ... }:
 
 let
   ROOT_DIR = ../../.;
@@ -18,5 +18,5 @@ in
   };
 
   programs.home-manager.enable = true; # Let Home Manager install and manage itself.
-  home.stateVersion = "24.11"; # don't touch this or everybody dies
+  home.stateVersion = homeStateVersion; # don't touch this or everybody dies
 }

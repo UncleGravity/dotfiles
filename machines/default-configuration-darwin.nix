@@ -1,5 +1,5 @@
 # This file defines the common configuration shared across different machines.
-{ pkgs, lib, inputs, username, hostname, ... }: {
+{ pkgs, lib, inputs, username, hostname, config, ... }: {
 
   # imports = [
   #   ./homebrew.nix
@@ -23,10 +23,12 @@
   #############################################################
   #  Packages
   #############################################################
-  environment.systemPackages = lib.mkDefault (with pkgs; [
+  environment.systemPackages = (with pkgs; [
     wget
     vim
     git
+    # _1password-cli 
+    cowsay
   ]);
 
   #############################################################
@@ -38,6 +40,13 @@
   # Garbage collection everything older than 30 days
   nix.gc = {
     automatic = lib.mkDefault true;
+    interval = lib.mkDefault [
+      {
+        Hour = 1;
+        Minute = 0;
+        Weekday = 1;
+      }
+    ];
     options = lib.mkDefault "--delete-older-than 30d";
   };
 
@@ -50,7 +59,6 @@
   nix.settings.auto-optimise-store = lib.mkDefault false;
 
   system.configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
-  system.stateVersion = lib.mkDefault 4; # Set once per machine and keep stable.
 
   # Set NIX_PATH
   # environment.etc."nix/inputs/nixpkgs".source = "${inputs.nixpkgs}";
@@ -165,9 +173,32 @@
 
   environment.shells = lib.mkDefault [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 
-
   #############################################################
   #  Tailscale 
   #############################################################
   # services.tailscale.enable = true;
+
+  #############################################################
+  #  SOPS
+  #############################################################
+
+  sops = {
+    # age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
+    defaultSopsFile = ../secrets/secrets.yaml;
+    validateSopsFiles = true;
+    environment = {
+      # SOPS_AGE_KEY_CMD = ''su - ${username} -c "op item get \"master-ssh-key\" --field \"private-key-age\" --reveal"'';
+      # SOPS_AGE_KEY_CMD = "/Users/useradmin/.config/sops/age/keys.sh";
+      SOPS_AGE_KEY_CMD = ../secrets/keys.sh;
+      # SOPS_AGE_KEY = "$${op item get \"master-ssh-key\" --field \"private-key-age\" --reveal}";
+    };
+
+    secrets = {
+      "agenix.zsh" = {
+        path = "${config.users.users.${username}.home}/.config/zsh/secrets/agenix.zsh";
+        owner = username;
+        # mode = "0600";
+      };
+    };
+  };
 }

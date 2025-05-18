@@ -176,9 +176,10 @@ function y() {
 
 # ------------ cd ------------
 alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias .....='cd ../../../..'
+alias ..2='cd ../..'
+alias ..3='cd ../../..'
+alias ..4='cd ../../../..'
+alias ..5='cd ../../../../..'
 
 alias zshrst="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
 
@@ -251,7 +252,7 @@ esac
 # SECRETS
 # ==================================================================================================
 [ -f "$HOME/.config/zsh/secrets/_decrypt.sh" ] && source "$HOME/.config/zsh/secrets/_decrypt.sh"
-
+[ -f "$HOME/.config/zsh/secrets/agenix.zsh" ] && source "$HOME/.config/zsh/secrets/agenix.zsh"
 # ==================================================================================================
 # Completions (KEEP AT THE END OF FILE)
 # ==================================================================================================
@@ -274,8 +275,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
   # Add ~/.scripts to PATH if it exists
   [[ -d "$HOME/.scripts" ]] && export PATH="$HOME/.scripts:$PATH"
   # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions) # Homebrew
-  [[ -d /Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh ]] && fpath+=(/Applications/Cursor.app/Contents/Resources/app/resources/completions/zsh) # Cursor
-  [[ -d /Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions ]] && fpath+=(/Applications/kitty.app/Contents/Resources/kitty/shell-integration/zsh/completions) # Kitty
 else
   # Load missing completions for ubuntu!
   [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
@@ -301,7 +300,7 @@ compdef _gnu_generic file
 # compdef _gnu_generic SOME_OTHER_COMMAND
 
 # Weird issue with delta completion, I have to load it manually
-compdef _delta delta
+# compdef _delta delta
 
 zinit cdreplay -q # recommended by zinit
 

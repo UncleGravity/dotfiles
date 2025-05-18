@@ -1,0 +1,11 @@
+# .sops.yaml
+
+keys:
+  - &master age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
+  - &nixos-vm age16ssscp6dgnpg8ev7enfqejkp2y0c00493rvgrh0vccwgdllk0y2swjawjq
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini|sops)$
+    key_groups:
+    - age:
+      - *master
+      - *nixos-vm

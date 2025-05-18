@@ -1,5 +1,5 @@
 # Configuration for the 'my-macbook' machine
-{ pkgs, lib, inputs, username, hostname, ... }:
+{ pkgs, lib, inputs, username, hostname, systemStateVersion, ... }:
 
 {
   imports = [
@@ -16,5 +16,5 @@
   # Example: Override a specific system default for this machine
   # system.defaults.dock.autohide = false; # Keep the dock visible on this machine
 
-  system.stateVersion = 6; # Don't change this
+  system.stateVersion = systemStateVersion; # Don't change this
 }

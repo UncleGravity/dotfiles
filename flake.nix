@@ -38,9 +38,14 @@
       url = "github:zhaofengli/nix-homebrew";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, sops-nix, ... }@inputs:
   let
     systems = {
       aarch64-linux = "aarch64-linux";
@@ -49,10 +54,11 @@
       x86_64-darwin = "x86_64-darwin";
     };
 
-    mkHomeManagerConfig = { username, hostname }: {
+    mkHomeManagerConfig = { username, hostname, homeStateVersion }: {
       home-manager.extraSpecialArgs = {
         inherit inputs;
         username = username;
+        homeStateVersion = homeStateVersion;
       };
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
@@ -61,29 +67,30 @@
       home-manager.users.${username} = import ./machines/${hostname}/home.nix;
     };
 
-    mkNixos = { system, username, hostname }: nixpkgs.lib.nixosSystem {
+    mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }: nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
         inherit inputs;
-        inherit username hostname;
+        inherit username hostname systemStateVersion homeStateVersion;
       };
       modules = [
         home-manager.nixosModules.home-manager
         ./machines/${hostname}/configuration.nix
-        (mkHomeManagerConfig { inherit username hostname; })
+        (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
       ];
     };
 
-    mkDarwin = { system, username, hostname }: darwin.lib.darwinSystem {
+    mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }: darwin.lib.darwinSystem {
       inherit system;
       specialArgs = {
         inherit inputs;
-        inherit username hostname;
+        inherit username hostname systemStateVersion homeStateVersion;
       };
       modules = [
         ./machines/${hostname}/configuration.nix
+        inputs.sops-nix.darwinModules.sops
         home-manager.darwinModules.home-manager
-        (mkHomeManagerConfig { inherit username hostname; })
+        (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
         nix-homebrew.darwinModules.nix-homebrew
         {
           nix-homebrew = {
@@ -95,11 +102,11 @@
       ];
     };
 
-    mkHomeManagerSystem = { pkgs, username   }: home-manager.lib.homeManagerConfiguration {
+    mkHomeManagerSystem = { pkgs, username, homeStateVersion }: home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       extraSpecialArgs = {
         inherit inputs;
-        inherit username;
+        inherit username homeStateVersion;
       };
       modules = [ ./machines/${username}/home.nix ];
     };
@@ -111,6 +118,8 @@
       system = systems.aarch64-linux;
       username = "angel";
       hostname = "nixos";
+      systemStateVersion = "24.05";
+      homeStateVersion = "24.05";
     };
 
     # Darwin - BENGKUI
@@ -118,6 +127,8 @@
       system = systems.aarch64-darwin;
       username = "useradmin";
       hostname = "BENGKUI";
+      systemStateVersion = 4;
+      homeStateVersion = "24.05";
     };
 
     # Darwin - BASURA
@@ -125,12 +136,15 @@
       system = systems.x86_64-darwin;
       username = "angel";
       hostname = "BASURA";
+      systemStateVersion = 6;
+      homeStateVersion = "24.11";
     };
 
     # Raspberry Pi (home-manager only)
     homeConfigurations.pi = mkHomeManagerSystem {
       pkgs = nixpkgs.legacyPackages."aarch64-linux";
       username = "pi";
+      homeStateVersion = "24.05";
     };
 
   };

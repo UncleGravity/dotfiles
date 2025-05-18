@@ -2,16 +2,20 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, options, username, hostname, ... }:
+{ config, pkgs, inputs, options, username, hostname, systemStateVersion, ... }:
 let
   enableXServer = false;  # Set to false to disable X server
+  ROOT_DIR = ../../.;
+  MODULES_DIR = "${ROOT_DIR}/modules";
 in
 {
   imports =
     [
       ./hardware.nix
-      ./escape-hatch.nix
-      ./hackrf.nix
+      "${MODULES_DIR}/docker.nix"
+      # "${MODULES_DIR}/hackrf.nix"
+      # ./escape-hatch.nix
+      # ./hackrf.nix
     ];
 
   # Enable Flakes
@@ -34,17 +38,9 @@ in
 
   # ---------------------------------------------------------------------------
   # Networking
-  networking.hostName = hostname; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  services.openssh.enable = true;
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
+  networking.hostName = hostname;
   networking.networkmanager.enable = true;
-
+  services.openssh.enable = true;
 
   # ---------------------------------------------------------------------------
   # Set your time zone.
@@ -118,9 +114,8 @@ in
   users =  {
     users.${username} = {
       isNormalUser = true;
-      description = "Angel";
-      extraGroups = [ "networkmanager" "wheel" ]; # plugdev is for hackrf
-      packages = with pkgs; [];
+      description = "me";
+      extraGroups = [ "networkmanager" "wheel" ];
     };
     defaultUserShell = pkgs.zsh;
   };
@@ -144,11 +139,9 @@ in
   environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
 
   # ---------------------------------------------------------------------------
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-  
-  # Enable parallels tools
   hardware.parallels.enable = true;
+  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
   
   # ---------------------------------------------------------------------------
   # List packages installed in system profile. To search, run:
@@ -158,57 +151,9 @@ in
     wget
     git
     distrobox
-    podman
     chromium
-    kitty # Required for kitty to work
     ghostty
   ];
-  
-  # ---------------------------------------------------------------------------
-  # PODMAN CONFIG
-  
-  # Enable common container config files in /etc/containers
-  virtualisation.containers.enable = true;
-  virtualisation = {
-    podman = {
-      enable = true;
 
-      # Create a `docker` alias for podman, to use it as a drop-in replacement
-      dockerCompat = true;
-
-      # Required for containers under podman-compose to be able to talk to each other.
-      defaultNetwork.settings.dns_enabled = true;
-    };
-  };
-
-  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
-  
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.05"; # Did you read the comment?
-
+  system.stateVersion = systemStateVersion; # no touch
 }
-

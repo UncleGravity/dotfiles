@@ -9,16 +9,6 @@
   DOTFILES_DIR = ./dotfiles;
   SCRIPTS_DIR = ./scripts;
 
-  # Trying to symlink the nvim config from the flake dir to the home dir,
-  # But make it writable
-  # More info: https://github.com/nix-community/home-manager/issues/676
-  # HOME = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
-  # lib.meta = {
-  #     configPath = "${HOME}/nix/";
-  #     mkMutableSymlink = path: config.lib.file.mkOutOfStoreSymlink
-  #       (config.lib.meta.configPath + lib.string.removePrefix (toString inputs.self) (toString path));
-  #   };
-
   commonPackages = with pkgs; [
     # LSP
     tree-sitter
@@ -97,6 +87,7 @@
     # Security
     _1password-cli 
     age
+    ssh-to-age
     sops
     binwalk
     # rizin
@@ -190,11 +181,6 @@ in {
     dotDir = ".config/zsh";
   };
 
-  programs.wezterm = {
-    enable = !pkgs.stdenv.isDarwin;
-    # enableZshIntegration = true;
-  };
-
   programs.direnv = {
     enable = true;
     # enableZshIntegration = true;
@@ -228,9 +214,6 @@ in {
     };
     ".config/yazi" = {
       source = "${DOTFILES_DIR}/yazi";
-    };
-    ".config/wezterm" = {
-      source = "${DOTFILES_DIR}/wezterm";
     };
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
@@ -268,10 +251,13 @@ in {
     #   recursive = true;
     # };
 
+    # When nix store values need to be referenced.
     # Remember to source this script in your zsh config
     ".config/zsh/nix.zsh" = {
       source = pkgs.writeText "nix.zsh" ''
         eval "$(direnv hook zsh)"
+        # Add any nix-specific environment variables here e.g.
+        # export COWSAY_NIX="${pkgs.cowsay}/bin/cowsay"
       '';
     };
   };
@@ -281,21 +267,12 @@ in {
   # shell provided by Home Manager. If you don't want to manage your shell
   # through Home Manager then you have to manually source 'hm-session-vars.sh'
   # located at either
-  #
   #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
   # or
-  #
   #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-  #
   # or
-  #
   #  /etc/profiles/per-user/angel/etc/profile.d/hm-session-vars.sh
-  #
   home.sessionVariables = {
     # EDITOR = "emacs";
   };
-
-  # programs.home-manager.enable = true; # Let Home Manager install and manage itself.
-  # home.stateVersion = "24.05"; # don't touch this or everybody dies
 }
