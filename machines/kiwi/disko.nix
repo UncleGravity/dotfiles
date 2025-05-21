@@ -255,7 +255,7 @@
         };
 
         # vdev layout: 2x mirror vdevs.
-        devices = [
+        vdevs = [
           { # First mirror vdev
             type = "mirror";
             devices = [
