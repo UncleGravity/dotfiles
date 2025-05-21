@@ -1,13 +1,12 @@
-{ config, pkgs, inputs, homeStateVersion, ... }:
+{ config, pkgs, inputs, homeStateVersion, self,... }:
 
 let
-  ROOT_DIR = ../../.;
-  HOME_MODULES_DIR = "${ROOT_DIR}/home";
+  HOME_DIR = "${self}/home";
 in
 {
 
   imports = [
-    "${HOME_MODULES_DIR}/_core.nix"
+    "${HOME_DIR}/_core.nix"
   ];
 
   programs.home-manager.enable = true; # Let Home Manager install and manage itself.

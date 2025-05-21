@@ -251,8 +251,10 @@ esac
 # ==================================================================================================
 # SECRETS
 # ==================================================================================================
-[ -f "$HOME/.config/zsh/secrets/_decrypt.sh" ] && source "$HOME/.config/zsh/secrets/_decrypt.sh"
-[ -f "$HOME/.config/zsh/secrets/agenix.zsh" ] && source "$HOME/.config/zsh/secrets/agenix.zsh"
+# [ -f "$HOME/.config/zsh/secrets/_decrypt.sh" ] && source "$HOME/.config/zsh/secrets/_decrypt.sh"
+[ -f "$HOME/.config/zsh/secrets/home.zsh" ] && source "$HOME/.config/zsh/secrets/home.zsh"
+[ -f "$HOME/.config/zsh/secrets/work.zsh" ] && source "$HOME/.config/zsh/secrets/work.zsh"
+
 # ==================================================================================================
 # Completions (KEEP AT THE END OF FILE)
 # ==================================================================================================

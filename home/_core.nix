@@ -86,6 +86,8 @@
 
     # Security
     _1password-cli 
+    gnupg
+    gpg-tui
     age
     ssh-to-age
     sops
@@ -230,26 +232,9 @@ in {
     ".config/sesh" = {
       source = "${DOTFILES_DIR}/sesh";
     };
-
-    # Collects all home-manager completions into a single directory
-    # Crazy idea inspired by https://github.com/knl/dotskel/blob/14d2ba60cd1ec20866f6d1f5d405255396c2f802/home.nix
-    # Blog post: https://knezevic.ch/posts/zsh-completion-for-tools-installed-via-home-manager/
-    # TODO: Is this even necessary?
-    # ".config/zsh/auto-completions" = {
-    #   source = pkgs.runCommand "vendored-zsh-completions" {} ''
-    #     set -euo pipefail
-    #     mkdir -p $out
-    #     ${pkgs.fd}/bin/fd -t f '^_[^.]+$' \
-    #       ${lib.escapeShellArgs config.home.packages} \
-    #       | xargs -0 -I {} bash -c '${pkgs.ripgrep}/bin/rg -0l "^#compdef" $@ || :' _ {} \
-    #       | xargs -0 cp -t $out/
-
-    #     # TODO: Why Doesn't this work?
-    #     # cp ${pkgs.zig-shell-completions}/share/zsh/site-functions/_zig $out/
-
-    #   '';
-    #   recursive = true;
-    # };
+    ".sops.yaml" = {
+      source = "${DOTFILES_DIR}/sops/.sops.yaml";
+    };
 
     # When nix store values need to be referenced.
     # Remember to source this script in your zsh config

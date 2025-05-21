@@ -16,6 +16,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Installs homebrew with nix.
+    # Does not manage formulae, just installs homebrew.
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Zig nightly
     zig = {
       url = "github:mitchellh/zig-overlay";
@@ -30,13 +37,6 @@
       inputs = {
         nixpkgs.follows = "nixpkgs";
       };
-    };
-
-    # Use nix-homebrew - Installs homebrew with nix.
-    # Does not manage formulae, just installs homebrew.
-    nix-homebrew = {
-      url = "github:zhaofengli/nix-homebrew";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     sops-nix = {
@@ -56,7 +56,7 @@
 
     mkHomeManagerConfig = { username, hostname, homeStateVersion }: {
       home-manager.extraSpecialArgs = {
-        inherit inputs;
+        inherit inputs self;
         username = username;
         homeStateVersion = homeStateVersion;
       };
@@ -70,10 +70,11 @@
     mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }: nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit inputs;
+        inherit inputs self;
         inherit username hostname systemStateVersion homeStateVersion;
       };
       modules = [
+        inputs.sops-nix.nixosModules.sops
         home-manager.nixosModules.home-manager
         ./machines/${hostname}/configuration.nix
         (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
@@ -83,7 +84,7 @@
     mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }: darwin.lib.darwinSystem {
       inherit system;
       specialArgs = {
-        inherit inputs;
+        inherit inputs self;
         inherit username hostname systemStateVersion homeStateVersion;
       };
       modules = [
@@ -120,6 +121,15 @@
       hostname = "nixos";
       systemStateVersion = "24.05";
       homeStateVersion = "24.05";
+    };
+
+    # NixOS - kiwi (NAS)
+    nixosConfigurations.kiwi = mkNixos {
+      system = systems.x86_64-linux;
+      username = "angel";
+      hostname = "kiwi";
+      systemStateVersion = "24.11";
+      homeStateVersion = "25.05";
     };
 
     # Darwin - BENGKUI

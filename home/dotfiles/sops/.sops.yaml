@@ -1,0 +1,5 @@
+keys:
+  - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
+creation_rules:
+  # No path_regex, match everything as a default "catchall" clause.
+  - age: *angel 

@@ -1,65 +1,22 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, inputs, options, username, hostname, systemStateVersion, ... }:
+{ config, pkgs, inputs, options, username, hostname, systemStateVersion, self, ... }:
 let
-  enableXServer = false;  # Set to false to disable X server
-  ROOT_DIR = ../../.;
-  MODULES_DIR = "${ROOT_DIR}/modules";
+  enableXServer = true;
+  MODULES_DIR = "${self}/modules";
 in
 {
   imports =
     [
       ./hardware.nix
-      "${MODULES_DIR}/docker.nix"
-      # "${MODULES_DIR}/hackrf.nix"
-      # ./escape-hatch.nix
-      # ./hackrf.nix
+      ../_default/nixos/configuration.nix
+      "${MODULES_DIR}/sops.nix"
+      "${MODULES_DIR}/nixos/docker.nix"
+      "${MODULES_DIR}/nixos/hackrf.nix"
+      # "${MODULES_DIR}/nixos/escape-hatch.nix"
     ];
 
-  # Enable Flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # ---------------------------------------------------------------------------
-  # Automatic garbage collection
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 30d";
-  };
-
-  # ---------------------------------------------------------------------------
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5;  # Limit to 5 latest generations
-
-
-  # ---------------------------------------------------------------------------
-  # Networking
-  networking.hostName = hostname;
-  networking.networkmanager.enable = true;
-  services.openssh.enable = true;
-
-  # ---------------------------------------------------------------------------
-  # Set your time zone.
-  time.timeZone = "Asia/Taipei";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
+  # default username: admin@kasm.local
+  # default password: kasmweb
+  services.kasmweb.enable = true;
 
   # ---------------------------------------------------------------------------
   # X11
@@ -70,90 +27,10 @@ in
   services.xserver.displayManager.gdm.enable = enableXServer;
   services.xserver.desktopManager.gnome.enable = true;
 
-  # Enable xkb Options in TTY
-  console.useXkbConfig = true;
-  #console.keyMap = "us-intl";
-  
-  # Configure keymap in X11
-  services.xserver = {
-    xkb.layout = "us";
-    xkb.variant = "altgr-intl";
-    #xkb.options = "";
-    #xkb.model = "macbook79";
-  };
-    
-  services.xserver.exportConfiguration = true;
-
   # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
   # ---------------------------------------------------------------------------
-  # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
-
-  # ---------------------------------------------------------------------------
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # ---------------------------------------------------------------------------
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users =  {
-    users.${username} = {
-      isNormalUser = true;
-      description = "me";
-      extraGroups = [ "networkmanager" "wheel" ];
-    };
-    defaultUserShell = pkgs.zsh;
-  };
-
-  # hardware.hackrf.enable = true; # doesn't work for some reason, maybe send pull request
-  # https://github.com/NixOS/nixpkgs/blob/d1b9c95fdfe16e551737edc6e0b9646cfb9a6850/nixos/modules/hardware/hackrf.nix
-  # users.groups = {
-  #   plugdev = {}; # Required by hackrf
-  # };
-  # services.udev.extraRules = ''
-  #   SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{idProduct}=="6089", GROUP="plugdev", MODE="0666"
-  # '';
-
-  nix.settings.trusted-users = [ "root" "${username}" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
-
-  # ---------------------------------------------------------------------------
-  # SHELLS
-  environment.shells = with pkgs; [bash zsh];
-  programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
-  programs.zsh.enableGlobalCompInit = false; # This prevents compinit from running on /etc/zshrc, which noticeably slows down shell startup. Run compinit from user zshrc instead.
-  environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
-
-  # ---------------------------------------------------------------------------
-  nixpkgs.config.allowUnfree = true;
-  hardware.parallels.enable = true;
-  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
-  
-  # ---------------------------------------------------------------------------
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default. 
-    wget
-    git
-    distrobox
-    chromium
-    ghostty
-  ];
-
   system.stateVersion = systemStateVersion; # no touch
 }

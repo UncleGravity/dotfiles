@@ -1,9 +1,12 @@
 # This file defines the common configuration shared across different machines.
-{ pkgs, lib, inputs, username, hostname, config, ... }: {
-
-  # imports = [
-  #   ./homebrew.nix
-  # ];
+{ pkgs, lib, inputs, username, hostname, config, self, ... }: 
+let
+  MODULES_DIR = "${self}/modules";
+in
+{
+  imports = [
+    "${MODULES_DIR}/sops.nix"
+  ];
 
   #############################################################
   #  Host & User config
@@ -27,7 +30,6 @@
     wget
     vim
     git
-    # _1password-cli 
     cowsay
   ]);
 
@@ -59,12 +61,6 @@
   nix.settings.auto-optimise-store = lib.mkDefault false;
 
   system.configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
-
-  # Set NIX_PATH
-  # environment.etc."nix/inputs/nixpkgs".source = "${inputs.nixpkgs}";
-  # nix.nixPath = lib.mkForce [ ... ]; # Use mkForce if you absolutely need this path structure
-
-  # nixpkgs.hostPlatform = "x86_64-darwin"; # Usually detected automatically
 
   ###################################################################################
   #  macOS's System configuration
@@ -182,23 +178,23 @@
   #  SOPS
   #############################################################
 
-  sops = {
-    # age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
-    defaultSopsFile = ../secrets/secrets.yaml;
-    validateSopsFiles = true;
-    environment = {
-      # SOPS_AGE_KEY_CMD = ''su - ${username} -c "op item get \"master-ssh-key\" --field \"private-key-age\" --reveal"'';
-      # SOPS_AGE_KEY_CMD = "/Users/useradmin/.config/sops/age/keys.sh";
-      SOPS_AGE_KEY_CMD = ../secrets/keys.sh;
-      # SOPS_AGE_KEY = "$${op item get \"master-ssh-key\" --field \"private-key-age\" --reveal}";
-    };
+  # sops = {
+  #   age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
+  #   defaultSopsFile = ../secrets/secrets.yaml;
+  #   validateSopsFiles = true;
+  #   # environment = {
+  #   #   # SOPS_AGE_KEY_CMD = ''su - ${username} -c "op item get \"master-ssh-key\" --field \"private-key-age\" --reveal"'';
+  #   #   # SOPS_AGE_KEY_CMD = "/Users/useradmin/.config/sops/age/keys.sh";
+  #   #   SOPS_AGE_KEY_CMD = ../secrets/keys.sh;
+  #   #   # SOPS_AGE_KEY = "$${op item get \"master-ssh-key\" --field \"private-key-age\" --reveal}";
+  #   # };
 
-    secrets = {
-      "agenix.zsh" = {
-        path = "${config.users.users.${username}.home}/.config/zsh/secrets/agenix.zsh";
-        owner = username;
-        # mode = "0600";
-      };
-    };
-  };
+  #   secrets = {
+  #     "secrets.zsh" = {
+  #       path = "${config.users.users.${username}.home}/.config/zsh/secrets/secrets.zsh";
+  #       owner = username;
+  #       mode = "0600";
+  #     };
+  #   };
+  # };
 }

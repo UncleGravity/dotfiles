@@ -1,14 +1,13 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, self, ... }:
 
 let
-  ROOT_DIR = ../../.;
-  HOME_MODULES_DIR = "${ROOT_DIR}/home";
-  DOTFILES_DIR = "${HOME_MODULES_DIR}/dotfiles";
+  HOME_DIR = "${self}/home";
+  DOTFILES_DIR = "${HOME_DIR}/dotfiles";
 in
 {
 
   imports = [
-    "${HOME_MODULES_DIR}/_core.nix"
+    "${HOME_DIR}/_core.nix"
   ];
 
   home.file = {

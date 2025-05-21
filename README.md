@@ -51,14 +51,32 @@ rm flake.nix home.nix
    - [Download GUI](https://1password.com/downloads/mac)
    - Download op CLI with nix: `NIXPKGS_ALLOW_UNFREE=1 nix shell nixpkgs#_1password-cli --impure`
    - Configure op CLI: `op signin`
+   - Configure SSH agent
 
-3. Git clone this repo
+3. Set up sops-nix for secrets management:
+   ```bash
+   # [On new machine] 
+   # Create age keypair
+   mkdir -p $HOME/sops/age
+   nix shell nixpkgs#age --command age-keygen -o $HOME/sops/age/keys.txt
+   chmod 600 $HOME/sops/age/keys.txt
+   # Save the key pair to 1Password!
+   
+   # [On old machine]
+   # Add the public key to .sops.yaml!
+   # Re-encerypt secrets.yaml with new public key
+   sops updatekeys secrets/secrets.yaml
+
+   # commit and push
+   ```
+
+4. Git clone this repo
    ```bash
    git clone git@github.com:UncleGravity/dotfiles.git ~/nix
    cd ~/nix
    ```
 
-4. Build your new system:
+5. Build your new system:
    - First run: 
    ```bash
    nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>

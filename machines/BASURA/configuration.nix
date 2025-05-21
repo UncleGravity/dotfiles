@@ -3,8 +3,8 @@
 
 {
   imports = [
-    ../default-configuration-darwin.nix # Import common settings
-    ../default-homebrew.nix
+    ../_default/darwin/configuration.nix
+    ../_default/darwin/homebrew.nix
   ];
 
   # --- Overrides or Machine-Specific Settings ---
