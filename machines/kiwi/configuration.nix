@@ -8,6 +8,7 @@ in
     [
       ./hardware.nix
       ../_default/nixos/configuration.nix
+      inputs.disko.nixosModules.disko
       ./disko.nix
       ./zfs.nix
       # "${MODULES_DIR}/sops.nix"

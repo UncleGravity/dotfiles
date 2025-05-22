@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ inputs, ... }:
 
 # ------------------------------------------------------------------------------
 # IMPORTANT NOTES FOR MANAGING STORAGE WITH DISKO & ZFS:
@@ -98,9 +98,9 @@
 # ------------------------------------------------------------------------------
 
 {
-  imports = [
-    inputs.disko.nixosModules.disko
-  ];
+  # imports = [
+  #   inputs.disko.nixosModules.disko
+  # ];
   
   # 
   disko.devices = {
@@ -221,22 +221,22 @@
           # It's good practice to create a blank dataset for the root of the pool
           # and then create your actual filesystems under it.
           # Disko will automatically create these if they don't exist.
-          "rpool/root" = {
+          "root" = {
             type = "zfs_fs";
             mountpoint = "/";
           };
-          "rpool/home" = {
+          "home" = {
             type = "zfs_fs";
             mountpoint = "/home";
           };
-          "rpool/nix" = {
+          "nix" = {
             type = "zfs_fs";
             mountpoint = "/nix";
             options = {
               "com.sun:auto-snapshot" = "false";
             };
           };
-          "rpool/persist" = {
+          "persist" = {
             type = "zfs_fs";
             mountpoint = "/persist"; # Or any other mountpoint you need
           };
@@ -293,15 +293,15 @@
         # ├── backups         # Dataset mounted at /nas/backups
         # └── media           # Dataset mounted at /nas/media
         datasets = {
-          "storagepool/root" = {
+          "root" = {
             type = "zfs_fs";
             mountpoint = "/nas"; # Main data share at the root of /nas
           };
-          "storagepool/backups" = {
+          "backups" = {
             type = "zfs_fs";
             mountpoint = "/nas/backups";
           };
-          "storagepool/media" = {
+          "media" = {
             type = "zfs_fs";
             mountpoint = "/nas/media";
             options = {
