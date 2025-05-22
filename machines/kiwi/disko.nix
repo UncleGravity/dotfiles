@@ -1,4 +1,4 @@
-{ ... }:
+{ config, pkgs, inputs, ... }:
 
 # ------------------------------------------------------------------------------
 # IMPORTANT NOTES FOR MANAGING STORAGE WITH DISKO & ZFS:
@@ -98,6 +98,10 @@
 # ------------------------------------------------------------------------------
 
 {
+  imports = [
+    inputs.disko.nixosModules.disko
+  ];
+  
   # 
   disko.devices = {
     #############################################################
@@ -109,10 +113,9 @@
         device = "/dev/disk/by-id/nvme-WD_BLACK_SN770M_1TB_245166801032"; # 1TB NVME OS Drive
         content = {
           type = "gpt";
-          partitions = [
+          partitions = {
             # Boot partition
-            {
-              name = "ESP";
+            ESP = {
               size = "512M";
               type = "EF00"; # EFI System Partition
               content = {
@@ -120,17 +123,16 @@
                 format = "vfat";
                 mountpoint = "/boot";
               };
-            }
+            };
             # ZFS partition
-            {
-              name = "zfs";
+            zfs = {
               size = "100%"; # Use the rest of the disk for ZFS
               content = {
                 type = "zfs";
                 pool = "rpool"; # Name of your ZFS pool
               };
-            }
-          ];
+            };
+          };
         };
       };
       hdd1 = {
