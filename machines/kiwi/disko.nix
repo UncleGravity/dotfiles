@@ -140,14 +140,16 @@
         device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800378"; # Storage Drive (Bay 01)
         content = {
           type = "gpt";
-          partitions = [{
-            name = "zfs-bay-1"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-1
-            size = "100%";
-            type = "FD00"; # Linux RAID partition type
-            # No specific 'content' type is strictly needed here if referenced by path in zpool,
-            # but you could set type = "FD00"; # Linux RAID if preferred by tools,
-            # or leave it for Disko to make a Linux data partition.
-          }];
+          partitions = {
+            data = {
+              name = "zfs-bay-1"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-1
+              size = "100%";
+              type = "FD00"; # Linux RAID partition type
+              # No specific 'content' type is strictly needed here if referenced by path in zpool,
+              # but you could set type = "FD00"; # Linux RAID if preferred by tools,
+              # or leave it for Disko to make a Linux data partition.
+            };
+          };
         };
       };
       hdd2 = {
@@ -155,11 +157,13 @@
         device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800370"; # Storage Drive (Bay 02)
         content = {
           type = "gpt";
-          partitions = [{
-            name = "zfs-bay-2"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-2
-            size = "100%";
-            type = "FD00"; # Linux RAID partition type
-          }];
+          partitions = {
+            data = {
+              name = "zfs-bay-2"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-2
+              size = "100%";
+              type = "FD00"; # Linux RAID partition type
+            };
+          };
         };
       };
       hdd3 = {
@@ -167,11 +171,13 @@
         device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800343"; # Storage Drive (Bay 03)
         content = {
           type = "gpt";
-          partitions = [{
-            name = "zfs-bay-3"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-3
-            size = "100%";
-            type = "FD00"; # Linux RAID partition type
-          }];
+          partitions = {
+            data = {
+              name = "zfs-bay-3"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-3
+              size = "100%";
+              type = "FD00"; # Linux RAID partition type
+            };
+          };
         };
       };
       hdd4 = {
@@ -179,11 +185,13 @@
         device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800293"; # Storage Drive (Bay 04)
         content = {
           type = "gpt";
-          partitions = [{
-            name = "zfs-bay-4"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-4
-            size = "100%";
-            type = "FD00"; # Linux RAID partition type
-          }];
+          partitions = {
+            data = {
+              name = "zfs-bay-4"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-4
+              size = "100%";
+              type = "FD00"; # Linux RAID partition type
+            };
+          };
         };
       };
     };

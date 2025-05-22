@@ -22,7 +22,6 @@
 
   # Enable the ZFS service at boot and tell it where to find your disks
   boot.zfs = {
-    enable                     = true;
     devNodes                   = "/dev/disk/by-id/";
     forceImportAll             = true;
     requestEncryptionCredentials = true;
