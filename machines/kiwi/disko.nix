@@ -129,7 +129,7 @@
               size = "100%"; # Use the rest of the disk for ZFS
               content = {
                 type = "zfs";
-                pool = "rpool"; # Name of your ZFS pool
+                pool = "rpool"; # boot/root pool
               };
             };
           };
