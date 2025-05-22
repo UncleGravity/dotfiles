@@ -141,13 +141,12 @@
         content = {
           type = "gpt";
           partitions = {
-            data = {
-              name = "zfs-bay-1"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-1
+            zfs = {
               size = "100%";
-              type = "FD00"; # Linux RAID partition type
-              # No specific 'content' type is strictly needed here if referenced by path in zpool,
-              # but you could set type = "FD00"; # Linux RAID if preferred by tools,
-              # or leave it for Disko to make a Linux data partition.
+              content = {
+                type = "zfs";
+                pool = "storagepool";
+              };
             };
           };
         };
@@ -158,10 +157,12 @@
         content = {
           type = "gpt";
           partitions = {
-            data = {
-              name = "zfs-bay-2"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-2
+            zfs = {
               size = "100%";
-              type = "FD00"; # Linux RAID partition type
+              content = {
+                type = "zfs";
+                pool = "storagepool";
+              };
             };
           };
         };
@@ -172,10 +173,12 @@
         content = {
           type = "gpt";
           partitions = {
-            data = {
-              name = "zfs-bay-3"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-3
+            zfs = {
               size = "100%";
-              type = "FD00"; # Linux RAID partition type
+              content = {
+                type = "zfs";
+                pool = "storagepool";
+              };
             };
           };
         };
@@ -186,10 +189,12 @@
         content = {
           type = "gpt";
           partitions = {
-            data = {
-              name = "zfs-bay-4"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-4
+            zfs = {
               size = "100%";
-              type = "FD00"; # Linux RAID partition type
+              content = {
+                type = "zfs";
+                pool = "storagepool";
+              };
             };
           };
         };
@@ -270,18 +275,12 @@
               {
                 # first mirror vdev: bay 1 ↔ bay 2
                 mode    = "mirror";
-                members = [
-                  "/dev/disk/by-partlabel/disk-hdd1-zfs-bay-1"
-                  "/dev/disk/by-partlabel/disk-hdd2-zfs-bay-2"
-                ];
+                members = [ "hdd1" "hdd2" ];
               }
               {
                 # second mirror vdev: bay 3 ↔ bay 4
                 mode    = "mirror";
-                members = [
-                  "/dev/disk/by-partlabel/disk-hdd3-zfs-bay-3"
-                  "/dev/disk/by-partlabel/disk-hdd4-zfs-bay-4"
-                ];
+                members = [ "hdd3" "hdd4" ];
               }
             ];
           };
