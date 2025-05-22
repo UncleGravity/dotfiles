@@ -20,7 +20,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;  # Limit to 5 latest generations
 
-
   # ---------------------------------------------------------------------------
   # Networking
   networking.hostName = hostname;

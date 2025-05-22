@@ -1,101 +1,13 @@
 { ... }:
 
-# ------------------------------------------------------------------------------
-# IMPORTANT NOTES FOR MANAGING STORAGE WITH DISKO & ZFS:
-# ------------------------------------------------------------------------------
-#
-# This file declaratively defines the disk layout and ZFS configuration for
-# this NixOS system using Disko.
-#
-# --- MANAGING ZFS DATASETS ---
-#
-# 1. ADDING DATASETS:
-#    - To add a new ZFS dataset (e.g., for new storage areas), define it within
-#      the `datasets` attribute of the appropriate pool (e.g., `rpool` or
-#      `storagepool`).
-#    - Specify its `type = "zfs_fs";`, `mountpoint`, and any desired ZFS `options`.
-#    - After saving changes, run `nixos-rebuild switch` to apply.
-#
-# 2. REMOVING DATASETS & RECLAIMING SPACE:
-#    This is a two-step process if you want to permanently delete the data and
-#    reclaim its disk space:
-#
-#    Step A: Remove from NixOS/Disko Management
-#      - Delete or comment out the dataset's definition from this `disko.nix` file.
-#      - Run `nixos-rebuild switch`.
-#      - What happens:
-#          - NixOS will no longer manage this dataset.
-#          - It will likely be unmounted automatically.
-#          - THE DATASET AND ITS DATA ARE *NOT* YET DELETED FROM THE ZFS POOL.
-#          - The space is *NOT* yet reclaimed.
-#
-#    Step B: Permanently Destroy Dataset and Reclaim Space (Manual CLI)
-#      - Open a terminal.
-#      - Identify the full dataset name (e.g., `storagepool/olddata`).
-#      - Ensure it's unmounted: `sudo zfs unmount poolname/datasetname`
-#        (if it wasn't already).
-#      - Destroy the dataset: `sudo zfs destroy poolname/datasetname`
-#      - WARNING: `zfs destroy` is IRREVERSIBLE. Double-check the dataset name.
-#      - If the dataset has snapshots, `zfs destroy` might fail. You may need to
-#        destroy snapshots first (e.g., `zfs destroy poolname/datasetname@snapshotname`)
-#        or use `sudo zfs destroy -r poolname/datasetname` to remove the dataset
-#        and all its snapshots. Use `-r` with extreme caution.
-#      - After successful destruction, the space will be reclaimed by the pool.
-#
-# 3. ZFS SNAPSHOTS AND SPACE:
-#    - Snapshots (manual or automatic, like `com.sun:auto-snapshot`) consume
-#      space within the pool.
-#    - If you delete a dataset, its snapshots that depend on it might also need
-#      to be destroyed to fully reclaim space.
-#    - Regularly manage snapshots (e.g., `zfs list -t snapshot`, `zfs destroy pool/fs@snap`)
-#      to prevent excessive space usage.
-#
-# --- MANAGING ZFS POOLS & PHYSICAL DISKS ---
-#
-# 1. STABLE DEVICE PATHS:
-#    - For `devices` in ZFS pool definitions (e.g., `storagepool.devices`),
-#      it is CRITICAL to use stable device paths like:
-#        - `/dev/disk/by-partlabel/your-label` (preferred if you label partitions)
-#        - `/dev/disk/by-id/ata-drivemodel_serial-partX`
-#    - Avoid using `/dev/sdX` or `/dev/nvmeXnY` paths directly in pool definitions
-#      as they can change between boots, potentially leading to pool import issues.
-#    - The partition `name` attribute in `disk.*.content.partitions` (e.g., `name = "zfs-storage-1";`)
-#      creates a GPT PARTLABEL, allowing you to use `/dev/disk/by-partlabel/zfs-storage-1`.
-#
-# 2. REPLACING A FAILED DRIVE (e.g., in a mirror):
-#    - This is primarily a ZFS CLI operation.
-#    - Identify the failed drive: `sudo zpool status yourpoolname`
-#    - Offline the failed drive (if not already offline): `sudo zpool offline yourpoolname /dev/disk/by-id/old-drive-id`
-#    - Physically replace the drive.
-#    - Add the new drive to the mirror: `sudo zpool replace yourpoolname /dev/disk/by-id/old-drive-id /dev/disk/by-id/new-drive-id`
-#      (If the old drive is missing, you might just specify `sudo zpool replace yourpoolname old_drive_guid /dev/disk/by-id/new-drive-id`)
-#    - ZFS will start resilvering (rebuilding) the mirror. Monitor with `sudo zpool status yourpoolname`.
-#    - If you used specific partition labels that are now on the new disk, ensure this
-#      `disko.nix` file still accurately reflects the setup for future rebuilds, especially
-#      if the new disk needs partitioning/labeling via Disko first (less common for simple replacements).
-#
-# --- GENERAL ADVICE ---
-#
-# 1. REDUNDANCY IS NOT A BACKUP:
-#    - ZFS mirrors (like in `storagepool`) protect against single drive failure,
-#      not against accidental deletion, file corruption, malware, or disasters.
-#    - Implement a separate backup strategy for critical data (e.g., `zfs send/recv`
-#      to another machine/pool, or other backup tools).
-#
-# 2. TEST CHANGES:
-#    - Before applying significant storage changes to a production system,
-#      test your `disko.nix` configuration in a virtual machine or on a
-#      non-critical system if possible.
-#
-# 3. DISKO ON INITIAL INSTALL VS. REBUILDS:
-#    - On initial NixOS installation with Disko, Disko can be destructive
-#      (formatting disks, creating partitions).
-#    - On subsequent `nixos-rebuild switch` operations on an existing system,
-#      Disko is generally non-destructive for existing ZFS pools and datasets
-#      unless specific options for erasure are used (which are not in this config).
-#      It focuses on creating what's defined but missing.
-#
-# ------------------------------------------------------------------------------
+let
+  # Device Paths
+  osDrivePath = "/dev/disk/by-id/nvme-WD_BLACK_SN770M_1TB_245166801032";
+  hdd1Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800378";
+  hdd2Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800370";
+  hdd3Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800343";
+  hdd4Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800293";
+in
 
 {
   # imports = [
@@ -110,7 +22,7 @@
     disk = {
       maindrive = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-WD_BLACK_SN770M_1TB_245166801032"; # 1TB NVME OS Drive
+        device = osDrivePath; # 1TB NVME OS Drive
         content = {
           type = "gpt";
           partitions = {
@@ -137,7 +49,7 @@
       };
       hdd1 = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800378"; # Storage Drive (Bay 01)
+        device = hdd1Path; # Storage Drive (Bay 01)
         content = {
           type = "gpt";
           partitions = {
@@ -153,7 +65,7 @@
       };
       hdd2 = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800370"; # Storage Drive (Bay 02)
+        device = hdd2Path; # Storage Drive (Bay 02)
         content = {
           type = "gpt";
           partitions = {
@@ -169,7 +81,7 @@
       };
       hdd3 = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800343"; # Storage Drive (Bay 03)
+        device = hdd3Path; # Storage Drive (Bay 03)
         content = {
           type = "gpt";
           partitions = {
@@ -185,7 +97,7 @@
       };
       hdd4 = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800293"; # Storage Drive (Bay 04)
+        device = hdd4Path; # Storage Drive (Bay 04)
         content = {
           type = "gpt";
           partitions = {

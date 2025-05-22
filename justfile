@@ -119,6 +119,30 @@ help:
     @just --list
     @echo "Run 'just <command>' to execute a command."
 
+# Format and mount disk using Disko
+[confirm("DANGER: This will destroy, format, and mount the disk according to the Disko configuration for the specified host. THIS IS A DESTRUCTIVE OPERATION. Are you sure you want to continue?")]
+disko hostname:
+    #!/usr/bin/env bash
+    echo "💾 Preparing to format and mount disk using Disko for hostname: {{hostname}}"
+    if [ "{{system_type}}" != "nixos" ]; then
+        echo "❌ Disko command is only supported on NixOS systems."
+        exit 1
+    fi
+
+    DISKO_CONFIG="./machines/{{hostname}}/disko.nix"
+
+    if [ ! -f "$DISKO_CONFIG" ]; then
+        echo "❌ Disko configuration file not found: $DISKO_CONFIG"
+        exit 1
+    fi
+
+    echo "🚀 Running Disko with config: $DISKO_CONFIG"
+    if ! sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"; then
+        echo "❌ Failed to execute Disko command."
+        exit 1
+    fi
+    echo "✅ Disko command completed successfully!"
+
 ###############################################################
 # Secrets Management
 ###############################################################

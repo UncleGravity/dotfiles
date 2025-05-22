@@ -4,11 +4,16 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 
 ## Nixos Rebuild
 
-sudo nixos-rebuild switch --flake ".#nixos" -v
+### First time:
+just disko {{target-hostname}}
+sudo nixos-install --flake .#target-hostname
+
+### To rebuild:
+sudo nixos-rebuild switch --flake ".#target-hostname" -v
 
 ## If you want home manager to "see" a git submodule (tbh don't do this)
 
-sudo nixos-rebuild switch --flake ".?submodules=1#nixos" -v
+sudo nixos-rebuild switch --flake ".?submodules=1#target-hostname" -v
 
 ## For the Raspberry Pi
 

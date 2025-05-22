@@ -8,10 +8,12 @@ in
     [
       ./hardware.nix
       ../_default/nixos/configuration.nix
-      inputs.disko.nixosModules.disko
-      ./disko.nix
       ./zfs.nix
       # "${MODULES_DIR}/sops.nix"
+
+      # Auto-generates fileSystems entries originally found in hardware.nix
+      inputs.disko.nixosModules.disko 
+      ./disko.nix
     ];
 
   # ---------------------------------------------------------------------------
