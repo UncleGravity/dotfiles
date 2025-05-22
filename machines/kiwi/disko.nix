@@ -141,6 +141,7 @@
           partitions = [{
             name = "zfs-bay-1"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-1
             size = "100%";
+            type = "FD00"; # Linux RAID partition type
             # No specific 'content' type is strictly needed here if referenced by path in zpool,
             # but you could set type = "FD00"; # Linux RAID if preferred by tools,
             # or leave it for Disko to make a Linux data partition.
@@ -155,6 +156,7 @@
           partitions = [{
             name = "zfs-bay-2"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-2
             size = "100%";
+            type = "FD00"; # Linux RAID partition type
           }];
         };
       };
@@ -166,6 +168,7 @@
           partitions = [{
             name = "zfs-bay-3"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-3
             size = "100%";
+            type = "FD00"; # Linux RAID partition type
           }];
         };
       };
@@ -177,6 +180,7 @@
           partitions = [{
             name = "zfs-bay-4"; # GPT Label for /dev/disk/by-partlabel/zfs-bay-4
             size = "100%";
+            type = "FD00"; # Linux RAID partition type
           }];
         };
       };
@@ -197,13 +201,13 @@
           "com.sun:auto-snapshot" = "true";
           atime = "off"; # Disable atime updates for the whole pool by default
         };
+
+        # rpool/            # ZFS pool
+        # ├── root          # Dataset mounted at /
+        # ├── home          # Dataset mounted at /home
+        # ├── nix           # Dataset mounted at /nix
+        # └── persist       # Dataset mounted at /persist
         datasets = {
-          # rpool/            # ZFS pool
-          # ├── root          # Dataset mounted at /
-          # ├── home          # Dataset mounted at /home
-          # ├── nix           # Dataset mounted at /nix
-          # └── persist       # Dataset mounted at /persist
-          
           # It's good practice to create a blank dataset for the root of the pool
           # and then create your actual filesystems under it.
           # Disko will automatically create these if they don't exist.
@@ -238,13 +242,7 @@
       # ---------------------------------------------------------------------------
       #  Storage Pool
       storagepool = {
-        # storagepool/
-        # ├── root            # Dataset mounted at /nas
-        # ├── backups         # Dataset mounted at /nas/backups
-        # └── media           # Dataset mounted at /nas/media
         type = "zpool";
-        # The pool itself typically doesn't need a mountpoint if datasets under it specify theirs.
-        # mountpoint = "none";
 
         # Default options
         rootFsOptions = {
@@ -254,25 +252,36 @@
           acltype = "posixacl"; # Enable POSIX ACLs
         };
 
-        # vdev layout: 2x mirror vdevs.
-        vdevs = [
-          { # First mirror vdev
-            type = "mirror";
-            devices = [
-              "/dev/disk/by-partlabel/zfs-bay-1" # From hdd1 (Bay 01)
-              "/dev/disk/by-partlabel/zfs-bay-2" # From hdd2 (Bay 02)
+        # ─ Topology: two mirror vdevs ──────────────────────────────────────────────
+        mode = {
+          topology = {
+            type = "topology";
+            vdev = [
+              {
+                # first mirror vdev: bay 1 ↔ bay 2
+                mode    = "mirror";
+                members = [
+                  "/dev/disk/by-partlabel/zfs-bay-1"
+                  "/dev/disk/by-partlabel/zfs-bay-2"
+                ];
+              }
+              {
+                # second mirror vdev: bay 3 ↔ bay 4
+                mode    = "mirror";
+                members = [
+                  "/dev/disk/by-partlabel/zfs-bay-3"
+                  "/dev/disk/by-partlabel/zfs-bay-4"
+                ];
+              }
             ];
-          }
-          { # Second mirror vdev
-            type = "mirror";
-            devices = [
-              "/dev/disk/by-partlabel/zfs-bay-3" # From hdd3 (Bay 03)
-              "/dev/disk/by-partlabel/zfs-bay-4" # From hdd4 (Bay 04)
-            ];
-          }
-        ];
+          };
+        };
 
         # Define datasets within the 'storagepool'.
+        # storagepool/
+        # ├── root            # Dataset mounted at /nas
+        # ├── backups         # Dataset mounted at /nas/backups
+        # └── media           # Dataset mounted at /nas/media
         datasets = {
           "storagepool/root" = {
             type = "zfs_fs";
