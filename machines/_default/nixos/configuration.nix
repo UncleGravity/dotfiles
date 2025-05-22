@@ -26,10 +26,10 @@
   networking.networkmanager.enable = true;
   services.openssh = {
     enable = true;
-    # settings = {
-    #   PermitRootLogin = "no"; # No root login
-    #   PasswordAuthentication = false; # No password login
-    # };
+    settings = {
+      PermitRootLogin = "no"; # No root login
+      PasswordAuthentication = false; # No password login
+    };
   };
 
   # Configure network proxy if necessary
@@ -119,6 +119,9 @@
         "networkmanager" 
         "wheel" # sudo
         ];
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzI2b0Spyh5wIm6mLVPKaDonuea0a7sdNFGN2V1HTRq" # PUBLIC ssh key
+      ];
     };
     defaultUserShell = pkgs.zsh;
   };

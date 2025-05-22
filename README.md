@@ -5,11 +5,14 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ## Nixos Rebuild
 
 ### First time:
-just disko {{target-hostname}}
-sudo nixos-install --flake .#target-hostname
+just disko <hostname>
+sudo nixos-install --flake .#<hostname>
 
 ### To rebuild:
-sudo nixos-rebuild switch --flake ".#target-hostname" -v
+sudo nixos-rebuild switch --flake ".#<hostname>" -v
+
+### Send rebuild command to remote host:
+sudo nixos-rebuild switch --flake ".#<hostname>" --target-host <hostname.local> --use-remote-sudo
 
 ## If you want home manager to "see" a git submodule (tbh don't do this)
 
