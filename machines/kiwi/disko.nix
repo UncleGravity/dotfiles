@@ -271,16 +271,16 @@
                 # first mirror vdev: bay 1 ↔ bay 2
                 mode    = "mirror";
                 members = [
-                  "/dev/disk/by-partlabel/zfs-bay-1"
-                  "/dev/disk/by-partlabel/zfs-bay-2"
+                  "/dev/disk/by-partlabel/disk-hdd1-zfs-bay-1"
+                  "/dev/disk/by-partlabel/disk-hdd2-zfs-bay-2"
                 ];
               }
               {
                 # second mirror vdev: bay 3 ↔ bay 4
                 mode    = "mirror";
                 members = [
-                  "/dev/disk/by-partlabel/zfs-bay-3"
-                  "/dev/disk/by-partlabel/zfs-bay-4"
+                  "/dev/disk/by-partlabel/disk-hdd3-zfs-bay-3"
+                  "/dev/disk/by-partlabel/disk-hdd4-zfs-bay-4"
                 ];
               }
             ];
