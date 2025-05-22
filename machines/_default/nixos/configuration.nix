@@ -26,10 +26,10 @@
   networking.networkmanager.enable = true;
   services.openssh = {
     enable = true;
-    settings = {
-      PermitRootLogin = "no"; # No root login
-      PasswordAuthentication = false; # No password login
-    };
+    # settings = {
+    #   PermitRootLogin = "no"; # No root login
+    #   PasswordAuthentication = false; # No password login
+    # };
   };
 
   # Configure network proxy if necessary

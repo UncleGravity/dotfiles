@@ -10,11 +10,6 @@ let
 in
 
 {
-  # imports = [
-  #   inputs.disko.nixosModules.disko
-  # ];
-  
-  # 
   disko.devices = {
     #############################################################
     #  Disks
@@ -34,6 +29,7 @@ in
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
+                options = [ "umask=0077" ]; # Restrict permissions
               };
             };
             # ZFS partition
