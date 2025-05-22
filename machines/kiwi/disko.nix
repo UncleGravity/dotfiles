@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 # ------------------------------------------------------------------------------
 # IMPORTANT NOTES FOR MANAGING STORAGE WITH DISKO & ZFS:
