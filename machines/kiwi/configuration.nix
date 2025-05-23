@@ -9,7 +9,9 @@ in
       ./hardware.nix
       ../_default/nixos/configuration.nix
       ./zfs.nix
-      # "${MODULES_DIR}/sops.nix"
+      "${MODULES_DIR}/nixos/docker.nix"
+      "${MODULES_DIR}/sops.nix"
+      "${MODULES_DIR}/samba.nix"
 
       # Auto-generates fileSystems entries originally found in hardware.nix
       inputs.disko.nixosModules.disko 

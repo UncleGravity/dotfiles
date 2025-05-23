@@ -12,7 +12,7 @@
   boot.supportedFilesystems = [ "vfat" "zfs" ];
 
   # Use the ZFS-compatible kernel build
-  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+  # boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
 
   # Tweak kernel params: limit ARC size, disable hibernation
   boot.kernelParams = [

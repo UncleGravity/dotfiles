@@ -12,7 +12,12 @@ sudo nixos-install --flake .#<hostname>
 sudo nixos-rebuild switch --flake ".#<hostname>" -v
 
 ### Send rebuild command to remote host:
-sudo nixos-rebuild switch --flake ".#<hostname>" --target-host <hostname.local> --use-remote-sudo
+nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
+  --flake .#kiwi \
+  --build-host <user>@<hostname> \
+  --target-host <user>@<hostname> \
+  --use-remote-sudo \
+  --fast
 
 ## If you want home manager to "see" a git submodule (tbh don't do this)
 

@@ -164,3 +164,28 @@ secrets-rotate:
     @echo "🔄 Rotating secrets keys..."
     @./home/dotfiles/zsh/secrets/_rotate.sh
     @echo "✅ Secrets re-encrypted with updated keys."
+
+# Synchronize remote NixOS machine
+# Usage: just remote-sync <user> <hostname>
+# Example: just remote-sync myuser myremoteserver
+remote-sync user host:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
+    
+    # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
+    # named after the target host (e.g., nixosConfigurations.myremoteserver).
+    echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
+
+    if ! nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
+        --flake ".#{{host}}" \
+        --build-host "{{user}}@{{host}}" \
+        --target-host "{{user}}@{{host}}" \
+        --use-remote-sudo \
+        --fast; then
+        echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
+        exit 1
+    fi
+    
+    echo "✅ Remote synchronization for '{{host}}' completed successfully!"

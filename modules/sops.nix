@@ -19,7 +19,7 @@ in
     environment = {
       # SOPS_AGE_KEY_CMD = ''su - ${username} -c "op item get \"master-ssh-key\" --field \"private-key-age\" --reveal"'';
       # SOPS_AGE_KEY_CMD = "${secretsDir}/keys.sh";
-      SOPS_AGE_SSH_PRIVATE_KEY_FILE = "${config.users.users.${username}.home}/.ssh/id_ed25519";
+      # SOPS_AGE_SSH_PRIVATE_KEY_FILE = "${config.users.users.${username}.home}/.ssh/id_ed25519";
     };
 
     secrets = lib.mkMerge [

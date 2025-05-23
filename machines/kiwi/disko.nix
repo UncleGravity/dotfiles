@@ -29,7 +29,7 @@ in
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
-                options = [ "umask=0077" ]; # Restrict permissions
+                # options = [ "umask=0077" ]; # Restrict permissions
               };
             };
             # ZFS partition
@@ -123,6 +123,7 @@ in
           compression = "lz4";
           "com.sun:auto-snapshot" = "true";
           atime = "off"; # Disable atime updates for the whole pool by default
+          mountpoint = "none";
         };
 
         # rpool/            # ZFS pool
@@ -173,6 +174,7 @@ in
           atime = "off"; # Good for performance, less metadata writes.
           xattr = "sa"; # Stores extra metadata on files (used by SAMBA)
           acltype = "posixacl"; # Enable POSIX ACLs
+          mountpoint = "none";
         };
 
         # ─ Topology: two mirror vdevs ──────────────────────────────────────────────

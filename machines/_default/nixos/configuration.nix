@@ -1,8 +1,13 @@
-{lib, hostname, username, pkgs, ...}:
 {
+  lib,
+  hostname,
+  username,
+  pkgs,
+  ...
+}: {
   # Enable Flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -18,7 +23,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5;  # Limit to 5 latest generations
+  boot.loader.systemd-boot.configurationLimit = 5; # Limit to 5 latest generations
 
   # ---------------------------------------------------------------------------
   # Networking
@@ -65,7 +70,7 @@
   # X11
   services.xserver.enable = lib.mkDefault true;
   services.xserver.autorun = lib.mkDefault true;
-   
+
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = lib.mkDefault true;
   services.xserver.desktopManager.gnome.enable = true;
@@ -73,7 +78,7 @@
   # Enable xkb Options in TTY
   console.useXkbConfig = true;
   #console.keyMap = "us-intl";
-  
+
   # Configure keymap in X11
   services.xserver = {
     xkb.layout = "us";
@@ -81,8 +86,38 @@
     #xkb.options = "";
     #xkb.model = "macbook79";
   };
-    
+
   services.xserver.exportConfiguration = true;
+
+  # Disable the GNOME3/GDM auto-suspend feature that cannot be disabled in GUI!
+  # If no user is logged in, the machine will power down after 20 minutes.
+  # systemd = {
+  #   targets = {
+  #     sleep = {
+  #       enable = false;
+  #       unitConfig.DefaultDependencies = "no";
+  #     };
+  #     suspend = {
+  #       enable = false;
+  #       unitConfig.DefaultDependencies = "no";
+  #     };
+  #     hibernate = {
+  #       enable = false;
+  #       unitConfig.DefaultDependencies = "no";
+  #     };
+  #     "hybrid-sleep" = {
+  #       enable = false;
+  #       unitConfig.DefaultDependencies = "no";
+  #     };
+  #   };
+  # };
+
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=no
+    AllowHibernation=no
+    AllowHybridSleep=no
+    AllowSuspendThenHibernate=no
+  '';
 
   # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
@@ -111,14 +146,14 @@
 
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users =  {
+  users = {
     users.${username} = {
       isNormalUser = true;
       description = "me";
-      extraGroups = [ 
-        "networkmanager" 
+      extraGroups = [
+        "networkmanager"
         "wheel" # sudo
-        ];
+      ];
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzI2b0Spyh5wIm6mLVPKaDonuea0a7sdNFGN2V1HTRq" # PUBLIC ssh key
       ];
@@ -126,23 +161,23 @@
     defaultUserShell = pkgs.zsh;
   };
 
-  nix.settings.trusted-users = [ "root" "${username}" ]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
+  nix.settings.trusted-users = ["root" "${username}"]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
 
   # ---------------------------------------------------------------------------
   # SHELLS
   environment.shells = with pkgs; [bash zsh];
   programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
   programs.zsh.enableGlobalCompInit = false; # This prevents compinit from running on /etc/zshrc, which noticeably slows down shell startup. Run compinit from user zshrc instead.
-  environment.pathsToLink = [ "/share/zsh" ]; # (apparently) get zsh completions for system packages (eg. systemd)
+  environment.pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
 
   # ---------------------------------------------------------------------------
   services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
-  
+
   # ---------------------------------------------------------------------------
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default. 
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
     git
     distrobox
@@ -150,3 +185,4 @@
     ghostty
   ];
 }
+
