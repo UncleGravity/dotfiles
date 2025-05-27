@@ -67,29 +67,6 @@
   };
 
   # ---------------------------------------------------------------------------
-  # X11
-  services.xserver.enable = lib.mkDefault true;
-  services.xserver.autorun = lib.mkDefault true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = lib.mkDefault true;
-  services.xserver.desktopManager.gnome.enable = true;
-
-  # Enable xkb Options in TTY
-  console.useXkbConfig = true;
-  #console.keyMap = "us-intl";
-
-  # Configure keymap in X11
-  services.xserver = {
-    xkb.layout = "us";
-    xkb.variant = "altgr-intl";
-    #xkb.options = "";
-    #xkb.model = "macbook79";
-  };
-
-  services.xserver.exportConfiguration = true;
-
-  # ---------------------------------------------------------------------------
   # Disable sleep, suspend, hibernate, and hybrid-sleep
   # This is necessary because the GNOME3/GDM auto-suspend feature cannot be disabled in GUI!
   # If no user is logged in, the machine will power down after 20 minutes.

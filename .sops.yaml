@@ -6,17 +6,30 @@ keys:
     - &nixos-vm age16ssscp6dgnpg8ev7enfqejkp2y0c00493rvgrh0vccwgdllk0y2swjawjq
     - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
 creation_rules:
-  - path_regex: secrets/[^/]+\.(yaml|json|env|ini|sops)$
+  # Secrets for all machines.
+  - path_regex: (secrets|modules)/.+\.(yaml|json|env|ini|sops)$
     key_groups:
     - age:
       - *angel
       - *bengkui
       - *nixos-vm
       - *kiwi
-    # - path_regex: machines/nixos/[^/]+\.(yaml|json|env|ini|sops)$
-    #   key_groups:
-    #     - age:
-    #       - *nixos-vm
+
+  # bengkui 
+  - path_regex: machines/bengkui/.*\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+        - *bengkui
+  # nixos-vm
+  - path_regex: machines/nixos/.*\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+        - *nixos-vm
+  # kiwi
+  - path_regex: machines/kiwi/.*\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+        - *kiwi
 
   # Anything else not included above.
   - age: *angel

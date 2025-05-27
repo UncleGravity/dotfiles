@@ -10,9 +10,8 @@ in
 
   sops = {
     age.sshKeyPaths = [ 
-      "${config.users.users.${username}.home}/.ssh/id_ed25519" 
       "/etc/ssh/ssh_host_ed25519_key"
-      ];
+    ];
     # age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
     defaultSopsFile = "${secretsDir}/secrets.yaml";
     validateSopsFiles = true;

@@ -1,6 +1,5 @@
 { self, config, pkgs, inputs, options, username, hostname, systemStateVersion, ... }:
 let
-  enableXServer = true;
   MODULES_DIR = "${self}/modules";
 in
 {
@@ -11,21 +10,26 @@ in
       ./zfs.nix
       "${MODULES_DIR}/nixos/docker.nix"
       "${MODULES_DIR}/sops.nix"
-      "${MODULES_DIR}/samba.nix"
+      "${MODULES_DIR}/nixos/samba.nix"
+      "${MODULES_DIR}/nixos/guacamole/"
+      "${MODULES_DIR}/nixos/display-manager.nix"
 
-      # Auto-generates fileSystems entries originally found in hardware.nix
+      # Auto-generates fileSystems entries (originally managed in hardware.nix)
       inputs.disko.nixosModules.disko 
       ./disko.nix
     ];
 
   # ---------------------------------------------------------------------------
-  # X11
-  services.xserver.enable = enableXServer;
-  services.xserver.autorun = enableXServer;
-   
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = enableXServer;
-  services.xserver.desktopManager.gnome.enable = true;
+  # X11 / GNOME
+  displayManager = {
+    enable = true;
+    desktop = "gnome";
+    rdp.enable = true; # For Guacamole
+  };
+
+  # ---------------------------------------------------------------------------
+  # Escape Hatch
+  programs.nix-ld.enable = true;
 
   # ---------------------------------------------------------------------------
   system.stateVersion = systemStateVersion; # no touch
