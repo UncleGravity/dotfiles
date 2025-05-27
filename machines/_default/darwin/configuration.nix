@@ -4,6 +4,66 @@ let
   MODULES_DIR = "${self}/modules";
 in
 {
+  # HOTFIX:
+  # Failed assertions:
+  #      - The `system.activationScripts.postUserActivation` option has
+  #      been removed, as all activation now takes place as `root`. Please
+  #      restructure your custom activation scripts appropriately,
+  #      potentially using `sudo` if you need to run commands as a user.
+
+  #      - Previously, some nix-darwin options applied to the user running
+  #      `darwin-rebuild`. As part of a long‐term migration to make
+  #      nix-darwin focus on system‐wide activation and support first‐class
+  #      multi‐user setups, all system activation now runs as `root`, and
+  #      these options instead apply to the `system.primaryUser` user.
+
+  #      You currently have the following primary‐user‐requiring options set:
+
+  #      * `homebrew.enable`
+  #      * `system.defaults.ActivityMonitor.IconType`
+  #      * `system.defaults.CustomUserPreferences."com.apple.ActivityMonitor"`
+  #      * `system.defaults.CustomUserPreferences.NSGlobalDomain`
+  #      * `system.defaults.LaunchServices.LSQuarantine`
+  #      * `system.defaults.NSGlobalDomain.ApplePressAndHoldEnabled`
+  #      * `system.defaults.NSGlobalDomain.InitialKeyRepeat`
+  #      * `system.defaults.NSGlobalDomain.KeyRepeat`
+  #      * `system.defaults.NSGlobalDomain.NSAutomaticCapitalizationEnabled`
+  #      * `system.defaults.NSGlobalDomain.NSAutomaticDashSubstitutionEnabled`
+  #      * `system.defaults.NSGlobalDomain.NSAutomaticPeriodSubstitutionEnabled`
+  #      * `system.defaults.NSGlobalDomain.NSAutomaticQuoteSubstitutionEnabled`
+  #      * `system.defaults.NSGlobalDomain.NSAutomaticSpellingCorrectionEnabled`
+  #      * `system.defaults.dock.autohide`
+  #      * `system.defaults.dock.autohide-delay`
+  #      * `system.defaults.dock.autohide-time-modifier`
+  #      * `system.defaults.dock.mineffect`
+  #      * `system.defaults.dock.mru-spaces`
+  #      * `system.defaults.dock.scroll-to-open`
+  #      * `system.defaults.dock.show-recents`
+  #      * `system.defaults.finder.AppleShowAllExtensions`
+  #      * `system.defaults.finder.AppleShowAllFiles`
+  #      * `system.defaults.finder.FXDefaultSearchScope`
+  #      * `system.defaults.finder.FXPreferredViewStyle`
+  #      * `system.defaults.finder.ShowExternalHardDrivesOnDesktop`
+  #      * `system.defaults.finder.ShowHardDrivesOnDesktop`
+  #      * `system.defaults.finder.ShowPathbar`
+  #      * `system.defaults.finder.ShowRemovableMediaOnDesktop`
+  #      * `system.defaults.menuExtraClock.ShowAMPM`
+  #      * `system.defaults.menuExtraClock.ShowDate`
+  #      * `system.defaults.menuExtraClock.ShowDayOfMonth`
+  #      * `system.defaults.menuExtraClock.ShowDayOfWeek`
+  #      * `system.defaults.menuExtraClock.ShowSeconds`
+
+  #      To continue using these options, set `system.primaryUser` to the name
+  #      of the user you have been using to run `darwin-rebuild`. In the long
+  #      run, this setting will be deprecated and removed after all the
+  #      functionality it is relevant for has been adjusted to allow
+  #      specifying the relevant user separately, moved under the
+  #      `users.users.*` namespace, or migrated to Home Manager.
+
+  #      If you run into any unexpected issues with the migration, please
+  #      open an issue at <https://github.com/nix-darwin/nix-darwin/issues/new>
+  #      and include as much information as possible.
+  
   imports = [
     "${MODULES_DIR}/sops.nix"
   ];
@@ -19,6 +79,10 @@ in
   users.users."${username}" = {
     home = "/Users/${username}";
     description = username;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzI2b0Spyh5wIm6mLVPKaDonuea0a7sdNFGN2V1HTRq" # Master
+      "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLpjzihuPI+t7xYjznPNLALMCunS2WKw/cqYRMAG1YILTGiLmdYRWck9Ic7muK7SXWj0XP8nWTze1iRhA/iTyxA=" # CRISPR (termius)
+    ];
   };
 
   nix.settings.trusted-users = [ username ];
@@ -71,8 +135,9 @@ in
   #    https://macos-defaults.com/
   ###################################################################################
   system = {
+    primaryUser = username;
     # Activate settings without logout/login
-    activationScripts.postUserActivation.text = lib.mkDefault ''
+    activationScripts.postActivation.text = lib.mkDefault ''
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
     '';
 
@@ -173,28 +238,4 @@ in
   #  Tailscale 
   #############################################################
   # services.tailscale.enable = true;
-
-  #############################################################
-  #  SOPS
-  #############################################################
-
-  # sops = {
-  #   age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
-  #   defaultSopsFile = ../secrets/secrets.yaml;
-  #   validateSopsFiles = true;
-  #   # environment = {
-  #   #   # SOPS_AGE_KEY_CMD = ''su - ${username} -c "op item get \"master-ssh-key\" --field \"private-key-age\" --reveal"'';
-  #   #   # SOPS_AGE_KEY_CMD = "/Users/useradmin/.config/sops/age/keys.sh";
-  #   #   SOPS_AGE_KEY_CMD = ../secrets/keys.sh;
-  #   #   # SOPS_AGE_KEY = "$${op item get \"master-ssh-key\" --field \"private-key-age\" --reveal}";
-  #   # };
-
-  #   secrets = {
-  #     "secrets.zsh" = {
-  #       path = "${config.users.users.${username}.home}/.config/zsh/secrets/secrets.zsh";
-  #       owner = username;
-  #       mode = "0600";
-  #     };
-  #   };
-  # };
 }

@@ -23,10 +23,7 @@
 
     # Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
-    nix-homebrew = {
-      url = "github:zhaofengli/nix-homebrew";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
     # Zig nightly
     zig = {

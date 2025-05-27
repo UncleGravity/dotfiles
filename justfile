@@ -27,7 +27,7 @@ sync:
             ;;
         "darwin")
             HOSTNAME=$(scutil --get ComputerName)
-            if ! darwin-rebuild switch --flake .#$HOSTNAME; then
+            if ! sudo darwin-rebuild switch --flake .#$HOSTNAME; then
                 echo "❌ Failed to rebuild Darwin configuration."
                 exit 1
             fi
