@@ -30,6 +30,7 @@ Options:
   -T, --url-title TEXT     Title for the URL
   -S, --timestamp SECS     Unix timestamp for the message
   -d, --device DEVICE      Target device name (otherwise all devices)
+  -H, --html               Enable HTML formatting in the message
   -h, --help               Show this help message and exit
 EOF
 }
@@ -45,6 +46,7 @@ while [[ $# -gt 0 ]]; do
     --url-title) ARGS+=(-T "$2");       shift 2 ;;
     --timestamp) ARGS+=(-S "$2");       shift 2 ;;
     --device)    ARGS+=(-d "$2");       shift 2 ;;
+    --html)      ARGS+=(-H);            shift   ;;
     --help)      ARGS+=(-h);            shift   ;;
     --)          shift; break           ;;
     -*)          ARGS+=("$1");          shift   ;;
@@ -61,9 +63,10 @@ URL=""
 URL_TITLE=""
 TIMESTAMP=""
 DEVICE=""
+HTML_ENABLED=0
 
 # Parse short options
-while getopts "m:i:t:u:T:S:d:h" opt; do
+while getopts "m:i:t:u:T:S:d:Hh" opt; do
   case "$opt" in
     m) MESSAGE=$OPTARG      ;;
     i) IMAGE=$OPTARG        ;;
@@ -72,6 +75,7 @@ while getopts "m:i:t:u:T:S:d:h" opt; do
     T) URL_TITLE=$OPTARG    ;;
     S) TIMESTAMP=$OPTARG    ;;
     d) DEVICE=$OPTARG       ;;
+    H) HTML_ENABLED=1       ;;
     h) usage; exit 0        ;;
     *) usage; exit 1        ;;
   esac
@@ -105,6 +109,11 @@ if [[ -n "$IMAGE" ]]; then
   fi
 fi
 
+# Set default device if not provided
+if [[ -z "$DEVICE" ]]; then
+  DEVICE="CRISPR"
+fi
+
 # Send notification
 curl -sSf -X POST https://api.pushover.net/1/messages.json \
   -F "token=${PUSHOVER_APP_KEY_DEFAULT}" \
@@ -115,6 +124,7 @@ curl -sSf -X POST https://api.pushover.net/1/messages.json \
   ${URL_TITLE:+-F "url_title=${URL_TITLE}"} \
   ${TIMESTAMP:+-F "timestamp=${TIMESTAMP}"} \
   ${IMAGE:+-F "attachment=@${IMAGE}"} \
-  ${DEVICE:+-F "device=${DEVICE}"}
+  ${DEVICE:+-F "device=${DEVICE}"} \
+  ${HTML_ENABLED:+-F "html=1"}
 
 exit $?
