@@ -114,7 +114,6 @@ in
   # Run unpatched binaries
   # Why? Because vscode-server doesn't work without it.
   programs.nix-ld.enable = true; # Needed for vscode-server
-  programs.nix-ld.package = pkgs.nix-ld-rs; # Latest version of nix-ld
   programs.nix-ld.libraries = options.programs.nix-ld.libraries.default ++ commonPackages;
   
 
