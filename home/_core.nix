@@ -170,6 +170,20 @@ in {
     then "/Users/${username}"
     else "/home/${username}";
 
+  programs.ssh = {
+    enable = true;
+    forwardAgent = true;
+    extraConfig = ''
+      Include ${config.home.homeDirectory}/.config/colima/ssh_config
+    '';
+    matchBlocks = {
+      "kiwi" = {
+        user = "angel";
+        hostname = "kiwi";
+      };
+    };
+  };
+
   home.packages =
     commonPackages
     ++ (
