@@ -5,18 +5,19 @@ in
 {
   imports =
     [
+      # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
+      inputs.disko.nixosModules.disko 
+      ./disko.nix
       ./hardware.nix
       ../_default/nixos/configuration.nix
       ./zfs.nix
-      "${MODULES_DIR}/nixos/docker.nix"
       "${MODULES_DIR}/sops.nix"
+      "${MODULES_DIR}/nixos/tailscale.nix"
+      "${MODULES_DIR}/nixos/docker.nix"
       "${MODULES_DIR}/nixos/samba.nix"
       "${MODULES_DIR}/nixos/guacamole/"
       "${MODULES_DIR}/nixos/display-manager.nix"
 
-      # Auto-generates fileSystems entries (originally managed in hardware.nix)
-      inputs.disko.nixosModules.disko 
-      ./disko.nix
     ];
 
   # ---------------------------------------------------------------------------
