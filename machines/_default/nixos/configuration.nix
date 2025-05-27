@@ -89,29 +89,17 @@
 
   services.xserver.exportConfiguration = true;
 
-  # Disable the GNOME3/GDM auto-suspend feature that cannot be disabled in GUI!
+  # ---------------------------------------------------------------------------
+  # Disable sleep, suspend, hibernate, and hybrid-sleep
+  # This is necessary because the GNOME3/GDM auto-suspend feature cannot be disabled in GUI!
   # If no user is logged in, the machine will power down after 20 minutes.
-  # systemd = {
-  #   targets = {
-  #     sleep = {
-  #       enable = false;
-  #       unitConfig.DefaultDependencies = "no";
-  #     };
-  #     suspend = {
-  #       enable = false;
-  #       unitConfig.DefaultDependencies = "no";
-  #     };
-  #     hibernate = {
-  #       enable = false;
-  #       unitConfig.DefaultDependencies = "no";
-  #     };
-  #     "hybrid-sleep" = {
-  #       enable = false;
-  #       unitConfig.DefaultDependencies = "no";
-  #     };
-  #   };
-  # };
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
 
+  # Same as above, not sure which one is the one that works. So we keep both for now.
+  # TODO: Remove one of them.
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
@@ -155,7 +143,8 @@
         "wheel" # sudo
       ];
       openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzI2b0Spyh5wIm6mLVPKaDonuea0a7sdNFGN2V1HTRq" # PUBLIC ssh key
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzI2b0Spyh5wIm6mLVPKaDonuea0a7sdNFGN2V1HTRq" # Master
+        "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLpjzihuPI+t7xYjznPNLALMCunS2WKw/cqYRMAG1YILTGiLmdYRWck9Ic7muK7SXWj0XP8nWTze1iRhA/iTyxA="
       ];
     };
     defaultUserShell = pkgs.zsh;

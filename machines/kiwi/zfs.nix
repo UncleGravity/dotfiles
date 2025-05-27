@@ -11,9 +11,6 @@
    # Make sure these filesystems are mountable (Disko’s ESP + your ZFS pools)
   boot.supportedFilesystems = [ "vfat" "zfs" ];
 
-  # Use the ZFS-compatible kernel build
-  # boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
-
   # Tweak kernel params: limit ARC size, disable hibernation
   boot.kernelParams = [
     "zfs.zfs_arc_max=17179869184" # 16 * 1024 * 1024 * 1024 = 16GB
