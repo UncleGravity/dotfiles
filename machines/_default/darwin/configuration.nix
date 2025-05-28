@@ -66,6 +66,7 @@ in
   
   imports = [
     "${MODULES_DIR}/sops.nix"
+    "${MODULES_DIR}/darwin/apfs-snapshots.nix"
   ];
 
   #############################################################
