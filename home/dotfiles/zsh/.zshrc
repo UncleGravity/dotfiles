@@ -84,7 +84,7 @@ bindkey -e
 # Word delimiters
 # This section configures how Zsh treats word boundaries, which affects navigation and text manipulation
 autoload -U select-word-style; select-word-style bash  # Use Bash-style word definitions
-zstyle ':zle:*' word-chars " _-./;@"  # Define additional characters to be treated as part of words
+zstyle ':zle:*' word-chars " _-./;@#"  # Define additional characters to be treated as part of words
 zstyle ':zle:*' word-style unspecified
 
 # History search
