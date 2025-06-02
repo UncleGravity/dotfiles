@@ -1,0 +1,23 @@
+# visual
+theme = Dracula
+# background-opacity = 0.96
+macos-titlebar-proxy-icon=hidden
+# macos-titlebar-style = "transparent"
+# macos-titlebar-style=hidden
+window-decoration = "auto"
+# font-family = "MesloLGS Nerd Font Mono"
+
+# Keyboard
+macos-option-as-alt=true
+# keybind = global:cmd+shift+k=toggle_quick_terminal
+keybind = global:cmd+shift+k=toggle_visibility
+
+#window-padding-x = 5,1
+quick-terminal-position=top
+quick-terminal-screen=mouse
+quick-terminal-animation-duration=0
+quick-terminal-autohide=false
+# quick-terminal-size = 100%,100%
+
+initial-window = true
+#window-save-state = always

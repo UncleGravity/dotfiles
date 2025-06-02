@@ -109,6 +109,8 @@
     rustic
     borgbackup
     borgmatic
+    icloudpd
+    immich-go
 
     # file manager
     yazi 
@@ -233,6 +235,9 @@ in {
     };
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
+    };
+    ".config/ghostty" = {
+      source = "${DOTFILES_DIR}/ghostty";
     };
     ".config/tmux" = {
       source = "${DOTFILES_DIR}/tmux";
