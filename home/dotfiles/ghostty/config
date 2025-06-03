@@ -20,4 +20,4 @@ quick-terminal-autohide=false
 # quick-terminal-size = 100%,100%
 
 initial-window = true
-#window-save-state = always
+window-save-state = always
