@@ -17,6 +17,7 @@ in
       "${MODULES_DIR}/nixos/samba.nix"
       "${MODULES_DIR}/nixos/guacamole/"
       "${MODULES_DIR}/nixos/display-manager.nix"
+      # "${MODULES_DIR}/nixos/immich.nix"
 
     ];
 
@@ -26,6 +27,11 @@ in
     enable = true;
     desktop = "gnome";
     rdp.enable = true; # For Guacamole
+  };
+
+  services.iperf3 = {
+    enable = true;
+    openFirewall = true; # tcp/udp = [ 5201 ]
   };
 
   # ---------------------------------------------------------------------------
