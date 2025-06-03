@@ -35,7 +35,14 @@ sudo nixos-rebuild switch --flake ".?submodules=1#target-hostname" -v
 ## For Darwin (macOS)
 Requirement: configure iCloud for clipboard sharing.
 
-1. Install Nix (Determinate Installer)
+1. Xcode CLI tools + Rosetta
+   `xcode-select --install`
+   `softwareupdate --install-rosetta --agree-to-license`
+
+2. Symlink iCloud
+   `ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/ ~/iCloud`
+
+3. Install Nix (Determinate Installer)
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
@@ -47,29 +54,31 @@ Requirement: configure iCloud for clipboard sharing.
    ```
    Probably best to reboot after this.
 
-2. Install 1Password
+4. Install 1Password
    - [Download GUI](https://1password.com/downloads/mac)
    - Download op CLI with nix: `NIXPKGS_ALLOW_UNFREE=1 nix shell nixpkgs#_1password-cli --impure`
    - Configure op CLI: `op signin`
    - Configure SSH agent
 
-3. Find state versions
+5. Find state versions
 
-For nix-darwin `system.StateVersion`
-```bash
-nix flake init -t nix-darwin/master
-grep "system.stateVersion" flake.nix
-rm flake.nix
-```
+   For nix-darwin `system.StateVersion`
+   ```bash
+   nix flake init -t nix-darwin/master
+   grep "system.stateVersion" flake.nix
+   rm flake.nix
+   ```
 
-For home-manager `home.stateVersion`
-```bash
-nix run home-manager/master -- init .
-grep "home.stateVersion" home.nix
-rm flake.nix home.nix
-```
+   For home-manager `home.stateVersion`
+   ```bash
+   nix run home-manager/master -- init .
+   grep "home.stateVersion" home.nix
+   rm flake.nix home.nix
+   ```
 
-4. Set up sops-nix for secrets management:
+   Update flake.nix with values
+
+6. Set up sops-nix for secrets management:
    ```bash
    # [On new machine] 
    # Create host ssh keypair (/etc/ssh/)
@@ -85,13 +94,13 @@ rm flake.nix home.nix
    # commit and push
    ```
 
-5. Git clone this repo
+7. Git clone this repo
    ```bash
    git clone git@github.com:UncleGravity/dotfiles.git ~/nix
    cd ~/nix
    ```
 
-6. Build your new system:
+8. Build your new system:
    - First run: 
    ```bash
    nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>

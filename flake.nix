@@ -164,7 +164,7 @@
 
     # Raspberry Pi (home-manager only)
     homeConfigurations.pi = mkHomeManagerSystem {
-      pkgs = nixpkgs.legacyPackages."aarch64-linux";
+      pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
       username = "pi";
       homeStateVersion = "24.05";
     };
