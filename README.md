@@ -33,20 +33,7 @@ sudo nixos-rebuild switch --flake ".?submodules=1#target-hostname" -v
    - Subsequent runs: `home-manager switch --flake .#pi`
 
 ## For Darwin (macOS)
-
-Figure out `system.StateVersion`
-```bash
-nix flake init -t nix-darwin/master
-grep "system.stateVersion" flake.nix
-rm flake.nix
-```
-
-Figure out `home.stateVersion`
-```bash
-nix run home-manager/master -- init .
-grep "home.stateVersion" home.nix
-rm flake.nix home.nix
-```
+Requirement: configure iCloud for clipboard sharing.
 
 1. Install Nix (Determinate Installer)
    ```bash
@@ -66,14 +53,29 @@ rm flake.nix home.nix
    - Configure op CLI: `op signin`
    - Configure SSH agent
 
-3. Set up sops-nix for secrets management:
+3. Find state versions
+
+For nix-darwin `system.StateVersion`
+```bash
+nix flake init -t nix-darwin/master
+grep "system.stateVersion" flake.nix
+rm flake.nix
+```
+
+For home-manager `home.stateVersion`
+```bash
+nix run home-manager/master -- init .
+grep "home.stateVersion" home.nix
+rm flake.nix home.nix
+```
+
+4. Set up sops-nix for secrets management:
    ```bash
    # [On new machine] 
-   # Create age keypair
-   mkdir -p $HOME/sops/age
-   nix shell nixpkgs#age --command age-keygen -o $HOME/sops/age/keys.txt
-   chmod 600 $HOME/sops/age/keys.txt
-   # Save the key pair to 1Password!
+   # Create host ssh keypair (/etc/ssh/)
+   nix shell nixpkgs#ssh-to-age
+   sudo ssh-keygen -A
+   cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
    
    # [On old machine]
    # Add the public key to .sops.yaml!
@@ -83,13 +85,13 @@ rm flake.nix home.nix
    # commit and push
    ```
 
-4. Git clone this repo
+5. Git clone this repo
    ```bash
    git clone git@github.com:UncleGravity/dotfiles.git ~/nix
    cd ~/nix
    ```
 
-5. Build your new system:
+6. Build your new system:
    - First run: 
    ```bash
    nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>

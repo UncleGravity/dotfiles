@@ -2,6 +2,7 @@ keys:
   - &users
     - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
   - &hosts # cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
+    - &banana age1gfgas2vwf4emddhqquqk8uzr306d3mdpv3hap3sk32rglxf50egscyd0xd
     - &bengkui age1jg5fak744795g94htywlxulgqyx7edvf47wvrjzjng8vsstckg7smjm78c
     - &nixos-vm age16ssscp6dgnpg8ev7enfqejkp2y0c00493rvgrh0vccwgdllk0y2swjawjq
     - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
@@ -11,10 +12,16 @@ creation_rules:
     key_groups:
     - age:
       - *angel
+      - *banana
       - *bengkui
       - *nixos-vm
       - *kiwi
 
+    # banana 
+  - path_regex: machines/banana/.*\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+        - *banana
   # bengkui 
   - path_regex: machines/bengkui/.*\.(yaml|json|env|ini|sops)$
     key_groups:

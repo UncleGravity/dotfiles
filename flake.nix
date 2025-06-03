@@ -116,12 +116,22 @@
 
   in
   {
-    # NixOS VM (nixos + home-manager)
-    nixosConfigurations.nixos = mkNixos {
-      system = systems.aarch64-linux;
+
+    # Darwin - banana
+    darwinConfigurations.banana = mkDarwin {
+      system = systems.aarch64-darwin;
       username = "angel";
-      hostname = "nixos";
-      systemStateVersion = "24.05";
+      hostname = "banana";
+      systemStateVersion = 6;
+      homeStateVersion = "25.05";
+    };
+
+    # Darwin - BENGKUI
+    darwinConfigurations.BENGKUI = mkDarwin {
+      system = systems.aarch64-darwin;
+      username = "useradmin";
+      hostname = "BENGKUI";
+      systemStateVersion = 4;
       homeStateVersion = "24.05";
     };
 
@@ -133,13 +143,13 @@
       systemStateVersion = "24.11";
       homeStateVersion = "25.05";
     };
-
-    # Darwin - BENGKUI
-    darwinConfigurations.BENGKUI = mkDarwin {
-      system = systems.aarch64-darwin;
-      username = "useradmin";
-      hostname = "BENGKUI";
-      systemStateVersion = 4;
+    
+    # NixOS VM (nixos + home-manager)
+    nixosConfigurations.nixos = mkNixos {
+      system = systems.aarch64-linux;
+      username = "angel";
+      hostname = "nixos";
+      systemStateVersion = "24.05";
       homeStateVersion = "24.05";
     };
 
