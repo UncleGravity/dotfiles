@@ -103,9 +103,9 @@ Requirement: configure iCloud for clipboard sharing.
 8. Build your new system:
    - First run: 
    ```bash
-   nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>
+   sudo nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>
    ```
    - Subsequent runs: 
    ```bash
-   darwin-rebuild switch --flake .#<new-hostname>
+   sudo darwin-rebuild switch --flake .#<new-hostname>
    ```
