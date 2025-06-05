@@ -19,6 +19,9 @@
     # logPath = "/var/log/apfs-snapshots.log"; # This is the default
   };
 
+  # Lots of legacy homebrew stuff, keep it for now
+  homebrew.onActivation.cleanup = "none";
+
   # Example: Override system packages for this specific machine
   # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base
 

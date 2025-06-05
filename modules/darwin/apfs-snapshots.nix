@@ -48,12 +48,12 @@ in
 
             # count total snapshots (only count non-empty lines)
             total_count=$(echo "$snapshots" | rg -c '^\d' || echo "0")
-            
+
             # only delete if we have more than the keep count
             if [ "$total_count" -gt ${toString cfg.keepCount} ]; then
               # calculate how many to delete
               delete_count=$((total_count - ${toString cfg.keepCount}))
-              
+
               # delete the oldest snapshots
               echo "$snapshots" \
                 | head -n "$delete_count" \
@@ -66,7 +66,7 @@ in
             else
               echo "$(date): Total snapshots ($total_count) &lt;= keep count (${toString cfg.keepCount}), no deletion needed"
             fi
-            
+
             echo "$(date): Snapshot operation completed"
           ''
         ];
@@ -75,7 +75,8 @@ in
         StandardErrorPath = cfg.logPath;
         # Ensure the service runs even when no user is logged in
         RunAtLoad = true;
-        # Keep the service running
+        # Service should stop when snapshot operation is completed
+        # We be reinvoked when timer interval is reached again
         KeepAlive = false;
       };
     };
@@ -87,4 +88,4 @@ in
       chmod 644 "${cfg.logPath}"
     '';
   };
-} 
+}

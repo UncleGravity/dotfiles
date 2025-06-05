@@ -16,7 +16,7 @@ system_type := `
 # Rebuild the system configuration
 sync:
     #!/usr/bin/env bash
-    echo "🔄 Rebuilding system configuration for {{system_type}}..."
+    echo "🔄 Rebuilding system configuration for host: $(hostname) on platform: {{system_type}}..."
     case "{{system_type}}" in
         "nixos")
             HOSTNAME=$(hostname)
@@ -173,7 +173,7 @@ remote-sync user host:
     set -euo pipefail
 
     echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
-    
+
     # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
     # named after the target host (e.g., nixosConfigurations.myremoteserver).
     echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
@@ -187,5 +187,5 @@ remote-sync user host:
         echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
         exit 1
     fi
-    
+
     echo "✅ Remote synchronization for '{{host}}' completed successfully!"

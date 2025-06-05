@@ -1,5 +1,5 @@
 # This file defines the common configuration shared across different machines.
-{ pkgs, lib, inputs, username, hostname, config, self, ... }: 
+{ pkgs, lib, inputs, username, hostname, config, self, ... }:
 let
   MODULES_DIR = "${self}/modules";
 in
@@ -63,7 +63,7 @@ in
   #      If you run into any unexpected issues with the migration, please
   #      open an issue at <https://github.com/nix-darwin/nix-darwin/issues/new>
   #      and include as much information as possible.
-  
+
   imports = [
     "${MODULES_DIR}/sops.nix"
     "${MODULES_DIR}/darwin/apfs-snapshots.nix"
@@ -76,6 +76,7 @@ in
   networking.localHostName = hostname;
   networking.computerName = hostname;
   # system.defaults.smb.NetBIOSName = lib.mkDefault hostname; # Often derived from hostname
+  networking.wakeOnLan.enable = lib.mkDefault true;
 
   users.users."${username}" = {
     home = "/Users/${username}";
@@ -101,8 +102,11 @@ in
   #############################################################
   #  Nix
   #############################################################
-  nix.settings.experimental-features = lib.mkDefault "nix-command flakes";
-  nixpkgs.config.allowUnfree = lib.mkDefault true;
+  nix.settings.experimental-features = "nix-command flakes";
+  nixpkgs.config.allowUnfree = true;
+
+  # Flake gang
+  nix.channel.enable = false;
 
   # Garbage collection everything older than 30 days
   nix.gc = {
@@ -137,10 +141,18 @@ in
   ###################################################################################
   system = {
     primaryUser = username;
-    # Activate settings without logout/login
-    activationScripts.postActivation.text = lib.mkDefault ''
+    # Also extraActivation, and preActivation
+    activationScripts.postActivation.text = ''
+      # Activate settings without logout/login
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+      # Remove channel symlinks (they get recreated despite nix.channel.enable = false)
+      rm -rf /Users/${username}/.nix-defexpr/channels
+      rm -rf /Users/${username}/.nix-defexpr/channels_root
+      rm -f /Users/${username}/.nix-profile
+      rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
     '';
+
 
     keyboard = {
       enableKeyMapping = lib.mkDefault true; # allow changing key maps
@@ -154,12 +166,16 @@ in
         # Sets how fast it repeats once it starts.
         KeyRepeat = lib.mkDefault 2; # minimum is 2 (30 ms), maximum is 120 (1800 ms)
 
-        NSAutomaticCapitalizationEnabled = lib.mkDefault false; 
-        NSAutomaticDashSubstitutionEnabled = lib.mkDefault false; 
+        NSAutomaticCapitalizationEnabled = lib.mkDefault false;
+        NSAutomaticDashSubstitutionEnabled = lib.mkDefault false;
         NSAutomaticPeriodSubstitutionEnabled = lib.mkDefault false;
         NSAutomaticQuoteSubstitutionEnabled = lib.mkDefault false;
         NSAutomaticSpellingCorrectionEnabled = lib.mkDefault false;
         ApplePressAndHoldEnabled = lib.mkDefault false;
+      };
+
+      controlcenter = {
+        NowPlaying = lib.mkDefault false; # 18 = Display icon in menu bar 24 = Hide icon in menu bar
       };
 
       dock = {
@@ -191,11 +207,14 @@ in
         ShowHardDrivesOnDesktop = lib.mkDefault false;
         ShowRemovableMediaOnDesktop = lib.mkDefault false;
       };
+
+      # For custom preferences, run "defaults read". Diff the output with the target option on/off
       CustomUserPreferences = lib.mkDefault {
         "NSGlobalDomain" = {
           "NSToolbarTitleViewRolloverDelay" = 0.0;
         };
-        "com.apple.ActivityMonitor".UpdatePeriod = 2; # Example: Moved here
+
+        "com.apple.ActivityMonitor".UpdatePeriod = 2;
       };
 
       loginwindow = {
@@ -218,7 +237,7 @@ in
   # services.karabiner-elements.enable = lib.mkDefault true;
 
   #############################################################
-  #  Zsh 
+  #  Zsh
   #############################################################
   programs.zsh = {
 
@@ -226,7 +245,7 @@ in
     # this is required if you want to use darwin's default shell - zsh (instead of bash)
     enable = lib.mkDefault true;
 
-    # IMPORTANT - This prevents compinit from running on /etc/zshrc, 
+    # IMPORTANT - This prevents compinit from running on /etc/zshrc,
     # which noticeably slows down shell startup. Run compinit from user zshrc instead.
     # This is (I think) mostly necessary because I am using a custom zshrc file instead of letting nix manage it.
     enableGlobalCompInit = lib.mkDefault false;
@@ -236,7 +255,7 @@ in
   environment.shells = lib.mkDefault [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
 
   #############################################################
-  #  Tailscale 
+  #  Tailscale
   #############################################################
   # services.tailscale.enable = true;
 }

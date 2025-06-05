@@ -6,8 +6,7 @@
 
     onActivation = {
       autoUpdate = false;
-      # 'zap': uninstalls all formulae(and related files) not listed here.
-      # cleanup = "zap";
+      # cleanup = "zap"; # uninstalls all formulae(and related files) not managed by nix.
     };
 
     taps = [
@@ -19,24 +18,51 @@
       # fuse-t
     ];
 
+    # masApps
+    # find the app id with `mas search <app name>`
+    masApps = {
+      "Paste – Limitless Clipboard" = 967805235;
+    };
+
     # `brew install --cask`
     casks = [
       "anki"
       "google-chrome"
+
+      # Protect  battery
+      "aldente"
+
+      # Code
       "cursor"
+      "zed"
+
+      # Terminal
       "ghostty"
       "kitty"
-      "kicad"
-      "raycast"
+
+      # VM
+      "utm"
+
+      # Note
       "obsidian"
+
+      # VPN
+      "tailscale"
       "private-internet-access"
       "freedom"
+
+      # Chat
       "discord"
       "microsoft-teams"
+      # "slack"
+
+      # EE
+      "kicad"
       "nrfutil"
 
-      # TODO: Move to nix-darwin: services.karabiner-elements.enable 
-      "karabiner-elements" 
+      # Keyboard
+      "karabiner-elements" # TODO: Move to nix-darwin: services.karabiner-elements.enable
+      "raycast"
     ];
   };
 }

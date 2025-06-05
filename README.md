@@ -39,8 +39,9 @@ Requirement: configure iCloud for clipboard sharing.
    `xcode-select --install`
    `softwareupdate --install-rosetta --agree-to-license`
 
-2. Symlink iCloud
+2. Symlinks
    `ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/ ~/iCloud`
+   `ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/obsidian/notes` ~/Notes
 
 3. Install Nix (Determinate Installer)
    ```bash

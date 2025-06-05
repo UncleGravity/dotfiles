@@ -19,6 +19,9 @@
     # logPath = "/var/log/apfs-snapshots.log"; # This is the default
   };
 
+  # Only keep brews and casks managed by nix
+  homebrew.onActivation.cleanup = "zap";
+
   # Example: Override system packages for this specific machine
   # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base
 

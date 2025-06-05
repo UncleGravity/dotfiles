@@ -143,7 +143,7 @@
       systemStateVersion = "24.11";
       homeStateVersion = "25.05";
     };
-    
+
     # NixOS VM (nixos + home-manager)
     nixosConfigurations.nixos = mkNixos {
       system = systems.aarch64-linux;
