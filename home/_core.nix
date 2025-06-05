@@ -85,8 +85,9 @@
     ctop
 
     # Security
-    _1password-cli 
+    _1password-cli
     gnupg
+    rsop # pgp in rust
     gpg-tui
     age
     ssh-to-age
@@ -113,7 +114,7 @@
     immich-go
 
     # file manager
-    yazi 
+    yazi
     fzf
 
     # tmux
@@ -153,6 +154,7 @@
   darwinOnlyPackages = with pkgs; [
     # Add Darwin-specific packages here
     mactop
+    mas
     lima
     colima
     docker
