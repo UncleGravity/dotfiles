@@ -166,6 +166,7 @@
 in {
   imports = [
     # ./zsh.nix
+    ../modules/home-manager/helix.nix
   ];
 
   home.username = username;
