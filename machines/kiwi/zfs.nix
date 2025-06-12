@@ -32,8 +32,8 @@
     autoSnapshot.frequent = 4; # How many frequent snapshots to keep
     autoSnapshot.hourly = 24;
     autoSnapshot.daily = 7;
-    autoSnapshot.weekly = 4;
-    autoSnapshot.monthly = 6;
+    # autoSnapshot.weekly = 4;
+    # autoSnapshot.monthly = 6;
 
     autoScrub.enable = true;  # periodic background scrub (prevent bit rot)
     trim.enable      = true;  # TRIM for SSDs (prevent SSD wear)
