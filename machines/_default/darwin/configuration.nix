@@ -215,6 +215,16 @@ in
         };
 
         "com.apple.ActivityMonitor".UpdatePeriod = 2;
+
+        # Avoid creating .DS_Store files on network or USB volumes
+        "com.apple.desktopservices" = {
+          DSDontWriteNetworkStores = true;
+          DSDontWriteUSBStores = true;
+        };
+
+        "com.apple.AdLib" = {
+          allowApplePersonalizedAdvertising = false;
+        };
       };
 
       loginwindow = {

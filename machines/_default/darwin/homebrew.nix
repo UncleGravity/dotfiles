@@ -28,6 +28,7 @@
     casks = [
       "anki"
       "google-chrome"
+      "digikam"
 
       # Protect  battery
       "aldente"

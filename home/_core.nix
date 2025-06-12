@@ -70,6 +70,7 @@
 
     # Web
     # httpie
+    dig # dnsutils
     ngrok
     hcloud # hetzner cli
     flyctl # fly.io cli
@@ -116,6 +117,7 @@
     # file manager
     yazi
     fzf
+    exiftool
 
     # tmux
     tmux
@@ -185,6 +187,7 @@ in {
       "kiwi" = {
         user = "angel";
         hostname = "kiwi";
+        identityAgent = "${config.home.homeDirectory}/.1password/agent.sock";
       };
     };
   };
