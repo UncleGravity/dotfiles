@@ -47,8 +47,16 @@
       defaultWindowManager = 
         if config.displayManager.desktop == "gnome" then "${pkgs.gnome-session}/bin/gnome-session"
         else if config.displayManager.desktop == "plasma" then "startplasma-x11"
-        else null; # Or some other default if neither is selected
+        else null;
       openFirewall = config.displayManager.rdp.openFirewall;
+      
+      # Configure drive redirection to use a different location (instead of ~/thinclient_drives/)
+      # https://manpages.ubuntu.com/manpages/lunar/man5/sesman.ini.5.html
+      extraConfDirCommands = ''
+        # Remove any existing FuseMountName setting and add our own
+        sed -i '/^FuseMountName=/d' $out/sesman.ini
+        sed -i '/^\[Chansrv\]/a FuseMountName=/run/user/%u/rdp_drives' $out/sesman.ini
+      '';
     };
 
       # Enable xkb Options in TTY
