@@ -70,7 +70,7 @@
         "create mask" = "0664";    # Group-writable files
         "directory mask" = "0775"; # Group-writable directories
         "inherit acls" = "yes";
-        "veto files" = "/._*/.DS_Store/.Thumbs.db/.Trashes";
+        "veto files" = "/._*/.DS_Store/.Trashes";
         "valid users" = "${username} @share";
       };
     };
