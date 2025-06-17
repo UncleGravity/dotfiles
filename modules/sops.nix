@@ -1,7 +1,6 @@
 { config, pkgs, username, lib, ... }:
 let
   secretsDir = ../secrets;
-  allowedHostsForSecretsZsh = [ "BASURA" "BENGKUI" "nixos" ];
 in
 {
   #############################################################
@@ -22,8 +21,8 @@ in
     };
 
     secrets = lib.mkMerge [
-      # Work secrets, only on personal machines
-      (lib.mkIf (lib.elem config.networking.hostName allowedHostsForSecretsZsh) {
+      # Work secrets, only on macOS machines
+      (lib.mkIf pkgs.stdenv.isDarwin {
         "work.zsh" = {
           path = "${config.users.users.${username}.home}/.config/zsh/secrets/work.zsh";
           owner = username;
