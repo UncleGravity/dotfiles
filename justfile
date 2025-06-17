@@ -45,11 +45,14 @@ sync:
             ;;
     esac
     echo "✅ System configuration rebuilt successfully!"
-    echo "🔗 Creating symlink for Neovim configuration..."
+
+# Create symlink for Neovim configuration
+nvim:
+    @echo "🔗 Creating symlink for Neovim configuration..."
     rm -rf "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
     ln -sfn $(pwd)/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
-
-    echo "✅ Neovim configuration symlink created successfully!"
+    @echo "✅ Don't forget to delete the symlink when you're done."
+    @echo "✅ Neovim configuration symlink created successfully!"
 
 # Update flake inputs
 update:
@@ -60,14 +63,6 @@ update:
 # Update flake inputs and rebuild system configuration
 upgrade: update sync
     @echo "🎉 System upgrade completed!"
-
-# Synchronize local dotfiles repo with remote, stashing local changes
-pull:
-    @echo "🔄 Pulling latest changes from remote..."
-    git stash
-    git pull
-    git stash pop
-    @echo "✅ Local repository synchronized with remote!"
 
 # Garbage collect old generations (default: 30 days)
 gc days="30d":
@@ -139,28 +134,6 @@ disko hostname:
         exit 1
     fi
     echo "✅ Disko command completed successfully!"
-
-###############################################################
-# Secrets Management
-###############################################################
-
-# Update secrets (decrypt, edit, re-encrypt)
-secrets-update:
-    @echo "🔑 Updating secrets..."
-    @./home/dotfiles/zsh/secrets/_update.sh
-    @echo "🗑️ Removing old secrets.sh so it regenerates on next zsh start"
-    @rm "$HOME/.config/zsh/secrets/secrets.sh"
-    @echo "🔄 Resyncing Nix"
-    @just sync
-    @echo "🔄 Restarting zsh"
-    @zsh -c "source ~/.config/zsh/.zshrc"
-    @echo "✅ Secrets updated and re-encrypted."
-
-# Rotate secrets (re-encrypt with current GitHub keys)
-secrets-rotate:
-    @echo "🔄 Rotating secrets keys..."
-    @./home/dotfiles/zsh/secrets/_rotate.sh
-    @echo "✅ Secrets re-encrypted with updated keys."
 
 # Synchronize remote NixOS machine
 # Usage: just remote-sync <user> <hostname>

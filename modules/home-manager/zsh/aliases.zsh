@@ -1,3 +1,5 @@
+#!/usr/bin/env zsh
+
 # ------------ ls -> eza ------------
 alias ls="eza"
 alias l="eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference"

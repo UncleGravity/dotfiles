@@ -45,7 +45,7 @@
   };
 
   # Complain if RDP is not enabled.
-  warnings = lib.mkIf (!config.displayManager.rdp.enable) [
-    "displayManager.rdp.enable is false. xrdp (and therefore Guacamole) might not function as expected. Consider enabling displayManager.rdp for full functionality."
+  warnings = lib.mkIf (!config.my.displayManager.rdp.enable) [
+    "my.displayManager.rdp.enable is false. xrdp (and therefore Guacamole) might not function as expected. Consider enabling displayManager.rdp for full functionality."
   ];
 }

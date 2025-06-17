@@ -27,7 +27,7 @@ in {
 
   # ---------------------------------------------------------------------------
   # X11 / GNOME
-  displayManager = {
+  my.displayManager = {
     enable = true;
     desktop = "gnome";
     rdp.enable = true; # For Guacamole

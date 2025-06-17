@@ -1,13 +1,13 @@
 { lib, config, pkgs, ... }:
 let
-  cfg = config.my.zshNix;
+  cfg = config.my.zsh;
 in
 {
 
   #TODO: Load ENVIRONMENT variables from sops-nix
 
   # 1.  Add an option the user can flip
-  options.my.zshNix.enable = lib.mkEnableOption "Enable experimental Nix-managed zsh configuration";
+  options.my.zsh.enable = lib.mkEnableOption "Enable experimental Nix-managed zsh configuration";
 
   # 2.  Apply experimental config when enabled
   config = lib.mkIf cfg.enable {
@@ -59,6 +59,8 @@ in
         zshScripts = lib.mkOrder 550 ''
           # Load custom completions
           fpath=("${config.home.homeDirectory}/.scripts/_completions" $fpath) # manual collection of completions
+          # fpath=("${pkgs.zsh-completions}/share/zsh/site-functions" $fpath) # extra collection of completions
+
 
           # Add platform-specific scripts to PATH
           [[ -d "${config.home.homeDirectory}/.scripts/all" ]] && export PATH="${config.home.homeDirectory}/.scripts/all:$PATH"
@@ -132,6 +134,12 @@ in
       enable = true;
       enableZshIntegration = true;
       tmux.enableShellIntegration = true;
+    };
+
+    programs.zoxide = {
+      enable = true;
+      enableZshIntegration = true;
+      options = [ "--cmd cd" ];
     };
 
   };

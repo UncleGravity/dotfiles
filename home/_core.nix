@@ -174,7 +174,7 @@ in {
   ];
 
   # Toggle to enable the experimental nix-managed zsh configuration
-  my.zshNix.enable = true;
+  my.zsh.enable = true;
   xdg.enable = true;
 
   home.username = username;
@@ -208,7 +208,7 @@ in {
       else linuxOnlyPackages
     );
 
-  programs.zsh = lib.mkIf (!config.my.zshNix.enable) {
+  programs.zsh = lib.mkIf (!config.my.zsh.enable) {
     enable = true;
     dotDir = ".config/zsh";
   };

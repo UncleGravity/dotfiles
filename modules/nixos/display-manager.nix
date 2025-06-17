@@ -5,8 +5,11 @@
   ...
 }:
 
+let
+  cfg = config.my.displayManager;
+in
 {
-  options.displayManager = {
+  options.my.displayManager = {
     enable = lib.mkEnableOption "Enable custom display manager configuration";
     desktop = lib.mkOption {
       type = lib.types.enum [ "gnome" "plasma" ];
@@ -23,32 +26,32 @@
     };
   };
 
-  config = lib.mkIf config.displayManager.enable {
+  config = lib.mkIf cfg.enable {
     services.xserver.enable = true;
     services.xserver.autorun = true;
 
     # ---------------------------------------------------------------------------
     # GNOME settings
-    services.xserver.displayManager.gdm = lib.mkIf (config.displayManager.desktop == "gnome") {
+    services.displayManager.gdm = lib.mkIf (cfg.desktop == "gnome") {
       enable = true;
       autoSuspend = false;
     };
-    services.xserver.desktopManager.gnome.enable = lib.mkIf (config.displayManager.desktop == "gnome") true;
+    services.desktopManager.gnome.enable = lib.mkIf (cfg.desktop == "gnome") true;
 
     # ---------------------------------------------------------------------------
     # Plasma (KDE) settings
-    services.xserver.displayManager.sddm.enable = lib.mkIf (config.displayManager.desktop == "plasma") true;
-    services.xserver.desktopManager.plasma5.enable = lib.mkIf (config.displayManager.desktop == "plasma") true;
+    services.xserver.displayManager.sddm.enable = lib.mkIf (cfg.desktop == "plasma") true;
+    services.xserver.desktopManager.plasma5.enable = lib.mkIf (cfg.desktop == "plasma") true;
 
     # ---------------------------------------------------------------------------
     # xrdp configuration
-    services.xrdp = lib.mkIf config.displayManager.rdp.enable {
+    services.xrdp = lib.mkIf cfg.rdp.enable {
       enable = true;
       defaultWindowManager = 
-        if config.displayManager.desktop == "gnome" then "${pkgs.gnome-session}/bin/gnome-session"
-        else if config.displayManager.desktop == "plasma" then "startplasma-x11"
+        if cfg.desktop == "gnome" then "${pkgs.gnome-session}/bin/gnome-session"
+        else if cfg.desktop == "plasma" then "startplasma-x11"
         else null;
-      openFirewall = config.displayManager.rdp.openFirewall;
+      openFirewall = cfg.rdp.openFirewall;
       
       # Configure drive redirection to use a different location (instead of ~/thinclient_drives/)
       # https://manpages.ubuntu.com/manpages/lunar/man5/sesman.ini.5.html

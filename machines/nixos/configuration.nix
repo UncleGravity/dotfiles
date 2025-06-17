@@ -17,7 +17,7 @@ in
 
   # ---------------------------------------------------------------------------
   # X11
-  displayManager = {
+  my.displayManager = {
     enable = true;
     desktop = "gnome";
   };
