@@ -219,10 +219,6 @@ in {
     nix-direnv.enable = true;
   };
 
-  # TODO:
-  # https://samasaur1.github.io/blog/jdks-on-nix-darwin
-  # programs.java.enable = true;
-
   # DOTFILES
   home.file = {
     ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
@@ -234,10 +230,10 @@ in {
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
-    # ".config/nvim" = {
-    #   source = "${DOTFILES_DIR}/nvim";
-    #   recursive = true;
-    # };
+    ".config/nvim" = {
+      source = "${DOTFILES_DIR}/nvim";
+      recursive = true;
+    };
     ".config/git" = {
       source = "${DOTFILES_DIR}/git";
     };

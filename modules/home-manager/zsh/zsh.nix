@@ -58,7 +58,7 @@ in
           '';
         zshScripts = lib.mkOrder 550 ''
           # Load custom completions
-          fpath=("${config.home.homeDirectory}/.scripts/completions" $fpath) # manual collection of completions
+          fpath=("${config.home.homeDirectory}/.scripts/_completions" $fpath) # manual collection of completions
 
           # Add platform-specific scripts to PATH
           [[ -d "${config.home.homeDirectory}/.scripts/all" ]] && export PATH="${config.home.homeDirectory}/.scripts/all:$PATH"
@@ -123,58 +123,6 @@ in
         zshPlugins
         zshEnd
       ] ++ lib.optional config.programs.fzf.enable zshFzf);
-
-      # historySubstringSearch = {
-      #   enable = true;
-      #   searchUpKey = [
-      #     "^[[A"
-      #     "^[OA"
-      #   ];
-      #   searchDownKey = [
-      #     "^[[B"
-      #     "^[OB"
-      #   ];
-      # };
-      # plugins = [
-      #   # {
-      #   #   name = "zsh-vi-mode";
-      #   #   src = "${pkgs.zsh-vi-mode}/share/zsh-vi-mode";
-      #   # }
-      #   {
-      #     name = "zsh-powerlevel10k";
-      #     src = "${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/";
-      #     file = "powerlevel10k.zsh-theme";
-      #   }
-      #   {
-      #     name = "powerlevel10k-config";
-      #     src = ./.;
-      #     file = "p10k.zsh";
-      #   }
-      #   {
-      #     name = "zsh-you-should-use";
-      #     src = "${pkgs.zsh-you-should-use}/share/zsh-you-should-use";
-      #     file = "you-should-use.plugin.zsh";
-      #   }
-      #   {
-      #     name = "fast-syntax-highlighting";
-      #     src = "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
-      #     file = "fast-syntax-highlighting.plugin.zsh";
-      #   }
-      #   {
-      #     name = "zsh-autosuggestions";
-      #     src = "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
-      #     file = "zsh-autosuggestions.zsh";
-      #   }
-      #   # {
-      #   #   name = "zsh-history-substring-search";
-      #   #   src = "${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search";
-      #   #   file = "zsh-history-substring-search.zsh";
-      #   # }
-      #   {
-      #     name = "fzf-tab";
-      #     src = "${pkgs.zsh-fzf-tab}/share/fzf-tab";
-      #   }
-      # ];
 
       completionInit = "autoload -Uz compinit && compinit";
       # completionInit = "autoload -Uz compinit && compinit -u -C"; u: skip security audit, C: don't rescan fpath

@@ -46,6 +46,7 @@ sync:
     esac
     echo "✅ System configuration rebuilt successfully!"
     echo "🔗 Creating symlink for Neovim configuration..."
+    rm -rf "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
     ln -sfn $(pwd)/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
 
     echo "✅ Neovim configuration symlink created successfully!"
