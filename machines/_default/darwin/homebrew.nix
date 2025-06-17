@@ -60,6 +60,7 @@
       # EE
       "kicad"
       "nrfutil"
+      "raspberry-pi-imager"
 
       # Keyboard
       "karabiner-elements" # TODO: Move to nix-darwin: services.karabiner-elements.enable
