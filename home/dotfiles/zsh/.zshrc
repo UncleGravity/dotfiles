@@ -273,11 +273,13 @@ zstyle ':completion:*' menu no # disable default menu so that we can use fzf ins
 zstyle ':completion:*' rehash true # automatically update cache (keep completions up to date)
 
 # Load missing completions for macOS
+[[ -d "$HOME/.scripts/all" ]] && export PATH="$HOME/.scripts/all:$PATH"
 if [[ "$(uname)" == "Darwin" ]]; then
   # Add ~/.scripts to PATH if it exists
-  [[ -d "$HOME/.scripts" ]] && export PATH="$HOME/.scripts:$PATH"
+  [[ -d "$HOME/.scripts/darwin" ]] && export PATH="$HOME/.scripts/darwin:$PATH"
   # [[ -d /opt/homebrew/share/zsh/site-functions ]] && fpath+=(/opt/homebrew/share/zsh/site-functions) # Homebrew
 else
+  [[ -d "$HOME/.scripts/linux" ]] && export PATH="$HOME/.scripts/linux:$PATH"
   # Load missing completions for ubuntu!
   [[ -d /usr/share/zsh/site-functions ]] && fpath+=/usr/share/zsh/site-functions
   [[ -d /usr/share/zsh/vendor-completions ]] && fpath+=/usr/share/zsh/vendor-completions
@@ -290,7 +292,8 @@ fpath=(~/.config/zsh/completions $fpath) # manual collection of completions
 # Keep this at the end of the file
 # This block ensures that the completion cache is properly set up and updated
 autoload -Uz compinit
-compinit -u -C -d "${ZDOTDIR:-$HOME}/.zcompdump"
+# compinit -u -C -d "${ZDOTDIR:-$HOME}/.zcompdump"
+compinit -d "${ZDOTDIR:-$HOME}/.zcompdump"
 
 eval "$(zoxide init --cmd cd zsh)" # this goes after compinit, according to the docs
 

@@ -80,6 +80,7 @@
 
     # Nix
     direnv
+    devenv
 
     lazygit
     lazydocker
@@ -167,9 +168,14 @@
   ];
 in {
   imports = [
-    # ./zsh.nix
     ../modules/home-manager/helix.nix
+    ../modules/home-manager/zsh/zsh.nix
+    ../modules/home-manager/yazi/yazi.nix
   ];
+
+  # Toggle to enable the experimental nix-managed zsh configuration
+  my.zshNix.enable = true;
+  xdg.enable = true;
 
   home.username = username;
   home.homeDirectory =
@@ -182,12 +188,14 @@ in {
     forwardAgent = true;
     extraConfig = ''
       Include ${config.home.homeDirectory}/.config/colima/ssh_config
+      IdentityAgent ${if pkgs.stdenv.isDarwin
+        then ''"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"''
+        else "~/.1password/agent.sock"}
     '';
     matchBlocks = {
       "kiwi" = {
         user = "angel";
         hostname = "kiwi";
-        identityAgent = "${config.home.homeDirectory}/.1password/agent.sock";
       };
     };
   };
@@ -200,14 +208,14 @@ in {
       else linuxOnlyPackages
     );
 
-  programs.zsh = {
+  programs.zsh = lib.mkIf (!config.my.zshNix.enable) {
     enable = true;
     dotDir = ".config/zsh";
   };
 
   programs.direnv = {
     enable = true;
-    # enableZshIntegration = true;
+    enableZshIntegration = true;
     nix-direnv.enable = true;
   };
 
@@ -236,9 +244,9 @@ in {
     ".config/lazygit" = {
       source = "${DOTFILES_DIR}/lazygit";
     };
-    ".config/yazi" = {
-      source = "${DOTFILES_DIR}/yazi";
-    };
+    # ".config/yazi" = {
+    #   source = "${DOTFILES_DIR}/yazi";
+    # };
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
     };
@@ -283,6 +291,7 @@ in {
   # or
   #  /etc/profiles/per-user/angel/etc/profile.d/hm-session-vars.sh
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    EDITOR = "nvim";
+    TEST = "HELLO";
   };
 }

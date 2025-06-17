@@ -1,16 +1,18 @@
 { config, lib, pkgs, ... }:
 
 let
-  DOTFILES_DIR = ../home/dotfiles;
+  DOTFILES_DIR = ../../home/dotfiles;
 in
 {
   programs.yazi = {
     enable = true;
     enableZshIntegration = true;
+    shellWrapperName = "y";
     plugins = {
-      fg = "${DOTFILES_DIR}/yazi/plugins/fg.yazi";
-      max-preview = "${DOTFILES_DIR}/yazi/plugins/max-preview.yazi";
+      fg = ./plugins/fg.yazi;
+      max-preview = ./plugins/max-preview.yazi;
     };
+
     keymap = {
       manager.prepend_keymap = [
         # Yank file to clipboard
@@ -83,5 +85,15 @@ in
         image_delay = 0;
       };
     };
+
+    # flavors = {
+    #   kanagawa = "${DOTFILES_DIR}/yazi/flavors/kanagawa.yazi";
+    # };
+    # theme = {
+    #   flavor = {
+    #     dark = "kanagawa";
+    #     # light = "???";
+    #   };
+    # };
   };
 }
