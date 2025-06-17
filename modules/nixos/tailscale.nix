@@ -7,6 +7,7 @@
 
   sops.secrets."tailscale/authkey" = {
     mode = "0600"; # Only root can read the auth key
+    owner = "root";
   };
 
   services.tailscale = {
