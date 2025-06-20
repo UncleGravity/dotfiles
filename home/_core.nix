@@ -48,6 +48,7 @@
     # zig
     uv
     bun
+    nodejs
     go
     cargo
     rustc
@@ -56,8 +57,8 @@
     # Dev
     git
     wget
-    inputs.neovim-nightly.packages.${pkgs.system}.default
-    helix
+    # helix
+    # evil-helix
     gnumake
     gh # github cli
     just
@@ -171,6 +172,7 @@ in {
     ../modules/home-manager/helix.nix
     ../modules/home-manager/zsh/zsh.nix
     ../modules/home-manager/yazi/yazi.nix
+    ../modules/home-manager/nvim
   ];
 
   # Toggle to enable the experimental nix-managed zsh configuration
@@ -217,6 +219,7 @@ in {
     enable = true;
     enableZshIntegration = true;
     nix-direnv.enable = true;
+    # silent = true;
   };
 
   # DOTFILES
@@ -230,7 +233,7 @@ in {
       source = "${DOTFILES_DIR}/zsh";
       recursive = true; # Allow the directory to be writable, since zplug will create files in it
     };
-    ".config/nvim" = {
+    ".config/nvim-lua" = {
       source = "${DOTFILES_DIR}/nvim";
       recursive = true;
     };
@@ -264,16 +267,6 @@ in {
     ".sops.yaml" = {
       source = "${DOTFILES_DIR}/sops/.sops.yaml";
     };
-
-    # When nix store values need to be referenced.
-    # Remember to source this script in your zsh config
-    ".config/zsh/nix.zsh" = {
-      source = pkgs.writeText "nix.zsh" ''
-        eval "$(direnv hook zsh)"
-        # Add any nix-specific environment variables here e.g.
-        # export COWSAY_NIX="${pkgs.cowsay}/bin/cowsay"
-      '';
-    };
   };
 
   # Home Manager can also manage your environment variables through
@@ -287,7 +280,8 @@ in {
   # or
   #  /etc/profiles/per-user/angel/etc/profile.d/hm-session-vars.sh
   home.sessionVariables = {
+    NVIM_APPNAME = "nvim-lua";
     EDITOR = "nvim";
-    TEST = "HELLO";
+    TEST = "HELLO2";
   };
 }

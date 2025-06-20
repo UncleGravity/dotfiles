@@ -39,7 +39,7 @@ return {
   {
     'rebelot/kanagawa.nvim',
     -- enabled = false,
-    lazy = false, -- Change this to false
+    lazy = false,
     priority = 1000,
     opts = {
       compile = true, -- `:KanagawaCompile`

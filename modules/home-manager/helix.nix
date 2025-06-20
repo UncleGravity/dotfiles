@@ -6,6 +6,7 @@
 }: {
   programs.helix = {
     enable = true;
+    # package = pkgs.evil-helix;
     
     settings = {
         theme = "kanagawa";
@@ -14,7 +15,7 @@
           mouse = true;
           line-number = "relative";
           auto-format = false;
-          rulers = [80 120];
+          rulers = [100];
           bufferline = "multiple";
           color-modes = true;
           

@@ -5,6 +5,12 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
+    # nix-darwin
+    darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -12,12 +18,6 @@
 
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # nix-darwin
-    darwin = {
-      url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -34,11 +34,9 @@
       };
     };
 
-    neovim-nightly = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-      };
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     sops-nix = {
@@ -67,6 +65,9 @@
       # This assumes that the home.nix file is in the machines/${hostname} directory.
       # ie. This only works for a single user.
       home-manager.users.${username} = import ./machines/${hostname}/home.nix;
+      home-manager.sharedModules = [
+        inputs.nixvim.homeManagerModules.nixvim
+      ];
     };
 
     mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }: nixpkgs.lib.nixosSystem {
@@ -111,7 +112,10 @@
         inherit inputs;
         inherit username homeStateVersion;
       };
-      modules = [ ./machines/${username}/home.nix ];
+      modules = [ 
+        ./machines/${username}/home.nix 
+        inputs.nixvim.homeManagerModules.nixvim
+      ];
     };
 
   in
@@ -168,6 +172,21 @@
       username = "pi";
       homeStateVersion = "24.05";
     };
+
+    # Development shells
+    devShells = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
+      default = nixpkgs.legacyPackages.${system}.mkShell {
+
+        packages = with nixpkgs.legacyPackages.${system}; [
+          nh
+          just
+        ];
+
+        # shellHook = ''
+        #   exec zsh
+        # '';
+      };
+    });
 
   };
 }

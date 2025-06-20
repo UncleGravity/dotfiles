@@ -53,17 +53,17 @@ return {
 
   -------------------------------------------------------------------------------------------------
   -- Closing a buffer won't close it's window
-  {
-    'echasnovski/mini.bufremove',
-    version = false,
-    event = 'VeryLazy',
-    config = function()
-      require('mini.bufremove').setup()
-      vim.keymap.set('n', '<leader>bd', function()
-        require('mini.bufremove').delete(0)
-      end, { desc = 'Delete Buffer (mini.bufremove)' })
-    end,
-  },
+  -- {
+  --   'echasnovski/mini.bufremove',
+  --   version = false,
+  --   event = 'VeryLazy',
+  --   config = function()
+  --     require('mini.bufremove').setup()
+  --     vim.keymap.set('n', '<leader>bd', function()
+  --       require('mini.bufremove').delete(0)
+  --     end, { desc = 'Delete Buffer (mini.bufremove)' })
+  --   end,
+  -- },
 
   -------------------------------------------------------------------------------------------------
   -- Drag selections around, with Alt+<direction>
@@ -185,40 +185,40 @@ return {
   -------------------------------------------------------------------------------------------------
   -- Show indent lines
 
-  {
-    'echasnovski/mini.indentscope',
-    version = false,
-    event = 'VeryLazy',
-    config = function()
-      require('mini.indentscope').setup {
-        draw = {
-          delay = 0,
-          animation = require('mini.indentscope').gen_animation.none(),
-        },
-        symbol = '│',
-        options = { try_as_border = true },
-      }
-    end,
-    init = function()
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = {
-          'alpha',
-          'dashboard',
-          'fzf',
-          'help',
-          'lazy',
-          'lazyterm',
-          'mason',
-          'neo-tree',
-          'notify',
-          'toggleterm',
-          'Trouble',
-          'trouble',
-        },
-        callback = function()
-          vim.b.miniindentscope_disable = true
-        end,
-      })
-    end,
-  },
+  -- {
+  --   'echasnovski/mini.indentscope',
+  --   version = false,
+  --   event = 'VeryLazy',
+  --   config = function()
+  --     require('mini.indentscope').setup {
+  --       draw = {
+  --         delay = 0,
+  --         animation = require('mini.indentscope').gen_animation.none(),
+  --       },
+  --       symbol = '│',
+  --       options = { try_as_border = true },
+  --     }
+  --   end,
+  --   init = function()
+  --     vim.api.nvim_create_autocmd('FileType', {
+  --       pattern = {
+  --         'alpha',
+  --         'dashboard',
+  --         'fzf',
+  --         'help',
+  --         'lazy',
+  --         'lazyterm',
+  --         'mason',
+  --         'neo-tree',
+  --         'notify',
+  --         'toggleterm',
+  --         'Trouble',
+  --         'trouble',
+  --       },
+  --       callback = function()
+  --         vim.b.miniindentscope_disable = true
+  --       end,
+  --     })
+  --   end,
+  -- },
 }

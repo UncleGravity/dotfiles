@@ -32,7 +32,7 @@ vim.opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus' -- Sync with system 
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { lead = '·', tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 vim.opt.swapfile = false -- turn off swapfile
 vim.opt.colorcolumn = '100' -- Show max line length indicator

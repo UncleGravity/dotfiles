@@ -1,5 +1,10 @@
 return {
 
+  {
+    "calops/hmts.nvim",
+    version = "*",
+  },
+
   -------------------------------------------------------------------------------------------------
   -- Adds borders around ui popups
   -- { 'stevearc/dressing.nvim', opts = {} },

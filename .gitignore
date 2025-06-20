@@ -22,3 +22,5 @@ secrets.sh
 *.bak
 *.backup
 .aider*
+
+.direnv/

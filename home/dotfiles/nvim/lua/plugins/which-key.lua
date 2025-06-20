@@ -4,6 +4,7 @@ return {
   event = 'VeryLazy',
   -- opts_extend = { 'spec' },
   opts = {
+    preset = "helix",
     defaults = {},
     spec = {
       {
@@ -48,7 +49,7 @@ return {
         -- Custom
 
         -- Neotree
-        { '<leader>e', ':Neotree reveal toggle<CR>', desc = '[e]xplorer', icon = { icon = '󰙅 ', color = 'orange' } },
+        -- { '<leader>e', ':lua Snacks.explorer()<CR>', desc = '[e]xplorer', icon = { icon = '󰙅 ', color = 'orange' } },
 
         -- Lazy
         { '<leader>l', '<cmd>Lazy<cr>', desc = 'Open Lazy', icon = { icon = '󰒲 ', color = 'azure' } },
