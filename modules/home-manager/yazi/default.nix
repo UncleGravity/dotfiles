@@ -5,8 +5,13 @@
     enableZshIntegration = true;
     shellWrapperName = "y";
     plugins = {
-      max-preview = ./plugins/max-preview.yazi;
+      toggle-pane = pkgs.yaziPlugins.toggle-pane;
+      git = pkgs.yaziPlugins.git;
     };
+
+    initLua = ''
+      require("git"):setup()
+    '';
 
     keymap = {
       mgr.prepend_keymap = [
@@ -23,7 +28,7 @@
         }
         {
           on = "T";
-          run = "plugin max-preview";
+          run = "plugin toggle-pane max-preview";
           desc = "Maximize or restore preview";
         }
       ];
@@ -39,6 +44,11 @@
     };
 
     settings = {
+      # Register Git Plugin
+      plugin.prepend_fetchers = [
+        { id = "git"; name = "*"; run = "git"; }
+        { id = "git"; name = "*/"; run = "git"; }
+      ];
       mgr = {
         sort_by = "mtime";
         sort_reverse = false;

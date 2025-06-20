@@ -170,13 +170,15 @@
 in {
   imports = [
     ../modules/home-manager/helix.nix
-    ../modules/home-manager/zsh/zsh.nix
-    ../modules/home-manager/yazi/yazi.nix
+    ../modules/home-manager/zsh
+    ../modules/home-manager/yazi
     ../modules/home-manager/nvim
+    ../modules/home-manager/tmux
   ];
 
   # Toggle to enable the experimental nix-managed zsh configuration
   my.zsh.enable = true;
+  my.tmux.enable = true;
   xdg.enable = true;
 
   home.username = username;
@@ -252,18 +254,18 @@ in {
     ".config/ghostty" = {
       source = "${DOTFILES_DIR}/ghostty";
     };
-    ".config/tmux" = {
-      source = "${DOTFILES_DIR}/tmux";
-      recursive = true; # This allows the directory to be writable, since tpm will create files in it
-      executable = true; # Not sure if necessary w/e
-    };
+    # ".config/tmux" = {
+    #   source = "${DOTFILES_DIR}/tmux";
+    #   recursive = true; # This allows the directory to be writable, since tpm will create files in it
+    #   executable = true; # Not sure if necessary w/e
+    # };
     ".config/aichat" = {
       source = "${DOTFILES_DIR}/aichat";
       recursive = true; # Allows the directory to be writable, since aichat will create files in it
     };
-    ".config/sesh" = {
-      source = "${DOTFILES_DIR}/sesh";
-    };
+    # ".config/sesh" = {
+    #   source = "${DOTFILES_DIR}/sesh";
+    # };
     ".sops.yaml" = {
       source = "${DOTFILES_DIR}/sops/.sops.yaml";
     };
