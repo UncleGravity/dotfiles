@@ -20,14 +20,14 @@ sync:
     case "{{system_type}}" in
         "nixos")
             HOSTNAME=$(hostname)
-            if ! sudo nixos-rebuild switch --flake .#$HOSTNAME; then
+            if ! nh os switch . -H $HOSTNAME; then
                 echo "❌ Failed to rebuild NixOS configuration."
                 exit 1
             fi
             ;;
         "darwin")
             HOSTNAME=$(scutil --get ComputerName)
-            if ! sudo darwin-rebuild switch --flake .#$HOSTNAME; then
+            if ! nh darwin switch . -H $HOSTNAME; then
                 echo "❌ Failed to rebuild Darwin configuration."
                 exit 1
             fi
@@ -61,7 +61,7 @@ update:
     @echo "✅ Flake inputs updated successfully!"
 
 # Update flake inputs and rebuild system configuration
-upgrade: update sync
+update-sync: update sync
     @echo "🎉 System upgrade completed!"
 
 # Garbage collect old generations (default: 30 days)
@@ -84,12 +84,12 @@ list-generations:
         "nixos")
             sudo nix-env -p /nix/var/nix/profiles/system --list-generations
             ;;
-        "darwin")
-            darwin-rebuild list-generations
-            ;;
-        "home-manager")
-            home-manager generations
-            ;;
+        # "darwin")
+        #     darwin-rebuild list-generations
+        #     ;;
+        # "home-manager")
+        #     home-manager generations
+        #     ;;
         *)
             echo "❌ Error: Unsupported system type for listing generations."
             exit 1
@@ -105,11 +105,6 @@ status:
     @echo "Nix Version: $(nix --version)"
     @echo "Flake Status:"
     @nix flake metadata
-
-# Display available commands
-help:
-    @just --list
-    @echo "Run 'just <command>' to execute a command."
 
 # Format and mount disk using Disko
 [confirm("DANGER: This will destroy, format, and mount the disk according to the Disko configuration for the specified host. THIS IS A DESTRUCTIVE OPERATION. Are you sure you want to continue?")]
@@ -138,24 +133,55 @@ disko hostname:
 # Synchronize remote NixOS machine
 # Usage: just remote-sync <user> <hostname>
 # Example: just remote-sync myuser myremoteserver
+# remote-sync user host:
+#     #!/usr/bin/env bash
+#     set -euo pipefail
+
+#     echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
+
+#     # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
+#     # named after the target host (e.g., nixosConfigurations.myremoteserver).
+#     echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
+
+#     if ! nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
+#         --flake ".#{{host}}" \
+#         --build-host "{{user}}@{{host}}" \
+#         --target-host "{{user}}@{{host}}" \
+#         --use-remote-sudo \
+#         --fast; then
+#         echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
+#         exit 1
+#     fi
+
+#     echo "✅ Remote synchronization for '{{host}}' completed successfully!"
+
+# [EXPERIMENTAL] Rsync entire flake directory and switch using nh
+# Usage: just experimental-sync <user> <hostname>
+# Example: just experimental-sync myuser myremoteserver
 remote-sync user host:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
-
-    # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
-    # named after the target host (e.g., nixosConfigurations.myremoteserver).
-    echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
-
-    if ! nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
-        --flake ".#{{host}}" \
-        --build-host "{{user}}@{{host}}" \
-        --target-host "{{user}}@{{host}}" \
-        --use-remote-sudo \
-        --fast; then
-        echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
+    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{host}} as user {{user}}..."
+    
+    REMOTE_PATH="/tmp/nix-flake-$(basename $(pwd))"
+    
+    echo "📁 Rsyncing flake directory to {{user}}@{{host}}:$REMOTE_PATH..."
+    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{user}}@{{host}}:$REMOTE_PATH/"; then
+        echo "❌ Failed to rsync flake directory to remote host."
         exit 1
     fi
+    
+    echo "🚀 Running 'nh os switch .' on remote host..."
+    if ! ssh -t "{{user}}@{{host}}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
+        echo "❌ Failed to run 'nh os switch .' on remote host."
+        exit 1
+    fi
+    
+    echo "✅ Experimental synchronization for '{{host}}' completed successfully!"
+    echo "ℹ️  Remote flake directory is located at: {{user}}@{{host}}:$REMOTE_PATH"
 
-    echo "✅ Remote synchronization for '{{host}}' completed successfully!"
+# Display available commands
+help:
+    @just --list
+    @echo "Run 'just <command>' to execute a command."
