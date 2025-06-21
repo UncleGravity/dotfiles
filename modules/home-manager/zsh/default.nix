@@ -7,14 +7,14 @@ in
   #TODO: Load ENVIRONMENT variables from sops-nix
 
   # 1.  Add an option the user can flip
-  options.my.zsh.enable = lib.mkEnableOption "Enable experimental Nix-managed zsh configuration";
+  options.my.zsh.enable = lib.mkEnableOption "Enable Nix-managed zsh configuration";
 
   # 2.  Apply experimental config when enabled
   config = lib.mkIf cfg.enable {
 
     programs.zsh = {
       enable  = true;
-      dotDir  = ".config/zsh-nix";
+      dotDir  = ".config/zsh";
 
       # History -----------------------------------------------------------------------------------
       history = {
@@ -131,7 +131,6 @@ in
     programs.fzf = {
       enable = true;
       enableZshIntegration = true;
-      tmux.enableShellIntegration = true;
     };
 
     programs.zoxide = {

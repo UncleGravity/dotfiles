@@ -176,7 +176,6 @@ in {
     ../modules/home-manager/tmux
   ];
 
-  # Toggle to enable the experimental nix-managed zsh configuration
   my.zsh.enable = true;
   my.tmux.enable = true;
   xdg.enable = true;
@@ -212,11 +211,6 @@ in {
       else linuxOnlyPackages
     );
 
-  programs.zsh = lib.mkIf (!config.my.zsh.enable) {
-    enable = true;
-    dotDir = ".config/zsh";
-  };
-
   programs.direnv = {
     enable = true;
     enableZshIntegration = true;
@@ -231,10 +225,6 @@ in {
       source = "${SCRIPTS_DIR}";
       recursive = true;
     };
-    ".config/zsh" = {
-      source = "${DOTFILES_DIR}/zsh";
-      recursive = true; # Allow the directory to be writable, since zplug will create files in it
-    };
     ".config/nvim-lua" = {
       source = "${DOTFILES_DIR}/nvim";
       recursive = true;
@@ -245,27 +235,16 @@ in {
     ".config/lazygit" = {
       source = "${DOTFILES_DIR}/lazygit";
     };
-    # ".config/yazi" = {
-    #   source = "${DOTFILES_DIR}/yazi";
-    # };
     ".config/kitty" = {
       source = "${DOTFILES_DIR}/kitty";
     };
     ".config/ghostty" = {
       source = "${DOTFILES_DIR}/ghostty";
     };
-    # ".config/tmux" = {
-    #   source = "${DOTFILES_DIR}/tmux";
-    #   recursive = true; # This allows the directory to be writable, since tpm will create files in it
-    #   executable = true; # Not sure if necessary w/e
-    # };
     ".config/aichat" = {
       source = "${DOTFILES_DIR}/aichat";
       recursive = true; # Allows the directory to be writable, since aichat will create files in it
     };
-    # ".config/sesh" = {
-    #   source = "${DOTFILES_DIR}/sesh";
-    # };
     ".sops.yaml" = {
       source = "${DOTFILES_DIR}/sops/.sops.yaml";
     };
