@@ -43,6 +43,16 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Tmux plugins
+    tmux-vim-navigator = {
+      url = "github:christoomey/vim-tmux-navigator";
+      flake = false;
+    };
+    tmux-tokyo-night = {
+      url = "github:fabioluciano/tmux-tokyo-night";
+      flake = false;
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, sops-nix, ... }@inputs:

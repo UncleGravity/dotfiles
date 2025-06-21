@@ -1,43 +1,29 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 let
   # Toggle
   cfg = config.my.tmux;
 
-  # Path to the original, hand-written tmux.conf that lives in the dotfiles
-  # repository.  We don't modify it – we only read it at build time.
   tmuxConf = ./tmux.conf;
 
   # Plugins built via Nix (no TPM needed)
-  # sensiblePlugin = pkgs.tmuxPlugins.sensible;
+  # Using flake inputs instead of manual fetchFromGitHub
   vim-tmux-navigator = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "vim-tmux-navigator";
     rtpFilePath = "vim-tmux-navigator.tmux";
-    version = "unstable-2025-06-09";
-    src = pkgs.fetchFromGitHub {
-      owner = "christoomey";
-      repo = "vim-tmux-navigator";
-      rev = "412c474e97468e7934b9c217064025ea7a69e05e";
-      hash = "sha256-8A+Yt9uhhAP76EiqUopE8vl7/UXkgU2x000EOcF7pl0=";
-    };
+    version = "unstable";
+    src = inputs.tmux-vim-navigator;
   };
   tokyoNightPlugin = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "tmux-tokyo-night";
-    rtpFile    = "tmux-tokyo-night.tmux";
-    version    = "unstable-2025-05-27";
-    src = pkgs.fetchFromGitHub {
-      owner = "fabioluciano";
-      repo  = "tmux-tokyo-night";
-      rev   = "54870913b2efd343da78352acd47df975331e37e";
-      sha256 = "sha256-OSWjOPT+XxAvGhquxoFlmimJbqSIlHmIOLClYZM/L9k=";
-    };
+    rtpFile = "tmux-tokyo-night.tmux";
+    version = "unstable";
+    src = inputs.tmux-tokyo-night;
   };
 
 in {
-  # Option the user can flip
   options.my.tmux.enable = lib.mkEnableOption "Enable Home-Manager tmux setup";
 
-  # Actual configuration
   config = lib.mkIf cfg.enable {
 
     programs.fzf.tmux.enableShellIntegration = true;

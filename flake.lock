@@ -269,6 +269,8 @@
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
         "sops-nix": "sops-nix",
+        "tmux-tokyo-night": "tmux-tokyo-night",
+        "tmux-vim-navigator": "tmux-vim-navigator",
         "zig": "zig"
       }
     },
@@ -334,6 +336,38 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tmux-tokyo-night": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1748332067,
+        "narHash": "sha256-OSWjOPT+XxAvGhquxoFlmimJbqSIlHmIOLClYZM/L9k=",
+        "owner": "fabioluciano",
+        "repo": "tmux-tokyo-night",
+        "rev": "54870913b2efd343da78352acd47df975331e37e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fabioluciano",
+        "repo": "tmux-tokyo-night",
+        "type": "github"
+      }
+    },
+    "tmux-vim-navigator": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1749413770,
+        "narHash": "sha256-czhzY1bauNd472osfUZSzsOEoGv9QhQBriF3ULkKNpY=",
+        "owner": "christoomey",
+        "repo": "vim-tmux-navigator",
+        "rev": "412c474e97468e7934b9c217064025ea7a69e05e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "christoomey",
+        "repo": "vim-tmux-navigator",
         "type": "github"
       }
     },
