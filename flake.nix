@@ -183,13 +183,20 @@
       homeStateVersion = "24.05";
     };
 
+    # Packages
+    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
+      scripts = nixpkgs.legacyPackages.${system}.callPackage ./packages/scripts { inherit system; };
+    });
+
     # Development shells
     devShells = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
       default = nixpkgs.legacyPackages.${system}.mkShell {
 
         packages = with nixpkgs.legacyPackages.${system}; [
           nh
+          nix-output-monitor
           just
+          # self.packages.${system}.scripts  # Your scripts available in dev shell
         ];
 
         # shellHook = ''

@@ -117,7 +117,7 @@ in
         p10kInstantPrompt 
         zshKeybindings
         zshAliases
-        zshScripts
+        # zshScripts
         zshSecrets
         zshOptions
         zshPlugins
@@ -138,6 +138,9 @@ in
       enableZshIntegration = true;
       options = [ "--cmd cd" ];
     };
+
+    # Prevents the message "Last login: ..." from being printed when logging in
+    home.file.".hushlogin".text = "";
 
   };
 } 

@@ -1,14 +1,9 @@
-{ config, pkgs, inputs, homeStateVersion, self, ... }:
+{ config, pkgs, inputs, self, ... }:
 
-let
-  HOME_DIR = "${self}/home";
-in
 {
-
   imports = [
-    "${HOME_DIR}/_core.nix"
+    "${self}/modules/home/core"
   ];
 
-  programs.home-manager.enable = true; # Let Home Manager install and manage itself.
-  home.stateVersion = homeStateVersion; # don't touch this or everybody dies
+  # More stuff here...
 }

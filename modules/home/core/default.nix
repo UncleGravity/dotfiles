@@ -6,9 +6,6 @@
   username,
   ...
 }: let
-  DOTFILES_DIR = ./dotfiles;
-  SCRIPTS_DIR = ./scripts;
-
   commonPackages = with pkgs; [
     # LSP
     tree-sitter
@@ -31,7 +28,6 @@
 
     # Formatters
     stylua # Lua
-    # nodePackages.prettier #
     prettierd # HTML/CSS/JS/TS/Markdown/YAML
     ruff # Python (imports/formatter/linter)
     alejandra # nix
@@ -45,7 +41,6 @@
     # Compilers
     clang
     inputs.zig.packages.${pkgs.system}.master
-    # zig
     uv
     bun
     nodejs
@@ -57,13 +52,10 @@
     # Dev
     git
     wget
-    # helix
-    # evil-helix
     gnumake
     gh # github cli
     just
     android-tools # adb/fastboot
-    # nrfutil
 
     # USB
     usbutils # lsusb
@@ -152,11 +144,9 @@
     # Fonts
     nerd-fonts.meslo-lg
     nerd-fonts.jetbrains-mono
-
   ];
 
   darwinOnlyPackages = with pkgs; [
-    # Add Darwin-specific packages here
     mactop
     mas
     lima
@@ -167,18 +157,24 @@
 
   linuxOnlyPackages = with pkgs; [
   ];
+
+  MODULES_DIR = "${inputs.self}/modules/home";
 in {
   imports = [
-    ../modules/home-manager/helix.nix
-    ../modules/home-manager/zsh
-    ../modules/home-manager/yazi
-    ../modules/home-manager/nvim
-    ../modules/home-manager/tmux
+    "${MODULES_DIR}/dotfiles"
+    "${MODULES_DIR}/helix.nix"
+    "${MODULES_DIR}/zsh"
+    "${MODULES_DIR}/yazi"
+    "${MODULES_DIR}/nvim"
+    "${MODULES_DIR}/tmux"
   ];
 
+  xdg.enable = true;
+
+  # Enable our modules
   my.zsh.enable = true;
   my.tmux.enable = true;
-  xdg.enable = true;
+  my.dotfiles.enable = true;
 
   home.username = username;
   home.homeDirectory =
@@ -218,38 +214,6 @@ in {
     # silent = true;
   };
 
-  # DOTFILES
-  home.file = {
-    ".hushlogin".text = ""; # Prevents the message "Last login: ..." from being printed when logging in
-    ".scripts/" = {
-      source = "${SCRIPTS_DIR}";
-      recursive = true;
-    };
-    ".config/nvim-lua" = {
-      source = "${DOTFILES_DIR}/nvim";
-      recursive = true;
-    };
-    ".config/git" = {
-      source = "${DOTFILES_DIR}/git";
-    };
-    ".config/lazygit" = {
-      source = "${DOTFILES_DIR}/lazygit";
-    };
-    ".config/kitty" = {
-      source = "${DOTFILES_DIR}/kitty";
-    };
-    ".config/ghostty" = {
-      source = "${DOTFILES_DIR}/ghostty";
-    };
-    ".config/aichat" = {
-      source = "${DOTFILES_DIR}/aichat";
-      recursive = true; # Allows the directory to be writable, since aichat will create files in it
-    };
-    ".sops.yaml" = {
-      source = "${DOTFILES_DIR}/sops/.sops.yaml";
-    };
-  };
-
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
   # shell provided by Home Manager. If you don't want to manage your shell
@@ -263,6 +227,6 @@ in {
   home.sessionVariables = {
     NVIM_APPNAME = "nvim-lua";
     EDITOR = "nvim";
-    TEST = "HELLO2";
+    TEST = "HELLO";
   };
-}
+} 
