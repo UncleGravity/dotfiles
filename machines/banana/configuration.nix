@@ -1,10 +1,10 @@
 # Configuration for the 'my-macbook' machine
-{ pkgs, lib, inputs, username, hostname, systemStateVersion, ... }:
+{ pkgs, lib, inputs, username, hostname, self, systemStateVersion, ... }:
 
 {
   imports = [
-    ../_common/darwin/configuration.nix
-    ../_common/darwin/homebrew.nix
+    "${self}/modules/darwin/_core.nix"
+    "${self}/modules/darwin/homebrew.nix"
   ];
 
   # --- Overrides or Machine-Specific Settings ---

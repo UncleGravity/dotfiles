@@ -64,25 +64,25 @@ in
       };
 
       # Dashboards: pick up all JSON under dashboardDir
-      # dashboards = {
-      #   settings = {
-      #     providers = [
-      #       {
-      #         name                = "default";
-      #         orgId               = 1;
-      #         folder              = "Cluster Metrics";
-      #         type                = "file";
-      #         disableDeletion     = false;
-      #         allowUiUpdates      = true;
-      #         updateIntervalSeconds = 60;
-      #         options = {
-      #           path = dashboardDir;
-      #           foldersFromFilesStructure = false;
-      #         };
-      #       }
-      #     ];
-      #   };
-      # };
+      dashboards = {
+        settings = {
+          providers = [
+            {
+              name                = "default";
+              orgId               = 1;
+              folder              = "System Monitoring";
+              type                = "file";
+              disableDeletion     = false;
+              allowUiUpdates      = true;
+              updateIntervalSeconds = 60;
+              options = {
+                path = dashboardDir;
+                foldersFromFilesStructure = false;
+              };
+            }
+          ];
+        };
+      };
       
     };
   };
@@ -104,8 +104,76 @@ in
           targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
         }];
       }
+      {
+        job_name = "telegraf";
+        static_configs = [{
+          targets = [ "127.0.0.1:9273" ]; # Telegraf Prometheus output port
+        }];
+      }
     ];
   };
 
-  networking.firewall.allowedTCPPorts = [ 3131 ]; # Caddy needs this to access the web interface
+  # Telegraf configuration for system monitoring
+  services.telegraf = {
+    enable = true;
+    
+    extraConfig = {
+      agent = {
+        interval = "10s";
+        round_interval = true;
+        metric_batch_size = 1000;
+        metric_buffer_limit = 10000;
+        collection_jitter = "0s";
+        flush_interval = "10s";
+        flush_jitter = "0s";
+        precision = "";
+        hostname = "";
+        omit_hostname = false;
+      };
+
+      # Prometheus output
+      outputs.prometheus_client = {
+        listen = ":9273";
+        metric_version = 2;
+      };
+
+      # Input plugins for system monitoring
+      inputs = {
+        # CPU metrics
+        cpu = {
+          percpu = true;
+          totalcpu = true;
+          collect_cpu_time = false;
+          report_active = false;
+        };
+
+        # Memory metrics
+        mem = {};
+
+        # Disk metrics
+        disk = {
+          ignore_fs = ["tmpfs" "devtmpfs" "devfs" "iso9660" "overlay" "aufs" "squashfs"];
+        };
+
+        # Disk I/O metrics
+        diskio = {};
+
+        # Network metrics
+        net = {
+          ignore_protocol_stats = false;
+        };
+
+        # System load
+        system = {};
+
+        # Process metrics
+        processes = {};
+
+        # Kernel metrics
+        kernel = {};
+      };
+    };
+  };
+
+  networking.firewall.allowedTCPPorts = [ 3131 9273 ]; # Caddy needs this to access the web interface, and Telegraf Prometheus endpoint
 }

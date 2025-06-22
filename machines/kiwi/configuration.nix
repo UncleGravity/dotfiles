@@ -13,7 +13,7 @@ in {
     ./disko.nix
     ./hardware.nix
     # ./wifi.nix
-    ../_common/nixos/configuration.nix
+    "${self}/modules/nixos/_core.nix"
     ./zfs.nix
     "${MODULES_DIR}/sops.nix"
     "${MODULES_DIR}/nixos/tailscale.nix"

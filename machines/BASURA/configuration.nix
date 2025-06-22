@@ -1,14 +1,17 @@
 # Configuration for the 'my-macbook' machine
-{ pkgs, lib, inputs, username, hostname, systemStateVersion, ... }:
+{ pkgs, lib, inputs, username, hostname, self, systemStateVersion, ... }:
 
 {
   imports = [
-    ../_common/darwin/configuration.nix
-    ../_common/darwin/homebrew.nix
+    "${self}/modules/darwin/_core.nix"
+    "${self}/modules/darwin/homebrew.nix"
   ];
 
   # --- Overrides or Machine-Specific Settings ---
   # Any setting here will override the corresponding 'mkDefault' setting in base-configuration.nix
+
+  # Only keep brews and casks managed by nix
+  homebrew.onActivation.cleanup = "zap";
 
   # Example: Override system packages for this specific machine
   # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base
