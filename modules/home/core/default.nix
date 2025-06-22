@@ -4,6 +4,7 @@
   lib,
   inputs,
   username,
+  homeStateVersion,
   ...
 }: let
   commonPackages = with pkgs; [
@@ -169,6 +170,10 @@ in {
     "${MODULES_DIR}/tmux"
   ];
 
+  programs.home-manager.enable = true; # Let Home Manager install and manage itself.
+  home.stateVersion = homeStateVersion; # don't touch this or everybody dies
+
+  # Use XDG Base Directory Specification (XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME)
   xdg.enable = true;
 
   # Enable our modules
@@ -205,7 +210,12 @@ in {
       if pkgs.stdenv.isDarwin
       then darwinOnlyPackages
       else linuxOnlyPackages
-    );
+    )
+    ++ [
+      # Custom packages from this flake
+      inputs.self.packages.${pkgs.system}.opencode
+      inputs.self.packages.${pkgs.system}.scripts
+    ];
 
   programs.direnv = {
     enable = true;

@@ -53,6 +53,12 @@
       url = "github:fabioluciano/tmux-tokyo-night";
       flake = false;
     };
+
+    # AI coding agent
+    opencode = {
+      url = "github:sst/opencode";
+      flake = false;
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, sops-nix, ... }@inputs:
@@ -184,9 +190,12 @@
     };
 
     # Packages
-    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
-      scripts = nixpkgs.legacyPackages.${system}.callPackage ./packages/scripts { inherit system; };
-    });
+    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: 
+      nixpkgs.legacyPackages.${system}.callPackage ./packages { 
+        inherit inputs system;
+        pkgs = nixpkgs.legacyPackages.${system};
+      }
+    );
 
     # Development shells
     devShells = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
