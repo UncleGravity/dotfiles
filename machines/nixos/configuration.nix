@@ -7,7 +7,7 @@ in
   imports =
     [
       ./hardware.nix
-      ../_common/nixos/configuration.nix
+      "${MODULES_DIR}/nixos/_core.nix"
       "${MODULES_DIR}/sops.nix"
       "${MODULES_DIR}/nixos/docker.nix"
       "${MODULES_DIR}/nixos/hackrf.nix"

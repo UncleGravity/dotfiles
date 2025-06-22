@@ -73,6 +73,8 @@
     # tailscale
 
     # Nix
+    nh
+    nix-output-monitor
     direnv
     devenv
 

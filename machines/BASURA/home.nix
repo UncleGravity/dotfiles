@@ -2,7 +2,7 @@
 
 {
   imports = [
-    "${self}/modules/home/core"
+    "${self}/modules/home/_core.nix"
   ];
 
   # More stuff here...
