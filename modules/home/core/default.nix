@@ -213,7 +213,7 @@ in {
     )
     ++ [
       # Custom packages from this flake
-      inputs.self.packages.${pkgs.system}.opencode
+      # inputs.self.packages.${pkgs.system}.opencode
       inputs.self.packages.${pkgs.system}.scripts
     ];
 
@@ -239,4 +239,4 @@ in {
     EDITOR = "nvim";
     TEST = "HELLO";
   };
-} 
+}

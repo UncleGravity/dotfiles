@@ -44,6 +44,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # ---------------------------------------------------------------------------------------------
+    # Non Flake Inputs
+
     # Tmux plugins
     tmux-vim-navigator = {
       url = "github:christoomey/vim-tmux-navigator";

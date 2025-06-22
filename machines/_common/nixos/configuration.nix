@@ -7,6 +7,8 @@
 }: {
   # Enable Flakes
   nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies
+  nix.channel.enable = false;
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -151,4 +153,3 @@
     ghostty
   ];
 }
-

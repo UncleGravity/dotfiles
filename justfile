@@ -156,30 +156,30 @@ disko hostname:
 #     echo "✅ Remote synchronization for '{{host}}' completed successfully!"
 
 # [EXPERIMENTAL] Rsync entire flake directory and switch using nh
-# Usage: just experimental-sync <user> <hostname>
-# Example: just experimental-sync myuser myremoteserver
-remote-sync user host:
+# Usage: just deploy <hostname>
+# Example: just deploy myremoteserver
+deploy host:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{host}} as user {{user}}..."
-    
+    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{host}}..."
+
     REMOTE_PATH="/tmp/nix-flake-$(basename $(pwd))"
-    
-    echo "📁 Rsyncing flake directory to {{user}}@{{host}}:$REMOTE_PATH..."
-    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{user}}@{{host}}:$REMOTE_PATH/"; then
+
+    echo "📁 Rsyncing flake directory to {{host}}:$REMOTE_PATH..."
+    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{host}}:$REMOTE_PATH/"; then
         echo "❌ Failed to rsync flake directory to remote host."
         exit 1
     fi
-    
+
     echo "🚀 Running 'nh os switch .' on remote host..."
-    if ! ssh -t "{{user}}@{{host}}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
+    if ! ssh -t "{{host}}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
         echo "❌ Failed to run 'nh os switch .' on remote host."
         exit 1
     fi
-    
-    echo "✅ Experimental synchronization for '{{host}}' completed successfully!"
-    echo "ℹ️  Remote flake directory is located at: {{user}}@{{host}}:$REMOTE_PATH"
+
+    echo "✅ Experimental deployment for '{{host}}' completed successfully!"
+    echo "ℹ️  Remote flake directory is located at: {{host}}:$REMOTE_PATH"
 
 # Display available commands
 help:
