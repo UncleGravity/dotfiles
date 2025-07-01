@@ -160,7 +160,6 @@ in
         postCreateHook = ''
           zfs snapshot rpool/root@blank
         '';
-        
       };
 
       # ---------------------------------------------------------------------------
@@ -171,6 +170,7 @@ in
         # Default options
         rootFsOptions = {
           compression = "lz4";
+          "com.sun:auto-snapshot" = "true";
           atime = "off"; # Good for performance, less metadata writes.
           xattr = "sa"; # Stores extra metadata on files (used by SAMBA)
           acltype = "posixacl"; # Enable POSIX ACLs
@@ -198,23 +198,20 @@ in
 
         # Define datasets within the 'storagepool'.
         # storagepool/
-        # ├── root            # Dataset mounted at /nas
-        # ├── backups         # Dataset mounted at /nas/backups
-        # └── media           # Dataset mounted at /nas/media
+        # ├── root            # Dataset mounted at /nas (includes media)
+        # └── backups         # Dataset mounted at /nas/backups
         datasets = {
           "root" = {
             type = "zfs_fs";
-            mountpoint = "/nas"; # Main data share at the root of /nas
+            options.mountpoint = "/nas"; # Main data share at the root of /nas
+            # options.mountpoint = "legacy";
           };
           "backups" = {
             type = "zfs_fs";
             mountpoint = "/nas/backups";
-          };
-          "media" = {
-            type = "zfs_fs";
-            mountpoint = "/nas/media";
             options = {
-              recordsize = "1M";
+              # options.mountpoint = "legacy";
+              "com.sun:auto-snapshot" = "false";
             };
           };
         };
@@ -226,4 +223,4 @@ in
       };
     };
   };
-} 
+}
