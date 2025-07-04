@@ -2,7 +2,6 @@
   self,
   inputs,
   systemStateVersion,
-  config,
   ...
 }: let
   MODULES_DIR = "${self}/modules";
@@ -12,9 +11,11 @@ in {
     inputs.disko.nixosModules.disko
     ./disko.nix
     ./hardware.nix
+    ./mounts.nix
+    ./zfs.nix
+    ./backup/
     # ./wifi.nix
     "${self}/modules/nixos/_core.nix"
-    ./zfs.nix
     "${MODULES_DIR}/sops.nix"
     "${MODULES_DIR}/nixos/tailscale.nix"
     "${MODULES_DIR}/nixos/docker.nix"
@@ -22,7 +23,7 @@ in {
     "${MODULES_DIR}/nixos/guacamole/"
     "${MODULES_DIR}/nixos/grafana/grafana.nix"
     "${MODULES_DIR}/nixos/display-manager.nix"
-    # "${MODULES_DIR}/nixos/immich.nix"
+    "${MODULES_DIR}/nixos/mounts.nix"
   ];
 
   # ---------------------------------------------------------------------------
@@ -36,6 +37,10 @@ in {
   services.iperf3 = {
     enable = true;
     openFirewall = true; # tcp/udp = [ 5201 ]
+  };
+
+  networking.networkmanager.settings = {
+    "connection"."wifi.powersave" = 2;   # 2 = disabled
   };
 
   networking.firewall.allowedTCPPorts = [ 19999 ]; # netdata #TODO: Remove this
