@@ -25,15 +25,6 @@
     # Does not manage formulae, just installs homebrew.
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
-    # Zig nightly
-    zig = {
-      url = "github:mitchellh/zig-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
-
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,6 +33,21 @@
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # ---------------------------------------------------------------------------------------------
+    # Overlays
+
+    # Opencode from upstream
+    nixpkgs_opencode.url = "github:nixos/nixpkgs/pull/419604/head";
+
+    # Zig nightly
+    zig = {
+      url = "github:mitchellh/zig-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
     };
 
     # ---------------------------------------------------------------------------------------------
@@ -64,7 +70,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, darwin, nix-homebrew, sops-nix, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs:
   let
     systems = {
       aarch64-linux = "aarch64-linux";
@@ -72,6 +78,14 @@
       x86_64-linux = "x86_64-linux";
       x86_64-darwin = "x86_64-darwin";
     };
+
+    # Shared overlays for both NixOS and Darwin
+    overlays = [
+      (final: prev: {
+        opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
+        zig = inputs.zig.packages.${prev.system}.master;
+      })
+    ];
 
     mkHomeManagerConfig = { username, hostname, homeStateVersion }: {
       home-manager.extraSpecialArgs = {
@@ -100,6 +114,9 @@
         home-manager.nixosModules.home-manager
         ./machines/${hostname}/configuration.nix
         (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
+        {
+          nixpkgs.overlays = overlays;
+        }
       ];
     };
 
@@ -114,13 +131,14 @@
         inputs.sops-nix.darwinModules.sops
         home-manager.darwinModules.home-manager
         (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
-        nix-homebrew.darwinModules.nix-homebrew
+        inputs.nix-homebrew.darwinModules.nix-homebrew
         {
           nix-homebrew = {
             enable = true;
             user = username; # Assuming username is the same as nix-homebrew user
             autoMigrate = true;
           };
+          nixpkgs.overlays = overlays;
         }
       ];
     };
@@ -131,8 +149,8 @@
         inherit inputs;
         inherit username homeStateVersion;
       };
-      modules = [ 
-        ./machines/${username}/home.nix 
+      modules = [
+        ./machines/${username}/home.nix
         inputs.nixvim.homeManagerModules.nixvim
       ];
     };
@@ -193,8 +211,8 @@
     };
 
     # Packages
-    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: 
-      nixpkgs.legacyPackages.${system}.callPackage ./packages { 
+    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
+      nixpkgs.legacyPackages.${system}.callPackage ./packages {
         inherit inputs system;
         pkgs = nixpkgs.legacyPackages.${system};
       }

@@ -2,5 +2,5 @@
 
 {
   scripts = pkgs.callPackage ./scripts { inherit system; };
-  opencode = pkgs.callPackage ./opencode { inherit inputs system; };
-} 
+  # my_package = pkgs.callPackage ./my_package { inherit inputs system; };
+}

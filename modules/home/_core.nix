@@ -41,7 +41,7 @@
 
     # Compilers
     clang
-    inputs.zig.packages.${pkgs.system}.master
+    zig
     uv
     bun
     nodejs
@@ -99,6 +99,7 @@
     ollama
     claude-code
     codex
+    opencode
     # goose-cli
     # aider-chat
 
@@ -188,6 +189,18 @@ in {
     then "/Users/${username}"
     else "/home/${username}";
 
+  home.packages =
+    commonPackages
+    ++ (
+      if pkgs.stdenv.isDarwin
+      then darwinOnlyPackages
+      else linuxOnlyPackages
+    )
+    ++ [
+      # Custom packages from this flake
+      inputs.self.packages.${pkgs.system}.scripts
+    ];
+
   programs.ssh = {
     enable = true;
     forwardAgent = true;
@@ -204,19 +217,6 @@ in {
       };
     };
   };
-
-  home.packages =
-    commonPackages
-    ++ (
-      if pkgs.stdenv.isDarwin
-      then darwinOnlyPackages
-      else linuxOnlyPackages
-    )
-    ++ [
-      # Custom packages from this flake
-      # inputs.self.packages.${pkgs.system}.opencode
-      inputs.self.packages.${pkgs.system}.scripts
-    ];
 
   programs.direnv = {
     enable = true;

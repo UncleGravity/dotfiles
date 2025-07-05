@@ -213,6 +213,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_opencode": {
+      "locked": {
+        "lastModified": 1751709304,
+        "narHash": "sha256-b2/D+8lW5ZZU7M5ELuFzcR7ea1kngf8+GFyNir71gsA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "fcb6a499b91a210778fbb367d46283c94db0ebef",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "pull/419604/head",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixvim": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -283,6 +299,7 @@
         "home-manager": "home-manager",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",
+        "nixpkgs_opencode": "nixpkgs_opencode",
         "nixvim": "nixvim",
         "opencode": "opencode",
         "sops-nix": "sops-nix",
