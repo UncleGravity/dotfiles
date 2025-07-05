@@ -113,7 +113,6 @@
 
     # file manager
     yazi
-    fzf
     exiftool
 
     # tmux
