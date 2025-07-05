@@ -1,5 +1,5 @@
 ## TODO: CONVERT TO MODULE.
-{ lib, config, pkgs, ... }:
+{ ... }:
 let
   uid  = 1000;   # your user
   gid  = 100;    # “users” group

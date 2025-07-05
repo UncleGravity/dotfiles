@@ -1,13 +1,10 @@
-{ lib, pkgs, config, hostname, ... }:
+{ pkgs, config, hostname, ... }:
 # Inspo: https://www.arthurkoziel.com/restic-backups-b2-nixos/
+# Cache Dir: /var/cache/restic-backups-${name}
 let
-  # Single ZFS dataset to backup
-  # Find with `zfs list -t filesystem -o name`
-  # output: <backupDataset>@<snapshotName>
-  # or zfs list -t snapshot -o name -H -S creation | grep "@backup$"
   backupDataset = "storagepool/root";
-  mountPoint = "/nas";
-  snapshotName = "backup";
+  mountPoint = "/nas"; # List zfs datasets and mountpoints: `zfs list`
+  snapshotName = "backup";  # List zfs snapshots: zfs list -t snapshot
 
   # Notification helper
   notify = message: "NTFY_TOPIC=$(cat ${config.sops.secrets."ntfy/topic".path}) ${pkgs.ntfy-sh}/bin/ntfy pub -m \"${message}\" -t \"${hostname} Backup\"";
@@ -16,8 +13,6 @@ in
 {
   # -----------------------------------------------------------------------------------------------
   # Secrets
-
-  # Required SOPS secrets - create these in your secrets file
   sops.secrets."backup/b2.env" = {}; # For Backblaze B2
   sops.secrets."backup/b2/restic/repo" = {}; # For Backblaze B2
   sops.secrets."backup/b2/restic/password" = {}; # For Backblaze B2
@@ -103,12 +98,13 @@ in
 
       pruneOpts = [
         # "--keep-daily 24"
-        "--keep-weekly 4"
-        "--keep-monthly 12"
+        "--keep-weekly 7"
+        "--keep-monthly 6"
       ];
 
       timerConfig = {
-        OnCalendar = "Sun *-*-* 03:01:00"; # Weekly backup on Sundays at 3:01 AM
+        # OnCalendar = "Sun *-*-* 03:01:00"; # Weekly backup on Sundays at 3:01 AM
+        OnCalendar = "03:01:00"; # Daily backup at 3:01 AM
       };
     };
     t7 = {
@@ -139,7 +135,7 @@ in
       ];
 
       pruneOpts = [
-        "--keep-daily 6"
+        # "--keep-daily 24"
         "--keep-weekly 7"
         "--keep-monthly 6"
       ];

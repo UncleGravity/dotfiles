@@ -13,7 +13,7 @@ in {
     ./hardware.nix
     ./mounts.nix
     ./zfs.nix
-    ./backup/
+    ./backup
     # ./wifi.nix
     "${self}/modules/nixos/_core.nix"
     "${MODULES_DIR}/sops.nix"
@@ -23,7 +23,6 @@ in {
     "${MODULES_DIR}/nixos/guacamole/"
     "${MODULES_DIR}/nixos/grafana/grafana.nix"
     "${MODULES_DIR}/nixos/display-manager.nix"
-    "${MODULES_DIR}/nixos/mounts.nix"
   ];
 
   # ---------------------------------------------------------------------------
@@ -44,6 +43,55 @@ in {
   };
 
   networking.firewall.allowedTCPPorts = [ 19999 ]; # netdata #TODO: Remove this
+
+  # services.udisks2.enable = true; # Auto-mount external drives
+  # services.udiskie.enable = true;
+  # services.devmon.enable = true;
+
+  # my.restic = {
+  #   enable = true;
+  #   local = {
+  #     enable = true;
+  #     zfsDatasets = [ "storagepool/root" ]; # Will take a snapshot, back up, then delete it
+  #     paths = [ "/home" "/var/log" ];
+  #     timerConfig.OnCalendar = "daily 02:00";
+  #     pruneOpts = [
+  #       "--keep-daily 7"
+  #       "--keep-weekly 5"
+  #       "--keep-monthly 12"
+  #     ];
+  #     stats = true;
+  #     healthCheck = {
+  #       enable = true;
+  #       url = "https://example.com/health-local";
+  #     };
+  #     alerts = {
+  #       enable = true;
+  #       url = "https://example.com/alerts";
+  #     };
+  #   };
+
+  #   remote = {
+  #     enable = true;
+  #     zfsDatasets = [ "storagepool/root" ]; # Will take a snapshot, back up, then delete it
+  #     paths = [ "/home" "/var/log" ];
+  #     timerConfig.OnCalendar = "daily 03:00";
+  #     pruneOpts = [
+  #       "--keep-daily 7"
+  #       "--keep-weekly 5"
+  #       "--keep-monthly 12"
+  #     ];
+  #     stats = true;
+  #     healthCheck = {
+  #       enable = true;
+  #       url = "https://example.com/health-remote";
+  #     };
+  #     alerts = {
+  #       enable = true;
+  #       url = "https://example.com/alerts";
+  #     };
+  #   };
+  # };
 
   # ---------------------------------------------------------------------------
   # Escape Hatch
