@@ -214,9 +214,11 @@
 
     # Packages
     packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
-      nixpkgs.legacyPackages.${system}.callPackage ./packages {
-        inherit inputs system;
+      let
         pkgs = nixpkgs.legacyPackages.${system};
+      in
+      import ./packages {
+        inherit inputs system pkgs;
       }
     );
 
