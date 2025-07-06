@@ -30,16 +30,13 @@ in {
     programs.sesh = {
       enable = true;
       enableAlias = true;
+      enableTmuxIntegration = false; # <prefix>+s
+      # tmuxKey = "k";
       settings = {
         session = [
           {
             name = "dotfiles";
             path = "~/nix/";
-            startup_command = "nvim";
-          }
-          {
-            name = "neovim config";
-            path = "~/.config/nvim/";
             startup_command = "nvim";
           }
         ];
@@ -58,8 +55,8 @@ in {
         # -----------------------------------------
         # THEME
         # -----------------------------------------
-        # set -g @theme_session_icon "\uf11c " #  
-        set -g @theme_session_icon "\uebc8" #  
+        # set -g @theme_session_icon "\uf11c " # 
+        set -g @theme_session_icon "\uebc8" # 
         set -g @theme_variation 'night'
         # set -g @theme_plugins 'datetime'
         set -g @theme_disable_plugins 1
@@ -71,4 +68,4 @@ in {
       '';
     };
   };
-} 
+}
