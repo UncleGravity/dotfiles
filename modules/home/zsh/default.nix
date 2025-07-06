@@ -27,7 +27,7 @@ in
 
       defaultKeymap = "emacs";
 
-      initContent = let 
+      initContent = let
         # -------------------------------------------------------------------------------------------
         p10kInstantPrompt = lib.mkOrder 500 /* bash */ ''
         # Powerlevel10k instant prompt
@@ -51,27 +51,11 @@ in
           bindkey "^[[1;3A" up-line-or-history    # Alt+Up: Move to previous line or history entry
           bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history entry
         '';
+        # -------------------------------------------------------------------------------------------
         zshAliases = lib.mkOrder 500 /* bash */ ''
           source ${./aliases.zsh}
           '';
-        zshScripts = lib.mkOrder 550 /* bash */ ''
-          # Load custom completions
-          fpath=("${config.home.homeDirectory}/.scripts/_completions" $fpath) # manual collection of completions
-          # fpath=("${pkgs.zsh-completions}/share/zsh/site-functions" $fpath) # extra collection of completions
-
-
-          # Add platform-specific scripts to PATH
-          [[ -d "${config.home.homeDirectory}/.scripts/all" ]] && export PATH="${config.home.homeDirectory}/.scripts/all:$PATH"
-
-          ${lib.optionalString pkgs.stdenv.isDarwin ''
-            [[ -d "${config.home.homeDirectory}/.scripts/darwin" ]] && export PATH="${config.home.homeDirectory}/.scripts/darwin:$PATH"
-          ''}
-
-          ${lib.optionalString pkgs.stdenv.isLinux ''
-            [[ -d "${config.home.homeDirectory}/.scripts/linux" ]] && export PATH="${config.home.homeDirectory}/.scripts/linux:$PATH"
-          ''}
-
-          '';
+        # -------------------------------------------------------------------------------------------
         zshSecrets = lib.mkOrder 500 /* bash */ ''
           [ -f "${config.xdg.configHome}/zsh/secrets/home.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/home.zsh"
           [ -f "${config.xdg.configHome}/zsh/secrets/work.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/work.zsh"
@@ -101,7 +85,7 @@ in
           setopt menu_complete       # Show completion menu on successive tab press
           setopt interactivecomments # Allow comments to be entered in interactive mode
           '';
-        # -------------------------------------------------------------------------------------------  
+        # -------------------------------------------------------------------------------------------
         zshFzf = lib.mkOrder 1000 /* zsh */ ''
           export DOTFILES_DIR="${config.home.homeDirectory}/nix"
           source ${./fzf.zsh}
@@ -113,8 +97,8 @@ in
           '';
         # zshMac = lib.mkOrder 1000 ''
         #   '';
-      in lib.mkMerge ([ 
-        p10kInstantPrompt 
+      in lib.mkMerge ([
+        p10kInstantPrompt
         zshKeybindings
         zshAliases
         # zshScripts
@@ -143,4 +127,4 @@ in
     home.file.".hushlogin".text = "";
 
   };
-} 
+}
