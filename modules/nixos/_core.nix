@@ -10,6 +10,17 @@
   nix.settings.sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies
   nix.channel.enable = false;
 
+  # --------------------------------------------------------------------------
+  # Binary caches for faster builds
+  nix.settings.substituters = [
+    "https://nix-community.cachix.org?priority=41"
+    "https://numtide.cachix.org?priority=42"
+  ];
+  nix.settings.trusted-public-keys = [
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+  ];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -38,16 +49,6 @@
       PasswordAuthentication = false; # No password login
     };
   };
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
   # ---------------------------------------------------------------------------
   # Set your time zone.
@@ -112,7 +113,7 @@
   # services.xserver.libinput.enable = true;
 
   # ---------------------------------------------------------------------------
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  # Define a user account. Don't forget to set a password with 'passwd'.
   users = {
     users.${username} = {
       isNormalUser = true;
