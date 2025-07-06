@@ -100,6 +100,7 @@
       home-manager.users.${username} = import ./machines/${hostname}/home.nix;
       home-manager.sharedModules = [
         inputs.nixvim.homeManagerModules.nixvim
+        ./modules/home
       ];
     };
 
@@ -152,6 +153,7 @@
       modules = [
         ./machines/${username}/home.nix
         inputs.nixvim.homeManagerModules.nixvim
+        ./modules/home
       ];
     };
 

@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   inputs,
   username,
   homeStateVersion,
@@ -161,16 +160,7 @@
   linuxOnlyPackages = with pkgs; [
   ];
 
-  MODULES_DIR = "${inputs.self}/modules/home";
 in {
-  imports = [
-    "${MODULES_DIR}/dotfiles"
-    "${MODULES_DIR}/helix.nix"
-    "${MODULES_DIR}/zsh"
-    "${MODULES_DIR}/yazi"
-    "${MODULES_DIR}/nvim"
-    "${MODULES_DIR}/tmux"
-  ];
 
   programs.home-manager.enable = true; # Let Home Manager install and manage itself.
   home.stateVersion = homeStateVersion; # don't touch this or everybody dies
