@@ -2,73 +2,66 @@
 
 let
   cfg = config.my.dotfiles;
-  
-  # Helper function to create dotfile options
-  mkDotfileOption = name: defaultDir: {
-    enable = lib.mkEnableOption "Enable ${name} dotfiles" // { default = true; };
-    dir = lib.mkOption {
-      type = lib.types.str;
-      default = defaultDir;
-      description = "Directory to place ${name} configuration files";
-    };
+
+  # tiny helper so each entry is just one line
+  mkEnable = name:
+    lib.mkEnableOption "Enable ${name} dotfiles" // { default = true; };
+
+in
+{
+  ##### 1.  Options ###########################################################
+
+  options.my.dotfiles = {
+    enable = lib.mkEnableOption "Enable all dotfiles management" // { default = true; };
+
+    aichat    = { enable = mkEnable "aichat";    };
+    ghostty   = { enable = mkEnable "ghostty";   };
+    git       = { enable = mkEnable "git";       };
+    karabiner = { enable = mkEnable "karabiner"; };   # Darwin-only below
+    kitty     = { enable = mkEnable "kitty";     };
+    lazygit   = { enable = mkEnable "lazygit";   };
+    nvim      = { enable = mkEnable "neovim";    };
+    sops      = { enable = mkEnable "sops";      };   # single file
   };
 
-in {
-  options.my.dotfiles = {
-    enable = lib.mkEnableOption "Enable dotfiles management" // { default = true; };
-    
-    aichat = mkDotfileOption "aichat" ".config/aichat";
-    ghostty = mkDotfileOption "ghostty" ".config/ghostty";
-    git = mkDotfileOption "git" ".config/git";
-    karabiner = mkDotfileOption "karabiner-elements" ".config/karabiner";
-    kitty = mkDotfileOption "kitty" ".config/kitty";
-    lazygit = mkDotfileOption "lazygit" ".config/lazygit";
-    nvim = mkDotfileOption "neovim" ".config/nvim-lua";
-    sops = mkDotfileOption "sops" ".config/sops";
-  };
+  ##### 2.  Configuration #####################################################
 
   config = lib.mkIf cfg.enable {
-    
-    # aichat
-    home.file."${cfg.aichat.dir}" = lib.mkIf cfg.aichat.enable {
-      source = ./aichat;
-      recursive = true;
+
+    # --- directory-style dotfiles (link to $XDG_CONFIG_HOME/<name>) ----------
+    xdg.configFile."aichat" = lib.mkIf cfg.aichat.enable {
+      source     = ./aichat;
+      recursive  = true;
     };
 
-    # ghostty
-    home.file."${cfg.ghostty.dir}" = lib.mkIf cfg.ghostty.enable {
+    xdg.configFile."ghostty" = lib.mkIf cfg.ghostty.enable {
       source = ./ghostty;
     };
 
-    # git
-    home.file."${cfg.git.dir}" = lib.mkIf cfg.git.enable {
+    xdg.configFile."git" = lib.mkIf cfg.git.enable {
       source = ./git;
     };
 
-    # karabiner (Darwin only)
-    home.file."${cfg.karabiner.dir}" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.isDarwin) {
+    xdg.configFile."karabiner" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.isDarwin) {
       source = ./karabiner;
     };
 
-    # kitty
-    home.file."${cfg.kitty.dir}" = lib.mkIf cfg.kitty.enable {
+    xdg.configFile."kitty" = lib.mkIf cfg.kitty.enable {
       source = ./kitty;
     };
 
-    # lazygit
-    home.file."${cfg.lazygit.dir}" = lib.mkIf cfg.lazygit.enable {
+    xdg.configFile."lazygit" = lib.mkIf cfg.lazygit.enable {
       source = ./lazygit;
     };
 
-    # neovim
-    home.file."${cfg.nvim.dir}" = lib.mkIf cfg.nvim.enable {
-      source = ./nvim;
-      recursive = true;
+    xdg.configFile."nvim-lua" = lib.mkIf cfg.nvim.enable {
+      source     = ./nvim;
+      recursive  = true;
     };
 
-    # sops
-    home.file."${cfg.sops.dir}" = lib.mkIf cfg.sops.enable {
-      source = ./sops;
+    # --- single file (lives directly in $HOME) -------------------------------
+    home.file.".sops.yaml" = lib.mkIf cfg.sops.enable {
+      source = ./sops/.sops.yaml;
     };
   };
-} 
+}
