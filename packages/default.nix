@@ -1,4 +1,4 @@
-{ pkgs, inputs, system, ... }:
+{ pkgs, system, ... }:
 
 {
   scripts = pkgs.callPackage ./scripts { inherit system; };

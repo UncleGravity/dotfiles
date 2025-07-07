@@ -17,4 +17,4 @@ stdenvNoCC.mkDerivation {
     description = "Personal shell scripts and completions";
     platforms = platforms.all;
   };
-} 
+}
