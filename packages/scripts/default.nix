@@ -1,5 +1,8 @@
-{ lib, stdenvNoCC, system }:
-
+{
+  lib,
+  stdenvNoCC,
+  system,
+}:
 stdenvNoCC.mkDerivation {
   pname = "scripts";
   version = "1.0.0";

@@ -1,14 +1,18 @@
-{ config, pkgs, username, lib, ... }:
-let
-  secretsDir = ../secrets;
-in
 {
+  config,
+  pkgs,
+  username,
+  lib,
+  ...
+}: let
+  secretsDir = ../secrets;
+in {
   #############################################################
   #  SOPS
   #############################################################
 
   sops = {
-    age.sshKeyPaths = [ 
+    age.sshKeyPaths = [
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     # age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";

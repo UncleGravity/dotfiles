@@ -1,6 +1,12 @@
-{ lib, config, pkgs, hostname, username, ... }:
 {
-  environment.systemPackages = [ config.services.samba.package ];
+  lib,
+  config,
+  pkgs,
+  hostname,
+  username,
+  ...
+}: {
+  environment.systemPackages = [config.services.samba.package];
 
   # SOPS secret for samba password
   sops.secrets."samba/password" = {
@@ -19,7 +25,7 @@
         "server string" = "${hostname}";
         "netbios name" = "${hostname}";
         "security" = "user";
-        "invalid users" = [ "root" ];
+        "invalid users" = ["root"];
         "guest account" = "nobody";
         "map to guest" = "bad user";
 
@@ -50,7 +56,7 @@
         "deadtime" = "30";
         "getwd cache" = "yes";
         "lpq cache time" = "30";
-        "max smbd processes" = "0";  # 0 = unlimited
+        "max smbd processes" = "0"; # 0 = unlimited
 
         # # Disable unused services
         # "load printers" = "no";
@@ -67,7 +73,7 @@
         "browseable" = "yes";
         "writeable" = "yes";
         "guest ok" = "no";
-        "create mask" = "0664";    # Group-writable files
+        "create mask" = "0664"; # Group-writable files
         "directory mask" = "0775"; # Group-writable directories
         "inherit acls" = "yes";
         "veto files" = "/._*/.DS_Store/.Trashes";
@@ -114,8 +120,8 @@
   # Set samba password
   system.activationScripts.sambaUser = {
     deps = [
-      "users"         # Wait for users to be available
-      "setupSecrets"  # Wait for secrets to be available
+      "users" # Wait for users to be available
+      "setupSecrets" # Wait for secrets to be available
     ];
     text = ''
       # Wait for samba to be ready

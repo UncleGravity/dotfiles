@@ -159,9 +159,7 @@
 
   linuxOnlyPackages = with pkgs; [
   ];
-
 in {
-
   programs.home-manager.enable = true; # Let Home Manager install and manage itself.
   home.stateVersion = homeStateVersion; # don't touch this or everybody dies
 
@@ -197,9 +195,11 @@ in {
     forwardAgent = true;
     extraConfig = ''
       Include ${config.home.homeDirectory}/.config/colima/ssh_config
-      IdentityAgent ${if pkgs.stdenv.isDarwin
+      IdentityAgent ${
+        if pkgs.stdenv.isDarwin
         then ''"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"''
-        else "~/.1password/agent.sock"}
+        else "~/.1password/agent.sock"
+      }
     '';
     matchBlocks = {
       "kiwi" = {

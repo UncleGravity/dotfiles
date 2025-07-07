@@ -5,4 +5,4 @@
     ./apfs-snapshots.nix
     ./homebrew.nix
   ];
-} 
+}

@@ -1,11 +1,12 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-  cfg = config.my.apfs-snapshots;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.my.apfs-snapshots;
+in {
   options.my.apfs-snapshots = {
     enable = mkEnableOption "APFS snapshot management service";
 
@@ -30,10 +31,11 @@ in
 
   config = mkIf cfg.enable {
     launchd.daemons.apfs-snapshots = {
-      path = [ pkgs.ripgrep pkgs.bash pkgs.coreutils ];
+      path = [pkgs.ripgrep pkgs.bash pkgs.coreutils];
       serviceConfig = {
         ProgramArguments = [
-          "${pkgs.bash}/bin/bash" "-c"
+          "${pkgs.bash}/bin/bash"
+          "-c"
           ''
             # take a new APFS local snapshot
             /usr/bin/tmutil snapshot

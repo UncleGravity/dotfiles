@@ -1,7 +1,14 @@
 # Configuration for the 'my-macbook' machine
-{ pkgs, lib, inputs, username, hostname, self, systemStateVersion, ... }:
-
 {
+  pkgs,
+  lib,
+  inputs,
+  username,
+  hostname,
+  self,
+  systemStateVersion,
+  ...
+}: {
   imports = [
     "${self}/modules/darwin/_core.nix"
   ];

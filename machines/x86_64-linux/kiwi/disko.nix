@@ -1,15 +1,11 @@
-{ ... }:
-
-let
+{...}: let
   # Device Paths
   osDrivePath = "/dev/disk/by-id/nvme-WD_BLACK_SN770M_1TB_245166801032";
   hdd1Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800378";
   hdd2Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800370";
   hdd3Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800343";
   hdd4Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800293";
-in
-
-{
+in {
   disko.devices = {
     #############################################################
     #  Disks
@@ -184,13 +180,13 @@ in
             vdev = [
               {
                 # first mirror vdev: bay 1 ↔ bay 2
-                mode    = "mirror";
-                members = [ "hdd1" "hdd2" ];
+                mode = "mirror";
+                members = ["hdd1" "hdd2"];
               }
               {
                 # second mirror vdev: bay 3 ↔ bay 4
-                mode    = "mirror";
-                members = [ "hdd3" "hdd4" ];
+                mode = "mirror";
+                members = ["hdd3" "hdd4"];
               }
             ];
           };

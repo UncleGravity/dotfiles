@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   programs.yazi = {
     enable = true;
     enableZshIntegration = true;
@@ -17,10 +21,10 @@
       mgr.prepend_keymap = [
         # Yank file to clipboard
         {
-          on = [ "y" ];
+          on = ["y"];
           run = [
             ''
-            	shell 'cb copy "$@"' --confirm
+              shell 'cb copy "$@"' --confirm
             ''
             "yank"
           ];
@@ -36,7 +40,7 @@
       # Don't go into normal mode when pressing Esc
       input.prepend_keymap = [
         {
-          on = [ "<Esc>" ];
+          on = ["<Esc>"];
           run = "close";
           desc = "Cancel input";
         }
@@ -46,8 +50,16 @@
     settings = {
       # Register Git Plugin
       plugin.prepend_fetchers = [
-        { id = "git"; name = "*"; run = "git"; }
-        { id = "git"; name = "*/"; run = "git"; }
+        {
+          id = "git";
+          name = "*";
+          run = "git";
+        }
+        {
+          id = "git";
+          name = "*/";
+          run = "git";
+        }
       ];
       mgr = {
         sort_by = "mtime";

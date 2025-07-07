@@ -1,16 +1,19 @@
-{ pkgs, config, hostname, ... }:
+{
+  pkgs,
+  config,
+  hostname,
+  ...
+}:
 # Inspo: https://www.arthurkoziel.com/restic-backups-b2-nixos/
 # Cache Dir: /var/cache/restic-backups-${name}
 let
   backupDataset = "storagepool/root";
   mountPoint = "/nas"; # List zfs datasets and mountpoints: `zfs list`
-  snapshotName = "backup";  # List zfs snapshots: zfs list -t snapshot
+  snapshotName = "backup"; # List zfs snapshots: zfs list -t snapshot
 
   # Notification helper
   notify = message: "NTFY_TOPIC=$(cat ${config.sops.secrets."ntfy/topic".path}) ${pkgs.ntfy-sh}/bin/ntfy pub -m \"${message}\" -t \"${hostname} Backup\"";
-
-in
-{
+in {
   # -----------------------------------------------------------------------------------------------
   # Secrets
   sops.secrets."backup/b2.env" = {}; # For Backblaze B2
@@ -22,10 +25,10 @@ in
   # --- B2 ----------------------------------------------------------
   systemd.services."restic-backups-b2" = {
     unitConfig = {
-      RequiresMountsFor = [ "${mountPoint}" ]; # Fail if /nas is not mounted
-      After  = [ "network-online.target" ]; # Internet required
-      Wants  = [ "network-online.target" ]; # Internet Required
-      OnFailure = [ "notify-backup-failed@%n.service" ]; # "%n" becomes "restic-backups-[b2|t7]"
+      RequiresMountsFor = ["${mountPoint}"]; # Fail if /nas is not mounted
+      After = ["network-online.target"]; # Internet required
+      Wants = ["network-online.target"]; # Internet Required
+      OnFailure = ["notify-backup-failed@%n.service"]; # "%n" becomes "restic-backups-[b2|t7]"
     };
     # Allows us to use ./<snapshot> as restic path
     # See (<mountpoint>/<files>) instead of <mountpoint>/nas/.zfs/snapshot/<files>
@@ -35,10 +38,10 @@ in
   # --- T7 SSD ------------------------------------------------------
   systemd.services."restic-backups-t7" = {
     unitConfig = {
-      RequiresMountsFor = [ "${mountPoint}" "/mnt/t7" ]; # Fail if /nas + /mnt/t7 are not mounted
-      After  = [ "network-online.target" ]; # Internet required
-      Wants  = [ "network-online.target" ]; # Internet Required
-      OnFailure = [ "notify-backup-failed@%n.service" ]; # "%n" becomes "restic-backups-[b2|t7]"
+      RequiresMountsFor = ["${mountPoint}" "/mnt/t7"]; # Fail if /nas + /mnt/t7 are not mounted
+      After = ["network-online.target"]; # Internet required
+      Wants = ["network-online.target"]; # Internet Required
+      OnFailure = ["notify-backup-failed@%n.service"]; # "%n" becomes "restic-backups-[b2|t7]"
     };
     # Allows us to use ./<snapshot> as restic path
     # See (<mountpoint>/<files>) instead of <mountpoint>/nas/.zfs/snapshot/<files>
@@ -50,11 +53,11 @@ in
   # For more details: https://manpages.ubuntu.com/manpages/xenial/man5/systemd.unit.5.html
 
   systemd.services."notify-backup-failed@" = {
-    description   = "Send ntfy alert when %i fails";
+    description = "Send ntfy alert when %i fails";
     restartIfChanged = false; # it’s oneshot; no need to restart on config change
     serviceConfig.Type = "oneshot";
     scriptArgs = "%i"; # %i → failed-unit name becomes $1 in the shell
-    path = with pkgs; [ ntfy-sh coreutils ];
+    path = with pkgs; [ntfy-sh coreutils];
 
     script = ''
       failed="$1"
@@ -75,7 +78,7 @@ in
       repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
       passwordFile = config.sops.secrets."backup/b2/restic/password".path;
 
-      paths = [ "./${snapshotName}" ];
+      paths = ["./${snapshotName}"];
       # exclude = [];
 
       # Create snapshot of the dataset. They will be named <dataset-mountpoint>@<snapshotName>
@@ -114,7 +117,7 @@ in
       passwordFile = config.sops.secrets."backup/t7-password".path;
       repository = "/mnt/t7/restic";
 
-      paths = [ "./${snapshotName}" ];
+      paths = ["./${snapshotName}"];
       # exclude = [];
 
       # Create snapshot of the dataset. They will be named <dataset-mountpoint>@<snapshotName>

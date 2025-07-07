@@ -11,4 +11,4 @@
     ./immich.nix
     ./tailscale.nix
   ];
-} 
+}

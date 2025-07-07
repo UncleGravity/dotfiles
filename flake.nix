@@ -70,8 +70,13 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs:
-  let
+  outputs = {
+    self,
+    nixpkgs,
+    home-manager,
+    darwin,
+    ...
+  } @ inputs: let
     systems = {
       aarch64-linux = "aarch64-linux";
       aarch64-darwin = "aarch64-darwin";
@@ -87,7 +92,12 @@
       })
     ];
 
-    mkHomeManagerConfig = { system, username, hostname, homeStateVersion }: {
+    mkHomeManagerConfig = {
+      system,
+      username,
+      hostname,
+      homeStateVersion,
+    }: {
       home-manager.extraSpecialArgs = {
         inherit inputs self;
         username = username;
@@ -104,64 +114,81 @@
       ];
     };
 
-    mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }: nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = {
-        inherit inputs self;
-        inherit username hostname systemStateVersion homeStateVersion;
+    mkNixos = {
+      system,
+      username,
+      hostname,
+      systemStateVersion,
+      homeStateVersion,
+    }:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit inputs self;
+          inherit username hostname systemStateVersion homeStateVersion;
+        };
+        modules = [
+          inputs.sops-nix.nixosModules.sops
+          home-manager.nixosModules.home-manager
+          ./modules/nixos
+          ./machines/${system}/${hostname}/configuration.nix
+          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
+          {
+            nixpkgs.overlays = overlays;
+          }
+        ];
       };
-      modules = [
-        inputs.sops-nix.nixosModules.sops
-        home-manager.nixosModules.home-manager
-        ./modules/nixos
-        ./machines/${system}/${hostname}/configuration.nix
-        (mkHomeManagerConfig { inherit system username hostname homeStateVersion; })
-        {
-          nixpkgs.overlays = overlays;
-        }
-      ];
-    };
 
-    mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }: darwin.lib.darwinSystem {
-      inherit system;
-      specialArgs = {
-        inherit inputs self;
-        inherit username hostname systemStateVersion homeStateVersion;
+    mkDarwin = {
+      system,
+      username,
+      hostname,
+      systemStateVersion,
+      homeStateVersion,
+    }:
+      darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = {
+          inherit inputs self;
+          inherit username hostname systemStateVersion homeStateVersion;
+        };
+        modules = [
+          ./modules/darwin
+          ./machines/${system}/${hostname}/configuration.nix
+          inputs.sops-nix.darwinModules.sops
+          home-manager.darwinModules.home-manager
+          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
+          inputs.nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              enable = true;
+              user = username; # Assuming username is the same as nix-homebrew user
+              autoMigrate = true;
+            };
+            nixpkgs.overlays = overlays;
+          }
+        ];
       };
-      modules = [
-        ./modules/darwin
-        ./machines/${system}/${hostname}/configuration.nix
-        inputs.sops-nix.darwinModules.sops
-        home-manager.darwinModules.home-manager
-        (mkHomeManagerConfig { inherit system username hostname homeStateVersion; })
-        inputs.nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            enable = true;
-            user = username; # Assuming username is the same as nix-homebrew user
-            autoMigrate = true;
-          };
-          nixpkgs.overlays = overlays;
-        }
-      ];
-    };
 
-    mkHomeManagerSystem = { system, pkgs, username, homeStateVersion }: home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      extraSpecialArgs = {
-        inherit inputs;
-        inherit username homeStateVersion;
+    mkHomeManagerSystem = {
+      system,
+      pkgs,
+      username,
+      homeStateVersion,
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {
+          inherit inputs;
+          inherit username homeStateVersion;
+        };
+        modules = [
+          ./machines/${system}/${username}/home.nix
+          inputs.nixvim.homeManagerModules.nixvim
+          ./modules/home
+        ];
       };
-      modules = [
-        ./machines/${system}/${username}/home.nix
-        inputs.nixvim.homeManagerModules.nixvim
-        ./modules/home
-      ];
-    };
-
-  in
-  {
-
+  in {
     # Darwin - banana
     darwinConfigurations.banana = mkDarwin {
       system = systems.aarch64-darwin;
@@ -216,19 +243,18 @@
     };
 
     # Packages
-    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
-      let
+    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in
-      import ./packages {
-        inherit inputs system pkgs;
-      }
+        import ./packages {
+          inherit inputs system pkgs;
+        }
     );
 
     # Development shells
     devShells = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
       default = nixpkgs.legacyPackages.${system}.mkShell {
-
         packages = with nixpkgs.legacyPackages.${system}; [
           nh
           nix-output-monitor
@@ -242,5 +268,10 @@
       };
     });
 
+    # Default formatter
+    formatter = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
+      system:
+        nixpkgs.legacyPackages.${system}.alejandra
+    );
   };
 }

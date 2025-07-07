@@ -2,10 +2,14 @@
 #
 # Nix module to configure a Linux VM builder on nix-darwin
 # using darwin.linux-builder.
-{ pkgs, lib, config, ... }:
 {
+  pkgs,
+  lib,
+  config,
+  ...
+}: {
   # Ensure virtualization tools are available on the host
-  environment.systemPackages = lib.mkDefault [ pkgs.qemu ]; # qemu provides necessary tools
+  environment.systemPackages = lib.mkDefault [pkgs.qemu]; # qemu provides necessary tools
 
   nix.linux-builder = {
     enable = true;
@@ -14,7 +18,7 @@
     # config.boot.binfmt.emulatedSystems = ["x86_64-linux"];
     maxJobs = 4;
     config = {
-      environment.systemPackages = [ pkgs.git pkgs.neovim ];
+      environment.systemPackages = [pkgs.git pkgs.neovim];
       virtualisation = {
         darwin-builder = {
           # hostPort = 22;
@@ -57,6 +61,5 @@
   # Note: This adds the user running the daemon, typically root.
   # You still need your *own* user in nix.conf's extra-trusted-users
   # if you are connecting directly to the daemon socket without sudo.
-  nix.settings.trusted-users = [ "@admin" ];
-
-} 
+  nix.settings.trusted-users = ["@admin"];
+}

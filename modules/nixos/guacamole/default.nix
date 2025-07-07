@@ -1,23 +1,26 @@
-{ config, pkgs, lib, ... }:
-let
-  cfg = config.my.guacamole;
-in
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
+  cfg = config.my.guacamole;
+in {
   options.my.guacamole = {
     enable = lib.mkEnableOption "Guacamole remote desktop gateway";
-    
+
     host = lib.mkOption {
       type = lib.types.str;
       default = "127.0.0.1";
       description = "Host address for guacamole server";
     };
-    
+
     clientPort = lib.mkOption {
       type = lib.types.port;
       default = 8080;
       description = "Port for the Guacamole web interface";
     };
-    
+
     serverPort = lib.mkOption {
       type = lib.types.port;
       default = 4822;
@@ -29,7 +32,7 @@ in
     # Only enable on supported platforms
     assertions = [
       {
-        assertion = lib.elem pkgs.stdenv.hostPlatform.system [ "x86_64-linux" "i686-linux" ];
+        assertion = lib.elem pkgs.stdenv.hostPlatform.system ["x86_64-linux" "i686-linux"];
         message = "Guacamole is only supported on x86_64-linux and i686-linux platforms";
       }
     ];
@@ -60,7 +63,7 @@ in
     users.groups.guacamole-server = {};
 
     # INFO: https://nixos.wiki/wiki/Remote_Desktop
-    networking.firewall.allowedTCPPorts = [ cfg.clientPort ]; # Caddy needs this to access the web interface
+    networking.firewall.allowedTCPPorts = [cfg.clientPort]; # Caddy needs this to access the web interface
 
     services.guacamole-server = {
       enable = true;

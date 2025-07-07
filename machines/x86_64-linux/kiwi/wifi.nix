@@ -1,7 +1,4 @@
-{
-  config,
-  ...
-}: {
+{config, ...}: {
   sops.templates."networkmanager/wifi-speed.env".content = ''
     WIFI_SPEED_SSID="${config.sops.placeholder."wifi/ssid"}"
     WIFI_SPEED_PSK="${config.sops.placeholder."wifi/psk"}"
@@ -17,8 +14,7 @@
     }
   ];
 
-  networking.networkmanager.ensureProfiles.environmentFiles =
-    [ config.sops.templates."networkmanager/wifi-speed.env".path ];
+  networking.networkmanager.ensureProfiles.environmentFiles = [config.sops.templates."networkmanager/wifi-speed.env".path];
 
   networking.networkmanager.ensureProfiles.profiles = [
     {
@@ -48,4 +44,4 @@
       };
     }
   ];
-} 
+}

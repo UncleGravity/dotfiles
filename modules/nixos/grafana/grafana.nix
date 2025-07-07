@@ -1,11 +1,11 @@
-{ pkgs, config, ... }:
-
-let
+{
+  pkgs,
+  config,
+  ...
+}: let
   # Suppose we store our dashboards JSON under ./grafana/dashboards/*.json
   dashboardDir = "/etc/nixos/grafana/dashboards";
-in
-{
-
+in {
   sops.secrets."grafana/password" = {
     mode = "0600";
     owner = "grafana";
@@ -20,23 +20,23 @@ in
       server = {
         http_addr = "0.0.0.0";
         http_port = 3131;
-        domain     = "grafana.angel.pizza";
+        domain = "grafana.angel.pizza";
       };
 
       # Security / user management:
       users = {
-        allow_sign_up   = false;  # no one can self-register
-        auto_assign_org = true;   # new orgs not created per user
+        allow_sign_up = false; # no one can self-register
+        auto_assign_org = true; # new orgs not created per user
       };
 
       security = {
-        admin_user     = "admin";
+        admin_user = "admin";
         admin_password = "$__file{${config.sops.secrets."grafana/password".path}}";
         disable_gravatar = true;
-        cookie_secure    = true;
+        cookie_secure = true;
       };
 
-      analytics.reporting_enabled = false;  # opt-out telemetry
+      analytics.reporting_enabled = false; # opt-out telemetry
     };
 
     # # Plugins:
@@ -68,12 +68,12 @@ in
         settings = {
           providers = [
             {
-              name                = "default";
-              orgId               = 1;
-              folder              = "System Monitoring";
-              type                = "file";
-              disableDeletion     = false;
-              allowUiUpdates      = true;
+              name = "default";
+              orgId = 1;
+              folder = "System Monitoring";
+              type = "file";
+              disableDeletion = false;
+              allowUiUpdates = true;
               updateIntervalSeconds = 60;
               options = {
                 path = dashboardDir;
@@ -83,7 +83,6 @@ in
           ];
         };
       };
-      
     };
   };
 
@@ -94,21 +93,25 @@ in
     exporters = {
       node = {
         enable = true;
-        enabledCollectors = [ "systemd" "processes"];
+        enabledCollectors = ["systemd" "processes"];
       };
     };
     scrapeConfigs = [
       {
         job_name = "kiwi";
-        static_configs = [{
-          targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
-        }];
+        static_configs = [
+          {
+            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.node.port}"];
+          }
+        ];
       }
       {
         job_name = "telegraf";
-        static_configs = [{
-          targets = [ "127.0.0.1:9273" ]; # Telegraf Prometheus output port
-        }];
+        static_configs = [
+          {
+            targets = ["127.0.0.1:9273"]; # Telegraf Prometheus output port
+          }
+        ];
       }
     ];
   };
@@ -116,7 +119,7 @@ in
   # Telegraf configuration for system monitoring
   services.telegraf = {
     enable = true;
-    
+
     extraConfig = {
       agent = {
         interval = "10s";
@@ -175,5 +178,5 @@ in
     };
   };
 
-  networking.firewall.allowedTCPPorts = [ 3131 9273 ]; # Caddy needs this to access the web interface, and Telegraf Prometheus endpoint
+  networking.firewall.allowedTCPPorts = [3131 9273]; # Caddy needs this to access the web interface, and Telegraf Prometheus endpoint
 }

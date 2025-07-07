@@ -1,5 +1,11 @@
-{config, lib, pkgs, inputs, ...}: {
-  imports = [ ./lsp.nix ./mini.nix ./snacks.nix ./gitsigns.nix ./colorscheme.nix ./formatting.nix ./treesitter.nix ./which-key.nix ];
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [./lsp.nix ./mini.nix ./snacks.nix ./gitsigns.nix ./colorscheme.nix ./formatting.nix ./treesitter.nix ./which-key.nix];
   programs.nixvim = {
     enable = true;
     # defaultEditor = true;
@@ -29,14 +35,21 @@
       # See `:help 'list'`
       # and `:help 'listchars'`
       list = true;
-      listchars = { /* lead = "·"; */ tab = "» "; trail = "·"; nbsp = "␣"; };
+      listchars = {
+        /*
+        lead = "·";
+        */
+        tab = "» ";
+        trail = "·";
+        nbsp = "␣";
+      };
 
       swapfile = false; #  turn off swapfile
       colorcolumn = "100"; #  Show max line length indicator
       confirm = true; #  Confirm to save changes before exiting modified buffer
       grepprg = "rg --vimgrep";
       inccommand = "nosplit"; #  preview incremental substitute
-      
+
       # line numbers
       number = true; # Show line numbers
       relativenumber = true; # Show relative line numbers
@@ -44,31 +57,39 @@
     keymaps = [
       # clear highlights with <Esc>
       {
-        mode = [ "i" "n" ];
+        mode = ["i" "n"];
         key = "<esc>";
         action = "<cmd>noh<cr><esc>";
         options.desc = "Escape and Clear hlsearch";
       }
-      
+
       # Only search on selected text if any
-      { mode = "x"; key = "/"; action = "<Esc>/\\%V"; }
-      { mode = "x"; key = "?"; action = "<Esc>?\\%V"; }
+      {
+        mode = "x";
+        key = "/";
+        action = "<Esc>/\\%V";
+      }
+      {
+        mode = "x";
+        key = "?";
+        action = "<Esc>?\\%V";
+      }
 
       # flash.nvim
       {
-        mode = [ "n" "x" "o" ];
+        mode = ["n" "x" "o"];
         key = "s";
         action = "<cmd>lua require('flash').jump()<cr>";
         options.desc = "Flash";
       }
       {
-        mode = [ "n" "o" "x" ];
-        key = "S"; 
+        mode = ["n" "o" "x"];
+        key = "S";
         action = "<cmd>lua require('flash').treesitter()<cr>";
         options.desc = "Flash Treesitter";
       }
       {
-        mode = [ "n" ];
+        mode = ["n"];
         key = "\\S";
         action = "<Cmd>ScrollViewToggle<CR>";
         options.desc = "Toggle scroll view";
@@ -163,8 +184,8 @@
           diagnostics_warn_symbol = " ";
           # The plugin expects vim.diagnostic.severity constants; omit for now or pass as strings
           diagnostics_severities = [
-            { __raw = "vim.diagnostic.severity.ERROR"; }
-            { __raw = "vim.diagnostic.severity.WARN"; }
+            {__raw = "vim.diagnostic.severity.ERROR";}
+            {__raw = "vim.diagnostic.severity.WARN";}
           ];
           scrollview_floating_windows = true;
         };
@@ -173,9 +194,15 @@
       alpha = {
         enable = false;
         layout = [
-          { type = "padding"; val = 2; }
           {
-            opts = { hl = "Type"; position = "center"; };
+            type = "padding";
+            val = 2;
+          }
+          {
+            opts = {
+              hl = "Type";
+              position = "center";
+            };
             type = "text";
             val = [
               "███╗   ██╗██╗██╗  ██╗██╗   ██╗██╗███╗   ███╗"
@@ -186,27 +213,29 @@
               "╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝  ╚═══╝  ╚═╝╚═╝     ╚═╝"
             ];
           }
-          { type = "padding"; val = 2; }
+          {
+            type = "padding";
+            val = 2;
+          }
           {
             type = "group";
             val = [
               {
-                on_press = { __raw = "function() vim.cmd[[ene]] end"; };
-                opts = { shortcut = "n"; };
+                on_press = {__raw = "function() vim.cmd[[ene]] end";};
+                opts = {shortcut = "n";};
                 type = "button";
                 val = "  New file";
               }
               {
-                on_press = { __raw = "function() vim.cmd[[qa]] end"; };
-                opts = { shortcut = "q"; };
+                on_press = {__raw = "function() vim.cmd[[qa]] end";};
+                opts = {shortcut = "q";};
                 type = "button";
                 val = " Quit Neovim";
               }
             ];
           }
         ];
-
       };
     };
   };
-} 
+}

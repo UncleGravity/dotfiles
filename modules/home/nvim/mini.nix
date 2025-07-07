@@ -1,9 +1,8 @@
-{ ... }:
-{
+{...}: {
   programs.nixvim.plugins.mini = {
     enable = true;
     modules = {
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Sensible defaults
       basics = {
         options = {
@@ -19,7 +18,7 @@
         silent = false;
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Home Page
       starter = {
         header = ''
@@ -31,21 +30,21 @@
         '';
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Buffer Tabs
       tabline = {
         tabpage_section = "right";
       };
-      
-      # ---------------------------------------------------------------------- 
+
+      # ----------------------------------------------------------------------
       # -- Drag selections around, with Alt+<direction>
       move = {};
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Autopairs `'"({[]})'`
       pairs = {};
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Surround text objects
       surround = {
         mappings = {
@@ -59,7 +58,7 @@
         };
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Split/join code blocks with gj
       splitjoin = {
         mappings = {
@@ -67,26 +66,68 @@
         };
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Bracketed motions
       bracketed = {
-        buffer = { suffix = "b"; options = {}; };
-        comment = { suffix = "c"; options = {}; };
-        conflict = { suffix = "x"; options = {}; };
-        diagnostic = { suffix = "d"; options = {}; };
-        file = { suffix = ""; options = {}; };
-        indent = { suffix = "i"; options = {}; };
-        jump = { suffix = "j"; options = {}; };
-        location = { suffix = "l"; options = {}; };
-        oldfile = { suffix = "o"; options = {}; };
-        quickfix = { suffix = "q"; options = {}; };
-        treesitter = { suffix = "t"; options = {}; };
-        undo = { suffix = ""; options = {}; };
-        window = { suffix = "w"; options = {}; };
-        yank = { suffix = "y"; options = {}; };
+        buffer = {
+          suffix = "b";
+          options = {};
+        };
+        comment = {
+          suffix = "c";
+          options = {};
+        };
+        conflict = {
+          suffix = "x";
+          options = {};
+        };
+        diagnostic = {
+          suffix = "d";
+          options = {};
+        };
+        file = {
+          suffix = "";
+          options = {};
+        };
+        indent = {
+          suffix = "i";
+          options = {};
+        };
+        jump = {
+          suffix = "j";
+          options = {};
+        };
+        location = {
+          suffix = "l";
+          options = {};
+        };
+        oldfile = {
+          suffix = "o";
+          options = {};
+        };
+        quickfix = {
+          suffix = "q";
+          options = {};
+        };
+        treesitter = {
+          suffix = "t";
+          options = {};
+        };
+        undo = {
+          suffix = "";
+          options = {};
+        };
+        window = {
+          suffix = "w";
+          options = {};
+        };
+        yank = {
+          suffix = "y";
+          options = {};
+        };
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Indent Line
       indentscope = {
         draw = {
@@ -99,58 +140,58 @@
         options.try_as_border = true;
       };
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Key sequence clues
-    #   clue = {
-    #     triggers = [
-    #       # Leader triggers
-    #       { mode = "n"; keys = "<Leader>"; }
-    #       { mode = "x"; keys = "<Leader>"; }
+      #   clue = {
+      #     triggers = [
+      #       # Leader triggers
+      #       { mode = "n"; keys = "<Leader>"; }
+      #       { mode = "x"; keys = "<Leader>"; }
 
-    #       # Built-in completion
-    #       { mode = "i"; keys = "<C-x>"; }
+      #       # Built-in completion
+      #       { mode = "i"; keys = "<C-x>"; }
 
-    #       # `g` key
-    #       { mode = "n"; keys = "g"; }
-    #       { mode = "x"; keys = "g"; }
+      #       # `g` key
+      #       { mode = "n"; keys = "g"; }
+      #       { mode = "x"; keys = "g"; }
 
-    #       # Marks
-    #       { mode = "n"; keys = "'"; }
-    #       { mode = "n"; keys = "`"; }
-    #       { mode = "x"; keys = "'"; }
-    #       { mode = "x"; keys = "`"; }
+      #       # Marks
+      #       { mode = "n"; keys = "'"; }
+      #       { mode = "n"; keys = "`"; }
+      #       { mode = "x"; keys = "'"; }
+      #       { mode = "x"; keys = "`"; }
 
-    #       # Registers
-    #       { mode = "n"; keys = "\""; }
-    #       { mode = "x"; keys = "\""; }
-    #       { mode = "i"; keys = "<C-r>"; }
-    #       { mode = "c"; keys = "<C-r>"; }
+      #       # Registers
+      #       { mode = "n"; keys = "\""; }
+      #       { mode = "x"; keys = "\""; }
+      #       { mode = "i"; keys = "<C-r>"; }
+      #       { mode = "c"; keys = "<C-r>"; }
 
-    #       # Window commands
-    #       { mode = "n"; keys = "<C-w>"; }
+      #       # Window commands
+      #       { mode = "n"; keys = "<C-w>"; }
 
-    #       # `z` key
-    #       { mode = "n"; keys = "z"; }
-    #       { mode = "x"; keys = "z"; }
+      #       # `z` key
+      #       { mode = "n"; keys = "z"; }
+      #       { mode = "x"; keys = "z"; }
 
-    #       # '\\' key for toggle commands
-    #       { mode = "n"; keys = "\\"; }
-    #     ];
+      #       # '\\' key for toggle commands
+      #       { mode = "n"; keys = "\\"; }
+      #     ];
 
-    #     clues = [
-    #       # Enhance this by adding descriptions for <Leader> mapping groups
-    #       { __raw = "require('mini.clue').gen_clues.builtin_completion()"; }
-    #       { __raw = "require('mini.clue').gen_clues.g()"; }
-    #       { __raw = "require('mini.clue').gen_clues.marks()"; }
-    #       { __raw = "require('mini.clue').gen_clues.registers()"; }
-    #       { __raw = "require('mini.clue').gen_clues.windows()"; }
-    #       { __raw = "require('mini.clue').gen_clues.z()"; }
-    #     ];
+      #     clues = [
+      #       # Enhance this by adding descriptions for <Leader> mapping groups
+      #       { __raw = "require('mini.clue').gen_clues.builtin_completion()"; }
+      #       { __raw = "require('mini.clue').gen_clues.g()"; }
+      #       { __raw = "require('mini.clue').gen_clues.marks()"; }
+      #       { __raw = "require('mini.clue').gen_clues.registers()"; }
+      #       { __raw = "require('mini.clue').gen_clues.windows()"; }
+      #       { __raw = "require('mini.clue').gen_clues.z()"; }
+      #     ];
 
-    #     window = {
-    #       delay = 200;
-    #     };
-    #   };
+      #     window = {
+      #       delay = 200;
+      #     };
+      #   };
     };
   };
-} 
+}

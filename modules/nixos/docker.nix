@@ -1,8 +1,11 @@
-{ config, lib, username, ... }:
-let
-  cfg = config.my.docker;
-in
 {
+  config,
+  lib,
+  username,
+  ...
+}: let
+  cfg = config.my.docker;
+in {
   options.my.docker = {
     enable = lib.mkEnableOption "Docker with both root and rootless support";
 
@@ -21,11 +24,11 @@ in
 
   config = lib.mkIf cfg.enable {
     # Allow docker to access the network (to avoid port forwarding manually... I think)
-    networking.firewall.trustedInterfaces = [ "docker0" ];
+    networking.firewall.trustedInterfaces = ["docker0"];
 
     # Root Docker
     virtualisation.docker.enable = true;
-    users.users.${username}.extraGroups = [ "docker" ];
+    users.users.${username}.extraGroups = ["docker"];
 
     # Rootless Docker
     virtualisation.docker.rootless = lib.mkIf cfg.enableRootless {

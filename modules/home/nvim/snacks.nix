@@ -1,9 +1,7 @@
-{ lib, ... }:
-{
+{lib, ...}: {
   programs.nixvim = {
     keymaps = [
-
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Explorer
       {
         key = "<leader>e";
@@ -11,7 +9,7 @@
         options.desc = "[e]xplorer";
       }
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Buffer Delete
       {
         key = "<leader>bd";
@@ -29,61 +27,61 @@
         options.desc = "Delete Other Buffers";
       }
 
-      # ---------------------------------------------------------------------- 
+      # ----------------------------------------------------------------------
       # -- Picker
       {
         key = "<leader><space>";
-        action = "<cmd>lua Snacks.picker.smart()<CR>";            # -- Files
-        options.desc = "Smart Find Files";    
-      }   
-      {   
-        key = "<leader>/";    
-        action = "<cmd>lua Snacks.picker.grep()<CR>";            # -- Grep
-        options.desc = "[g]rep";    
-      }   
-      {   
-        key = "<leader>s\"";    
-        action = "<cmd>lua Snacks.picker.registers()<CR>";        # -- Registers
-        options.desc = "Registers";   
-      }   
-      {   
-        key = "<leader>sm";   
-        action = "<cmd>lua Snacks.picker.marks()<CR>";            # -- Marks
+        action = "<cmd>lua Snacks.picker.smart()<CR>"; # -- Files
+        options.desc = "Smart Find Files";
+      }
+      {
+        key = "<leader>/";
+        action = "<cmd>lua Snacks.picker.grep()<CR>"; # -- Grep
+        options.desc = "[g]rep";
+      }
+      {
+        key = "<leader>s\"";
+        action = "<cmd>lua Snacks.picker.registers()<CR>"; # -- Registers
+        options.desc = "Registers";
+      }
+      {
+        key = "<leader>sm";
+        action = "<cmd>lua Snacks.picker.marks()<CR>"; # -- Marks
         options.desc = "Marks";
       }
       {
         key = "<leader>s/";
-        action = "<cmd>lua Snacks.picker.search_history()<CR>";   # -- Search History
+        action = "<cmd>lua Snacks.picker.search_history()<CR>"; # -- Search History
         options.desc = "Search History";
       }
       {
         key = "<leader>sc";
-        action = "<cmd>lua Snacks.picker.commands()<CR>";         # -- Commands
+        action = "<cmd>lua Snacks.picker.commands()<CR>"; # -- Commands
         options.desc = "Commands";
       }
       {
         key = "<leader>sd";
-        action = "<cmd>lua Snacks.picker.diagnostics()<CR>";      # -- Diagnostics
+        action = "<cmd>lua Snacks.picker.diagnostics()<CR>"; # -- Diagnostics
         options.desc = "Diagnostics";
       }
       {
         key = "<leader>sh";
-        action = "<cmd>lua Snacks.picker.help()<CR>";             # -- Help Pages
+        action = "<cmd>lua Snacks.picker.help()<CR>"; # -- Help Pages
         options.desc = "Help Pages";
       }
       {
         key = "<leader>sj";
-        action = "<cmd>lua Snacks.picker.jumps()<CR>";            # -- Jumps
+        action = "<cmd>lua Snacks.picker.jumps()<CR>"; # -- Jumps
         options.desc = "Jumps";
       }
       {
         key = "<leader>sk";
-        action = "<cmd>lua Snacks.picker.keymaps()<CR>";          # -- Keymaps
+        action = "<cmd>lua Snacks.picker.keymaps()<CR>"; # -- Keymaps
         options.desc = "Keymaps";
       }
       {
         key = "<leader>sT";
-        action = "<cmd>lua Snacks.picker.todo_comments()<CR>";   # -- Todo Comments
+        action = "<cmd>lua Snacks.picker.todo_comments()<CR>"; # -- Todo Comments
         options.desc = "Todo Comments";
       }
     ];
@@ -94,11 +92,11 @@
           enabled = true;
           replace_netrw = true;
         };
-        bigfile.enable = true;        # -- Deal with big files
-        bufdelete.enabled = true;     # -- Buffer deletion without closing windows
+        bigfile.enable = true; # -- Deal with big files
+        bufdelete.enabled = true; # -- Buffer deletion without closing windows
         # scroll.enabled = true;        # -- Smooth Scrolling
-        quickfile.enabled = true;     # -- Render files before plugins are loaded
-        statuscolumn.enabled = true;  # -- idk
+        quickfile.enabled = true; # -- Render files before plugins are loaded
+        statuscolumn.enabled = true; # -- idk
         picker.enabled = true;
         # indent = {
         #   enabled = true;
@@ -124,16 +122,16 @@
             filter = {
               event = "msg_show";
               any = [
-                { find = "%d+L, %d+B"; }
-                { find = "; after #%d+"; }
-                { find = "; before #%d+"; }
+                {find = "%d+L, %d+B";}
+                {find = "; after #%d+";}
+                {find = "; before #%d+";}
               ];
             };
             view = "mini";
           }
           {
             view = "notify";
-            filter = { event = "msg_showmode"; };
+            filter = {event = "msg_showmode";};
           }
         ];
         lsp = {
@@ -155,6 +153,5 @@
         };
       };
     };
-
   };
-} 
+}

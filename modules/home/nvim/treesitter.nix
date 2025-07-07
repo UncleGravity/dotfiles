@@ -1,6 +1,5 @@
-{ pkgs,... }: {
+{pkgs, ...}: {
   programs.nixvim = {
-
     extraFiles = {
       "lua/extra/foldtext.lua".text = builtins.readFile ./lua/extra/foldtext.lua;
       "lua/extra/persist-view.lua".text = builtins.readFile ./lua/extra/persist-view.lua;
@@ -12,7 +11,7 @@
       foldmethod = "expr";
       foldexpr = "v:lua.vim.treesitter.foldexpr()";
       foldtext = "v:lua.require('extra.foldtext')()";
-      foldlevel = 99;  # Make sure nothing is folded when a buffer opens
+      foldlevel = 99; # Make sure nothing is folded when a buffer opens
     };
 
     plugins.treesitter = {

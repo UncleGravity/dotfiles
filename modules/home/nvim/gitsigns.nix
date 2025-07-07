@@ -1,5 +1,4 @@
-{ lib, ... }:
-{
+{lib, ...}: {
   programs.nixvim.plugins.gitsigns = {
     enable = true;
     settings = {
@@ -70,4 +69,4 @@
       '';
     };
   };
-} 
+}

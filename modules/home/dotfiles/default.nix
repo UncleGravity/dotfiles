@@ -1,37 +1,37 @@
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   cfg = config.my.dotfiles;
 
   # tiny helper so each entry is just one line
   mkEnable = name:
-    lib.mkEnableOption "Enable ${name} dotfiles" // { default = true; };
-
-in
-{
+    lib.mkEnableOption "Enable ${name} dotfiles" // {default = true;};
+in {
   ##### 1.  Options ###########################################################
 
   options.my.dotfiles = {
-    enable = lib.mkEnableOption "Enable all dotfiles management" // { default = true; };
+    enable = lib.mkEnableOption "Enable all dotfiles management" // {default = true;};
 
-    aichat    = { enable = mkEnable "aichat";    };
-    ghostty   = { enable = mkEnable "ghostty";   };
-    git       = { enable = mkEnable "git";       };
-    karabiner = { enable = mkEnable "karabiner"; };   # Darwin-only below
-    kitty     = { enable = mkEnable "kitty";     };
-    lazygit   = { enable = mkEnable "lazygit";   };
-    nvim      = { enable = mkEnable "neovim";    };
-    sops      = { enable = mkEnable "sops";      };   # single file
+    aichat = {enable = mkEnable "aichat";};
+    ghostty = {enable = mkEnable "ghostty";};
+    git = {enable = mkEnable "git";};
+    karabiner = {enable = mkEnable "karabiner";}; # Darwin-only below
+    kitty = {enable = mkEnable "kitty";};
+    lazygit = {enable = mkEnable "lazygit";};
+    nvim = {enable = mkEnable "neovim";};
+    sops = {enable = mkEnable "sops";}; # single file
   };
 
   ##### 2.  Configuration #####################################################
 
   config = lib.mkIf cfg.enable {
-
     # --- directory-style dotfiles (link to $XDG_CONFIG_HOME/<name>) ----------
     xdg.configFile."aichat" = lib.mkIf cfg.aichat.enable {
-      source     = ./aichat;
-      recursive  = true;
+      source = ./aichat;
+      recursive = true;
     };
 
     xdg.configFile."ghostty" = lib.mkIf cfg.ghostty.enable {
@@ -55,8 +55,8 @@ in
     };
 
     xdg.configFile."nvim-lua" = lib.mkIf cfg.nvim.enable {
-      source     = ./nvim;
-      recursive  = true;
+      source = ./nvim;
+      recursive = true;
     };
 
     # --- single file (lives directly in $HOME) -------------------------------

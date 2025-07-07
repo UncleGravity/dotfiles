@@ -26,7 +26,7 @@
   };
 
   # Enable server services (beyond the defaults from _core.nix)
-  my.guacamole.enable = true;      # Remote desktop gateway
+  my.guacamole.enable = true; # Remote desktop gateway
   # my.grafana.enable = true;      # TODO: Modularize grafana.nix
   # Note: samba.nix is imported directly above (machine-specific)
 
@@ -36,10 +36,10 @@
   };
 
   networking.networkmanager.settings = {
-    "connection"."wifi.powersave" = 2;   # 2 = disabled
+    "connection"."wifi.powersave" = 2; # 2 = disabled
   };
 
-  networking.firewall.allowedTCPPorts = [ 19999 ]; # netdata #TODO: Remove this
+  networking.firewall.allowedTCPPorts = [19999]; # netdata #TODO: Remove this
 
   # services.udisks2.enable = true; # Auto-mount external drives
   # services.udiskie.enable = true;

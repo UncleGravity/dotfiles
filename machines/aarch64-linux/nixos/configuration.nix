@@ -1,5 +1,14 @@
-{ config, pkgs, inputs, options, username, hostname, systemStateVersion, self, ... }:
 {
+  config,
+  pkgs,
+  inputs,
+  options,
+  username,
+  hostname,
+  systemStateVersion,
+  self,
+  ...
+}: {
   imports = [
     ./hardware.nix
     "${self}/modules/nixos/_core.nix"

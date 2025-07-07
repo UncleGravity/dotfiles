@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   # ZFS requires a unique hostId for each machine.
   # Generate one with `head -c4 /dev/urandom | od -A n -t x1 | tr -d ' \n'`
   networking.hostId = "80b2c55c";
@@ -8,8 +10,8 @@
   # ——————————————————————————————————————————————————————————
   #  ZFS Boot
   # ——————————————————————————————————————————————————————————
-   # Make sure these filesystems are mountable (Disko’s ESP + your ZFS pools)
-  boot.supportedFilesystems = [ "vfat" "zfs" ];
+  # Make sure these filesystems are mountable (Disko’s ESP + your ZFS pools)
+  boot.supportedFilesystems = ["vfat" "zfs"];
 
   # Tweak kernel params: limit ARC size, disable hibernation
   boot.kernelParams = [
@@ -19,8 +21,8 @@
 
   # Enable the ZFS service at boot and tell it where to find your disks
   boot.zfs = {
-    devNodes                   = "/dev/disk/by-id/";
-    forceImportAll             = true;
+    devNodes = "/dev/disk/by-id/";
+    forceImportAll = true;
     requestEncryptionCredentials = true;
   };
 
@@ -35,14 +37,14 @@
     # autoSnapshot.weekly = 4;
     # autoSnapshot.monthly = 6;
 
-    autoScrub.enable = true;  # periodic background scrub (prevent bit rot)
-    trim.enable      = true;  # TRIM for SSDs (prevent SSD wear)
+    autoScrub.enable = true; # periodic background scrub (prevent bit rot)
+    trim.enable = true; # TRIM for SSDs (prevent SSD wear)
   };
 
   # ——————————————————————————————————————————————————————————
   #  Useful Utilities
   # ——————————————————————————————————————————————————————————
   environment.systemPackages = [
-    pkgs.zfs-prune-snapshots   # handy tool to clean up old snapshots
+    pkgs.zfs-prune-snapshots # handy tool to clean up old snapshots
   ];
 }

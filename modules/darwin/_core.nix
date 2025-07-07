@@ -1,6 +1,14 @@
 # This file defines the common configuration shared across different machines.
-{ pkgs, lib, inputs, username, hostname, config, self, ... }:
 {
+  pkgs,
+  lib,
+  inputs,
+  username,
+  hostname,
+  config,
+  self,
+  ...
+}: {
   # # --------------------------------------------------------------------------
   # My Darwin Modules
   my.homebrew.enable = true;
@@ -24,17 +32,17 @@
     ];
   };
 
-  nix.settings.trusted-users = [ username ];
+  nix.settings.trusted-users = [username];
 
   #############################################################
   #  Packages
   #############################################################
-  environment.systemPackages = (with pkgs; [
+  environment.systemPackages = with pkgs; [
     wget
     vim
     git
     cowsay
-  ]);
+  ];
 
   #############################################################
   #  Nix
@@ -99,7 +107,6 @@
       rm -f /Users/${username}/.nix-profile
       rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
     '';
-
 
     keyboard = {
       enableKeyMapping = lib.mkDefault true; # allow changing key maps
@@ -197,7 +204,6 @@
   #  Zsh
   #############################################################
   programs.zsh = {
-
     # Create /etc/zshrc that loads the nix-darwin environment.
     # this is required if you want to use darwin's default shell - zsh (instead of bash)
     enable = lib.mkDefault true;
@@ -209,7 +215,7 @@
     # environment.pathsToLink = [ "/share/zsh" ];
   };
 
-  environment.shells = lib.mkDefault [ pkgs.zsh ]; # Use nix managed zsh (probably more frequently updated
+  environment.shells = lib.mkDefault [pkgs.zsh]; # Use nix managed zsh (probably more frequently updated
 
   #############################################################
   #  Tailscale

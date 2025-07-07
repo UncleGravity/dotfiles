@@ -3,16 +3,13 @@
   pkgs,
   lib,
   ...
-}:
-
-let
+}: let
   cfg = config.my.displayManager;
-in
-{
+in {
   options.my.displayManager = {
     enable = lib.mkEnableOption "Enable custom display manager configuration";
     desktop = lib.mkOption {
-      type = lib.types.enum [ "gnome" "plasma" ];
+      type = lib.types.enum ["gnome" "plasma"];
       default = "gnome";
       description = "Select the desktop environment to use.";
     };
@@ -47,12 +44,14 @@ in
     # xrdp configuration
     services.xrdp = lib.mkIf cfg.rdp.enable {
       enable = true;
-      defaultWindowManager = 
-        if cfg.desktop == "gnome" then "${pkgs.gnome-session}/bin/gnome-session"
-        else if cfg.desktop == "plasma" then "startplasma-x11"
+      defaultWindowManager =
+        if cfg.desktop == "gnome"
+        then "${pkgs.gnome-session}/bin/gnome-session"
+        else if cfg.desktop == "plasma"
+        then "startplasma-x11"
         else null;
       openFirewall = cfg.rdp.openFirewall;
-      
+
       # Configure drive redirection to use a different location (instead of ~/thinclient_drives/)
       # https://manpages.ubuntu.com/manpages/lunar/man5/sesman.ini.5.html
       extraConfDirCommands = ''
@@ -62,21 +61,20 @@ in
       '';
     };
 
-      # Enable xkb Options in TTY
-      console.useXkbConfig = true;
-      #console.keyMap = "us-intl";
+    # Enable xkb Options in TTY
+    console.useXkbConfig = true;
+    #console.keyMap = "us-intl";
 
-      # Configure keymap in X11
-      services.xserver = {
-        xkb.layout = "us";
-        xkb.variant = "altgr-intl";
-        #xkb.options = "";
-        #xkb.model = "macbook79";
-      };
+    # Configure keymap in X11
+    services.xserver = {
+      xkb.layout = "us";
+      xkb.variant = "altgr-intl";
+      #xkb.options = "";
+      #xkb.model = "macbook79";
+    };
 
-      services.xserver.exportConfiguration = true;
+    services.xserver.exportConfiguration = true;
 
     # services.gnome.gnome-remote-desktop.enable = true; # I guess we don't need this?
-
   };
-} 
+}
