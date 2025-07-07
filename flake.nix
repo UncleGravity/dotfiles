@@ -268,7 +268,7 @@
       };
     });
 
-    # Default formatter
+    # Default formatter - Run with `nix fmt .`
     formatter = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
       system:
         nixpkgs.legacyPackages.${system}.alejandra
