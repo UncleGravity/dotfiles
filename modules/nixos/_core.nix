@@ -5,6 +5,12 @@
   pkgs,
   ...
 }: {
+  # --------------------------------------------------------------------------
+  # My NixOS modules
+  my.docker.enable = true;
+  my.tailscale.enable = true;
+  # my.escape-hatch.enable = true;
+
   # Enable Flakes
   nix.settings.experimental-features = ["nix-command" "flakes"];
   nix.settings.sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies

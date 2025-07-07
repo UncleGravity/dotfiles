@@ -1,70 +1,96 @@
 { config, lib, pkgs, inputs, username, ... }:
-
+let
+  cfg = config.my.homebrew;
+in
 {
-  homebrew = {
-    enable = true;
-
-    onActivation = {
-      autoUpdate = false;
-      # cleanup = "zap"; # uninstalls all formulae(and related files) not managed by nix.
+  options.my.homebrew = {
+    enable = lib.mkEnableOption "Homebrew with curated casks and apps";
+    
+    cleanup = lib.mkOption {
+      type = lib.types.enum [ "none" "uninstall" "zap" ];
+      default = "none";
+      description = "How to cleanup unmanaged formulae on activation";
     };
-
-    taps = [
-    ];
-
-    # `brew install`
-    brews = [
-      # "hackrf"
-      # fuse-t
-    ];
-
-    # masApps
-    # find the app id with `mas search <app name>`
-    masApps = {
-      "Paste – Limitless Clipboard" = 967805235;
+    
+    extraCasks = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "Additional casks to install beyond the default set";
     };
+    
+    extraMasApps = lib.mkOption {
+      type = lib.types.attrsOf lib.types.int;
+      default = {};
+      description = "Additional Mac App Store apps to install";
+    };
+  };
 
-    # `brew install --cask`
-    casks = [
-      "anki"
-      "google-chrome"
-      "digikam"
+  config = lib.mkIf cfg.enable {
+    homebrew = {
+      enable = true;
 
-      # Protect  battery
-      "aldente"
+      onActivation = {
+        autoUpdate = false;
+        cleanup = cfg.cleanup;
+      };
 
-      # Code
-      "cursor"
-      "zed"
+      taps = [
+      ];
 
-      # Terminal
-      "ghostty"
-      "kitty"
+      # `brew install`
+      brews = [
+        # "hackrf"
+        # fuse-t
+      ];
 
-      # VM
-      "utm"
+      # masApps
+      # find the app id with `mas search <app name>`
+      masApps = {
+        "Paste – Limitless Clipboard" = 967805235;
+      } // cfg.extraMasApps;
 
-      # Note
-      "obsidian"
+      # `brew install --cask`
+      casks = [
+        "anki"
+        "google-chrome"
+        "digikam"
 
-      # VPN
-      "tailscale"
-      "private-internet-access"
-      "freedom"
+        # Protect  battery
+        "aldente"
 
-      # Chat
-      "discord"
-      "microsoft-teams"
-      # "slack"
+        # Code
+        "cursor"
+        "zed"
 
-      # EE
-      "kicad"
-      "nrfutil"
-      "raspberry-pi-imager"
+        # Terminal
+        "ghostty"
+        "kitty"
 
-      # Keyboard
-      "karabiner-elements" # TODO: Move to nix-darwin: services.karabiner-elements.enable
-      "raycast"
-    ];
+        # VM
+        "utm"
+
+        # Note
+        "obsidian"
+
+        # VPN
+        "tailscale"
+        "private-internet-access"
+        "freedom"
+
+        # Chat
+        "discord"
+        "microsoft-teams"
+        # "slack"
+
+        # EE
+        "kicad"
+        "nrfutil"
+        "raspberry-pi-imager"
+
+        # Keyboard
+        "karabiner-elements" # TODO: Move to nix-darwin: services.karabiner-elements.enable
+        "raycast"
+      ] ++ cfg.extraCasks;
+    };
   };
 }

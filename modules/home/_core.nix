@@ -168,7 +168,8 @@ in {
   # Use XDG Base Directory Specification (XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME)
   xdg.enable = true;
 
-  # Enable our modules
+  # --------------------------------------------------------------------------
+  # My Home Manager Modules
   my.zsh.enable = true;
   my.tmux.enable = true;
   my.dotfiles.enable = true;

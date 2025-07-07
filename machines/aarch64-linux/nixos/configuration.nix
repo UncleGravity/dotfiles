@@ -1,19 +1,13 @@
 { config, pkgs, inputs, options, username, hostname, systemStateVersion, self, ... }:
-let
-  enableXServer = true;
-  MODULES_DIR = "${self}/modules";
-in
 {
-  imports =
-    [
-      ./hardware.nix
-      "${MODULES_DIR}/nixos/_core.nix"
-      "${MODULES_DIR}/sops.nix"
-      "${MODULES_DIR}/nixos/docker.nix"
-      "${MODULES_DIR}/nixos/hackrf.nix"
-      "${MODULES_DIR}/nixos/display-manager.nix"
-      # "${MODULES_DIR}/nixos/escape-hatch.nix"
-    ];
+  imports = [
+    ./hardware.nix
+    "${self}/modules/nixos/_core.nix"
+  ];
+
+  # ---------------------------------------------------------------------------
+  # Enable additional modules for this VM
+  my.hackrf.enable = true;
 
   # ---------------------------------------------------------------------------
   # X11

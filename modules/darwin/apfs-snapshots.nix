@@ -3,10 +3,10 @@
 with lib;
 
 let
-  cfg = config.apfs-snapshots;
+  cfg = config.my.apfs-snapshots;
 in
 {
-  options.apfs-snapshots = {
+  options.my.apfs-snapshots = {
     enable = mkEnableOption "APFS snapshot management service";
 
     interval = mkOption {

@@ -36,12 +36,16 @@ sudo nixos-rebuild switch --flake ".?submodules=1#target-hostname" -v
 Requirement: configure iCloud for clipboard sharing.
 
 1. Xcode CLI tools + Rosetta
-   `xcode-select --install`
-   `softwareupdate --install-rosetta --agree-to-license`
+```bash
+   xcode-select --install
+   softwareupdate --install-rosetta --agree-to-license
+```
 
 2. Symlinks
-   `ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/ ~/iCloud`
-   `ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/obsidian/notes` ~/Notes
+```bash
+   ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/obsidian/notes ~/Notes
+   ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/ ~/iCloud
+```
 
 3. Install Nix (Determinate Installer)
    ```bash
@@ -81,12 +85,12 @@ Requirement: configure iCloud for clipboard sharing.
 
 6. Set up sops-nix for secrets management:
    ```bash
-   # [On new machine] 
+   # [On new machine]
    # Create host ssh keypair (/etc/ssh/)
    nix shell nixpkgs#ssh-to-age
    sudo ssh-keygen -A
    cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
-   
+
    # [On old machine]
    # Add the public key to .sops.yaml!
    # Re-encerypt secrets.yaml with new public key
@@ -102,11 +106,11 @@ Requirement: configure iCloud for clipboard sharing.
    ```
 
 8. Build your new system:
-   - First run: 
+   - First run:
    ```bash
    sudo nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>
    ```
-   - Subsequent runs: 
+   - Subsequent runs:
    ```bash
    sudo darwin-rebuild switch --flake .#<new-hostname>
    ```

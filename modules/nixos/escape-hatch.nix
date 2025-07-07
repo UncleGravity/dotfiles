@@ -1,6 +1,6 @@
-{config, pkgs, options, ...}:
-
+{config, pkgs, options, lib, ...}:
 let
+  cfg = config.my.escape-hatch;
   commonPackages = with pkgs; [
     # FOUND THIS LIST HERE: https://unix.stackexchange.com/questions/522822/different-methods-to-run-a-non-nixos-executable-on-nixos
     # According to the answer, this is the list of libraries that are needed to run "most" unpatched binaries.
@@ -102,8 +102,13 @@ let
   ];
 in
 {
-  # -----------------------------------------------------
-  # Nix escape hatches
+  options.my.escape-hatch = {
+    enable = lib.mkEnableOption "Nix escape hatches for running non-NixOS binaries";
+  };
+
+  config = lib.mkIf cfg.enable {
+    # -----------------------------------------------------
+    # Nix escape hatches
   # -----------------------------------------------------
   # Why? Because I tried to run a make file that required bash and NixOS doesn't have /bin/bash
   # So to avoid having to patch the make file, I just symlinked bash to /bin/bash
@@ -151,4 +156,5 @@ in
       })
     )
   ];
+  };
 }

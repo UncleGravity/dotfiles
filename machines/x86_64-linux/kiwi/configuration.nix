@@ -3,9 +3,7 @@
   inputs,
   systemStateVersion,
   ...
-}: let
-  MODULES_DIR = "${self}/modules";
-in {
+}: {
   imports = [
     # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
     inputs.disko.nixosModules.disko
@@ -14,24 +12,23 @@ in {
     ./mounts.nix
     ./zfs.nix
     ./backup
+    ./samba.nix
     # ./wifi.nix
     "${self}/modules/nixos/_core.nix"
-    "${MODULES_DIR}/sops.nix"
-    "${MODULES_DIR}/nixos/tailscale.nix"
-    "${MODULES_DIR}/nixos/docker.nix"
-    "${MODULES_DIR}/nixos/samba.nix"
-    "${MODULES_DIR}/nixos/guacamole/"
-    "${MODULES_DIR}/nixos/grafana/grafana.nix"
-    "${MODULES_DIR}/nixos/display-manager.nix"
   ];
 
   # ---------------------------------------------------------------------------
-  # X11 / GNOME
+  # Enable server-specific modules
   my.displayManager = {
     enable = true;
     desktop = "gnome";
     rdp.enable = true; # For Guacamole
   };
+
+  # Enable server services (beyond the defaults from _core.nix)
+  my.guacamole.enable = true;      # Remote desktop gateway
+  # my.grafana.enable = true;      # TODO: Modularize grafana.nix
+  # Note: samba.nix is imported directly above (machine-specific)
 
   services.iperf3 = {
     enable = true;

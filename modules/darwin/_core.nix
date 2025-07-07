@@ -1,13 +1,10 @@
 # This file defines the common configuration shared across different machines.
 { pkgs, lib, inputs, username, hostname, config, self, ... }:
-let
-  MODULES_DIR = "${self}/modules";
-in
 {
-  imports = [
-    "${MODULES_DIR}/sops.nix"
-    "${MODULES_DIR}/darwin/apfs-snapshots.nix"
-  ];
+  # # --------------------------------------------------------------------------
+  # My Darwin Modules
+  my.homebrew.enable = true;
+  my.apfs-snapshots.enable = true;
 
   #############################################################
   #  Host & User config

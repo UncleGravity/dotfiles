@@ -87,7 +87,7 @@
       })
     ];
 
-    mkHomeManagerConfig = { username, hostname, homeStateVersion }: {
+    mkHomeManagerConfig = { system, username, hostname, homeStateVersion }: {
       home-manager.extraSpecialArgs = {
         inherit inputs self;
         username = username;
@@ -95,9 +95,9 @@
       };
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      # This assumes that the home.nix file is in the machines/${hostname} directory.
+      # This assumes that the home.nix file is in the machines/${system}/${hostname} directory.
       # ie. This only works for a single user.
-      home-manager.users.${username} = import ./machines/${hostname}/home.nix;
+      home-manager.users.${username} = import ./machines/${system}/${hostname}/home.nix;
       home-manager.sharedModules = [
         inputs.nixvim.homeManagerModules.nixvim
         ./modules/home
@@ -113,8 +113,9 @@
       modules = [
         inputs.sops-nix.nixosModules.sops
         home-manager.nixosModules.home-manager
-        ./machines/${hostname}/configuration.nix
-        (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
+        ./modules/nixos
+        ./machines/${system}/${hostname}/configuration.nix
+        (mkHomeManagerConfig { inherit system username hostname homeStateVersion; })
         {
           nixpkgs.overlays = overlays;
         }
@@ -128,10 +129,11 @@
         inherit username hostname systemStateVersion homeStateVersion;
       };
       modules = [
-        ./machines/${hostname}/configuration.nix
+        ./modules/darwin
+        ./machines/${system}/${hostname}/configuration.nix
         inputs.sops-nix.darwinModules.sops
         home-manager.darwinModules.home-manager
-        (mkHomeManagerConfig { inherit username hostname homeStateVersion; })
+        (mkHomeManagerConfig { inherit system username hostname homeStateVersion; })
         inputs.nix-homebrew.darwinModules.nix-homebrew
         {
           nix-homebrew = {
@@ -144,14 +146,14 @@
       ];
     };
 
-    mkHomeManagerSystem = { pkgs, username, homeStateVersion }: home-manager.lib.homeManagerConfiguration {
+    mkHomeManagerSystem = { system, pkgs, username, homeStateVersion }: home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       extraSpecialArgs = {
         inherit inputs;
         inherit username homeStateVersion;
       };
       modules = [
-        ./machines/${username}/home.nix
+        ./machines/${system}/${username}/home.nix
         inputs.nixvim.homeManagerModules.nixvim
         ./modules/home
       ];
@@ -207,6 +209,7 @@
 
     # Raspberry Pi (home-manager only)
     homeConfigurations.pi = mkHomeManagerSystem {
+      system = systems.aarch64-linux;
       pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
       username = "pi";
       homeStateVersion = "24.05";
