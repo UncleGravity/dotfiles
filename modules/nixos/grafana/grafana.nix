@@ -1,11 +1,10 @@
+{ pkgs, config, ... }:
+
+let
+  # Store our dashboards JSON under ./dashboards/*.json relative to this file
+  dashboardDir = "/etc/grafana/dashboards";
+in
 {
-  pkgs,
-  config,
-  ...
-}: let
-  # Suppose we store our dashboards JSON under ./grafana/dashboards/*.json
-  dashboardDir = "/etc/nixos/grafana/dashboards";
-in {
   sops.secrets."grafana/password" = {
     mode = "0600";
     owner = "grafana";
