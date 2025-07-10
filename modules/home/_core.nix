@@ -97,7 +97,7 @@
     aichat
     ollama
     claude-code
-    codex
+    # codex  # Commented out due to OpenSSL build issues
     opencode
     # goose-cli
     # aider-chat
