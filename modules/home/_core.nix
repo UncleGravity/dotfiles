@@ -210,10 +210,14 @@ in {
   };
 
   programs.direnv = {
-    enable = true;
+    enable = true; # load .envrc files automatically
     enableZshIntegration = true;
     nix-direnv.enable = true;
-    # silent = true;
+    silent = true;
+    config = {
+      load_dotenv = true; # also load .env files
+    };
+
   };
 
   # Home Manager can also manage your environment variables through
