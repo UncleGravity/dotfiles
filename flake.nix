@@ -39,7 +39,11 @@
     # Overlays
 
     # Opencode from upstream
-    nixpkgs_opencode.url = "github:nixos/nixpkgs/pull/419604/head";
+    # AI coding agent
+    opencode = {
+      url = "github:sst/opencode/v0.2.13";
+      flake = false;
+    };
 
     # Zig nightly
     zig = {
@@ -62,12 +66,6 @@
       url = "github:fabioluciano/tmux-tokyo-night";
       flake = false;
     };
-
-    # AI coding agent
-    opencode = {
-      url = "github:sst/opencode";
-      flake = false;
-    };
   };
 
   outputs = {
@@ -87,8 +85,21 @@
     # Shared overlays for both NixOS and Darwin
     overlays = [
       (final: prev: {
-        opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
+        # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
         zig = inputs.zig.packages.${prev.system}.master;
+        opencode = prev.opencode.overrideAttrs (old: {
+          version = "0.2.20";
+          src = inputs.opencode;
+          node_modules = old.node_modules.overrideAttrs (nmOld: {
+            outputHash =
+              if prev.system == "aarch64-darwin" then "sha256-uk8HQfHCKTAW54rNHZ1Rr0piZzeJdx6i4o0+xKjfFZs="
+              else if prev.system == "x86_64-linux" then "sha256-1ZxetDrrRdNNOfDOW2uMwMwpEs5S3BLF+SejWcRdtik="
+              else throw "Unsupported system for opencode: ${prev.system}";
+          });
+          tui = old.tui.overrideAttrs (tuiOld: {
+            vendorHash = "sha256-Qvn59PU95TniPy7JaZDJhn/wUCfFYM+7bzav1jxNv34=";
+          });
+        });
       })
     ];
 
@@ -98,20 +109,22 @@
       hostname,
       homeStateVersion,
     }: {
-      home-manager.extraSpecialArgs = {
-        inherit inputs self;
-        username = username;
-        homeStateVersion = homeStateVersion;
+      home-manager = {
+        extraSpecialArgs = {
+          inherit inputs self;
+          inherit username;
+          inherit homeStateVersion;
+        };
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        # This assumes that the home.nix file is in the machines/${system}/${hostname} directory.
+        # ie. This only works for a single user.
+        users.${username} = import ./machines/${system}/${hostname}/home.nix;
+        sharedModules = [
+          inputs.nixvim.homeManagerModules.nixvim
+          ./modules/home
+        ];
       };
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
-      # This assumes that the home.nix file is in the machines/${system}/${hostname} directory.
-      # ie. This only works for a single user.
-      home-manager.users.${username} = import ./machines/${system}/${hostname}/home.nix;
-      home-manager.sharedModules = [
-        inputs.nixvim.homeManagerModules.nixvim
-        ./modules/home
-      ];
     };
 
     mkNixos = {
@@ -189,57 +202,66 @@
         ];
       };
   in {
-    # Darwin - banana
-    darwinConfigurations.banana = mkDarwin {
-      system = systems.aarch64-darwin;
-      username = "angel";
-      hostname = "banana";
-      systemStateVersion = 6;
-      homeStateVersion = "25.05";
+    # Darwin Configurations
+    darwinConfigurations = {
+      # Darwin - banana
+      banana = mkDarwin {
+        system = systems.aarch64-darwin;
+        username = "angel";
+        hostname = "banana";
+        systemStateVersion = 6;
+        homeStateVersion = "25.05";
+      };
+
+      # Darwin - BENGKUI
+      BENGKUI = mkDarwin {
+        system = systems.aarch64-darwin;
+        username = "useradmin";
+        hostname = "BENGKUI";
+        systemStateVersion = 4;
+        homeStateVersion = "24.05";
+      };
+
+      # Darwin - BASURA
+      BASURA = mkDarwin {
+        system = systems.x86_64-darwin;
+        username = "angel";
+        hostname = "BASURA";
+        systemStateVersion = 6;
+        homeStateVersion = "24.11";
+      };
     };
 
-    # Darwin - BENGKUI
-    darwinConfigurations.BENGKUI = mkDarwin {
-      system = systems.aarch64-darwin;
-      username = "useradmin";
-      hostname = "BENGKUI";
-      systemStateVersion = 4;
-      homeStateVersion = "24.05";
+    # NixOS Configurations
+    nixosConfigurations = {
+      # kiwi (NAS)
+      kiwi = mkNixos {
+        system = systems.x86_64-linux;
+        username = "angel";
+        hostname = "kiwi";
+        systemStateVersion = "24.11";
+        homeStateVersion = "25.05";
+      };
+
+      # Development VM
+      nixos = mkNixos {
+        system = systems.aarch64-linux;
+        username = "angel";
+        hostname = "nixos";
+        systemStateVersion = "24.05";
+        homeStateVersion = "24.05";
+      };
     };
 
-    # NixOS - kiwi (NAS)
-    nixosConfigurations.kiwi = mkNixos {
-      system = systems.x86_64-linux;
-      username = "angel";
-      hostname = "kiwi";
-      systemStateVersion = "24.11";
-      homeStateVersion = "25.05";
-    };
-
-    # NixOS VM (nixos + home-manager)
-    nixosConfigurations.nixos = mkNixos {
-      system = systems.aarch64-linux;
-      username = "angel";
-      hostname = "nixos";
-      systemStateVersion = "24.05";
-      homeStateVersion = "24.05";
-    };
-
-    # Darwin - BASURA
-    darwinConfigurations.BASURA = mkDarwin {
-      system = systems.x86_64-darwin;
-      username = "angel";
-      hostname = "BASURA";
-      systemStateVersion = 6;
-      homeStateVersion = "24.11";
-    };
-
-    # Raspberry Pi (home-manager only)
-    homeConfigurations.pi = mkHomeManagerSystem {
-      system = systems.aarch64-linux;
-      pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
-      username = "pi";
-      homeStateVersion = "24.05";
+    # Home Manager Configurations
+    homeConfigurations = {
+      # Raspberry Pi (home-manager only)
+      pi = mkHomeManagerSystem {
+        system = systems.aarch64-linux;
+        pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
+        username = "pi";
+        homeStateVersion = "24.05";
+      };
     };
 
     # Packages
@@ -259,6 +281,7 @@
           nh
           nix-output-monitor
           just
+          statix
           # self.packages.${system}.scripts  # Your scripts available in dev shell
         ];
 
