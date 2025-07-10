@@ -11,6 +11,7 @@
 }: {
   imports = [
     "${self}/modules/darwin/_core.nix"
+    ./linux-builder.nix
   ];
 
   # --- Overrides or Machine-Specific Settings ---
@@ -27,6 +28,9 @@
 
   # Only keep brews and casks managed by nix
   my.homebrew.cleanup = "zap";
+
+  # Enable nix-linux-builder for building Linux packages on Darwin
+  # nix.linux-builder.enable = true;
 
   # Example: Override system packages for this specific machine
   # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base
