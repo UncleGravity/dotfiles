@@ -74,7 +74,7 @@ _fzf_tmux() {
 
     case $tmux_mode in
         commands)
-            tmux list-commands | 
+            tmux list-commands |
                 fzf --ansi \
                     --height=80% \
                     --tmux 80% \
@@ -105,8 +105,8 @@ _select_editor() {
 
 _fzf_projects() {
     local projects_command="fd -t d -H '^.git$' ~/Documents $(test -d /media/psf/Home/Documents && echo /media/psf/Home/Documents) -x echo {//}"
-    
-    local project_dir=$(eval "$projects_command" | 
+
+    local project_dir=$(eval "$projects_command" |
         fzf --prompt="Select project: " \
             --height=~50% \
             --tmux 80% \
@@ -118,9 +118,9 @@ _fzf_projects() {
         return 1
     fi
 
-    local action=$(echo -e "cursor\nvscode\nnvim\ntmux" | 
+    local action=$(echo -e "cursor\nvscode\nnvim\ntmux" |
         fzf --prompt="Open with: " --height=~50% --tmux --layout=reverse --border)
-    
+
     if [[ -z "$action" ]]; then
         return 1
     fi
@@ -129,7 +129,7 @@ _fzf_projects() {
         cursor) echo "cursor \"$project_dir\"" ;;
         vscode) echo "code \"$project_dir\"" ;;
         nvim)   echo "nvim \"$project_dir\"" ;;
-        tmux)   
+        tmux)
             local session_name=$(basename "$project_dir")
             if [ -n "$TMUX" ]; then
                 # If already in a tmux session, create a new session and switch to it
@@ -144,9 +144,9 @@ _fzf_projects() {
 }
 
 _fzf_dotfiles() {
-    local action=$(echo -e "cursor\nnvim\ntmux" | 
+    local action=$(echo -e "cursor\nnvim\ntmux" |
         fzf --prompt="Open dotfiles with: " --height=~50% --tmux --layout=reverse --border)
-    
+
     if [[ -z "$action" ]]; then
         return 1
     fi
@@ -154,7 +154,7 @@ _fzf_dotfiles() {
     case $action in
         cursor) echo "cursor \"$DOTFILES_DIR\"" ;;
         nvim)   echo "nvim \"$DOTFILES_DIR\"" ;;
-        tmux)   
+        tmux)
             local session_name="_dotfiles"
             if ! tmux has-session -t "$session_name" 2>/dev/null; then
                 tmux new-session -d -s "$session_name" -c "$DOTFILES_DIR"
@@ -172,15 +172,15 @@ _fzf_dotfiles() {
 
 _fzf_gh() {
     local username=$(gh api user --jq '.login')
-    
-    local org=$(printf "%s\n%s\n" "$username" "$(gh api user/orgs --jq '.[].login')" | 
+
+    local org=$(printf "%s\n%s\n" "$username" "$(gh api user/orgs --jq '.[].login')" |
         fzf --prompt="Select organization: " --height=~50% --tmux --layout=reverse --border)
     [[ -z "$org" ]] && return 1
 
     local repos=$(gh repo list "$org" --limit 1000 --json name,nameWithOwner,description,isFork,url \
         --jq '.[] | "\(.name)\t\(.nameWithOwner)\t\(.description)\t\(.isFork)\t\(.url)"')
-    
-    local repo=$(echo "$repos" | 
+
+    local repo=$(echo "$repos" |
         awk -F'\t' '{print ($4 == "true" ? "* " : "  ") $1 "\t" $2 "\t" $3 "\t" $5}' |
         fzf --prompt="Select repository: " \
             --height=80% \
@@ -219,7 +219,7 @@ fuzzy-files() {
                 local line=$(echo $selected | cut -d':' -f2)
                 local editor=$(_select_editor)
                 [[ -z "$editor" ]] && return
-                
+
                 case $editor in
                     nvim)   result="nvim +$line $file" ;;
                     code)   result="code -g $file:$line" ;;
@@ -228,7 +228,7 @@ fuzzy-files() {
             fi
             ;;
         tmux)
-            result=$(_fzf_tmux) 
+            result=$(_fzf_tmux)
             ;;
         projects)
             result=$(_fzf_projects)
@@ -295,7 +295,7 @@ zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags \
   --preview-window=down:3:wrap \
   --multi \
   --bind='ctrl-a:toggle-all' \
-  --bind='tab:toggle+down' 
+  --bind='tab:toggle+down'
 
 ### code
 zstyle ':fzf-tab:complete:(nvim|code|cursor|bat):*' \

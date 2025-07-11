@@ -12,11 +12,11 @@ alias tree="eza -T"
 alias grep="rg"
 
 # ------------ cat -> bat ------------
-export BAT_PAGER="less -RF --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
-export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Colorize man pages (with bat)
-export MANROFFOPT="-c" # Fix man page formatting issue
-alias cat="bat --paging=never"
-alias -g -- --help='--help | bat --language=help --style=plain --paging=never' # Syntax highlighting for all help commands (e.g. `ls --help`)
+# export BAT_PAGER="less -RF --mouse" # Fix "bat" issue where mouse scroll doesn't work in tmux
+# export MANROFFOPT="-c" # Fix man page formatting issue
+# export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Colorize man pages (with bat)
+# alias cat="bat --paging=never"
+# alias -g -- --help='--help | bat --language=help --style=plain --paging=never' # Syntax highlighting for all help commands (e.g. `ls --help`)
 
 # ------------ diff -> delta ------------ (smells like BLOAT)
 export DELTA_PAGER="less -RFX --mouse" # Fix "delta" issue where mouse scroll doesn't work in tmux
@@ -47,6 +47,7 @@ alias du="dua"
 alias df="duf --hide-mp '/dev, *ystem*, /private*, /nix*'"
 
 alias ts="tailscale"
+alias j="just"
 # export NVIM_APPNAME=lazyvim
 # export NVIM_APPNAME=my-nvim
 # alias nvim="NVIM_APPNAME=lazyvim nvim"
