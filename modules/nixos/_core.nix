@@ -5,31 +5,39 @@
   pkgs,
   ...
 }: {
-  # --------------------------------------------------------------------------
   # My NixOS modules
-  my.docker.enable = true;
-  my.tailscale.enable = true;
-  # my.escape-hatch.enable = true;
-
-  # Enable Flakes
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-  nix.settings.sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies
-  nix.channel.enable = false;
+  my = {
+    docker.enable = true;
+    tailscale.enable = true;
+    # escape-hatch.enable = true;
+  };
 
   # --------------------------------------------------------------------------
-  # Binary caches for faster builds
-  nix.settings.substituters = [
-    "https://nix-community.cachix.org?priority=41"
-    "https://numtide.cachix.org?priority=42"
-  ];
-  nix.settings.trusted-public-keys = [
-    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-  ];
-  nix.settings.always-allow-substitutes = true;
+  # Nix (flakes, caches, GC)
+  nix = {
+    channel.enable = false; # flake gang
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+    settings = {
+      experimental-features = ["nix-command" "flakes"]; # Enable Flakes
+      sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies
+
+      # -------------------------------
+      # Binary caches for faster builds
+      substituters = [
+        "https://nix-community.cachix.org?priority=41"
+        "https://numtide.cachix.org?priority=42"
+      ];
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+      ];
+      always-allow-substitutes = true;
+      # -------------------------------
+      trusted-users = ["root" username]; # Allow root and ${username} to use nix-command (required by devenv for cachix to work)
+    };
+  };
+
+  nixpkgs.config.allowUnfree = true; # buhaoyisi duibuqi
 
   # ---------------------------------------------------------------------------
   # Automatic garbage collection
@@ -44,14 +52,19 @@
 
   # ---------------------------------------------------------------------------
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5; # Limit to 5 latest generations
+  boot.loader = {
+    systemd-boot.enable = true;
+    efi.canTouchEfiVariables = true;
+    systemd-boot.configurationLimit = 10; # Limit to 5 latest generations
+  };
 
   # ---------------------------------------------------------------------------
   # Networking
-  networking.hostName = hostname;
-  networking.networkmanager.enable = true;
+  networking = {
+    hostName = hostname;
+    networkmanager.enable = true;
+  };
+
   services.openssh = {
     enable = true;
     settings = {
@@ -83,10 +96,12 @@
   # Disable sleep, suspend, hibernate, and hybrid-sleep
   # This is necessary because the GNOME3/GDM auto-suspend feature cannot be disabled in GUI!
   # If no user is logged in, the machine will power down after 20 minutes.
-  systemd.targets.sleep.enable = false;
-  systemd.targets.suspend.enable = false;
-  systemd.targets.hibernate.enable = false;
-  systemd.targets.hybrid-sleep.enable = false;
+  systemd.targets = {
+    sleep.enable = false;
+    suspend.enable = false;
+    hibernate.enable = false;
+    hybrid-sleep.enable = false;
+  };
 
   # Same as above, not sure which one is the one that works. So we keep both for now.
   # TODO: Remove one of them.
@@ -103,8 +118,8 @@
 
   # ---------------------------------------------------------------------------
   # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  services.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -121,6 +136,9 @@
   # ---------------------------------------------------------------------------
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
+
+  # ---------------------------------------------------------------------------
+  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
 
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with 'passwd'.
@@ -140,27 +158,24 @@
     defaultUserShell = pkgs.zsh;
   };
 
-  nix.settings.trusted-users = ["root" "${username}"]; # Allow root and angel to use nix-command (required by devenv for cachix to work)
-
   # ---------------------------------------------------------------------------
   # SHELLS
-  environment.shells = with pkgs; [bash zsh];
-  programs.zsh.enable = true; # apparently we need this even if it's enabled in home-manager
-  programs.zsh.enableGlobalCompInit = false; # This prevents compinit from running on /etc/zshrc, which noticeably slows down shell startup. Run compinit from user zshrc instead.
-  environment.pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
+  environment = {
+    shells = with pkgs; [bash zsh];
+    pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
 
-  # ---------------------------------------------------------------------------
-  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
+    systemPackages = with pkgs; [
+      vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      wget
+      git
+      distrobox
+      chromium
+      ghostty
+    ];
+  };
 
-  # ---------------------------------------------------------------------------
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    git
-    distrobox
-    chromium
-    ghostty
-  ];
+  programs.zsh = {
+    enable = true; # apparently we need this even if it's enabled in home-manager
+    enableGlobalCompInit = false; # Remove compinit from /etc/zshrc, since it SLOWS down shell startup. Run compinit from user zshrc instead. (home-manager)
+  };
 }
