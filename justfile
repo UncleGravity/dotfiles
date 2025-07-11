@@ -67,11 +67,11 @@ update-sync: update sync
 # Garbage collect old generations (default: 30 days)
 gc days="30d":
     @echo "🧹 Performing garbage collection..."
-    nix-collect-garbage --delete-older-than {{days}}
+    nh clean all --keep-since {{days}} --ask
     @echo "✅ Garbage collection completed!"
 
 # Remove unused nix store paths
-prune:
+trim:
     @echo "✂️  Pruning unused nix store paths..."
     nix-store --gc
     @echo "✅ Pruning completed!"
@@ -84,12 +84,12 @@ list-generations:
         "nixos")
             sudo nix-env -p /nix/var/nix/profiles/system --list-generations
             ;;
-        # "darwin")
-        #     darwin-rebuild list-generations
-        #     ;;
-        # "home-manager")
-        #     home-manager generations
-        #     ;;
+        "darwin")
+            nix-store --gc --print-roots | grep darwin-system
+            ;;
+        "home-manager")
+            nix-store --gc --print-roots | grep home-manager-generation
+            ;;
         *)
             echo "❌ Error: Unsupported system type for listing generations."
             exit 1
