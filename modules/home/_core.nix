@@ -160,64 +160,73 @@
   linuxOnlyPackages = with pkgs; [
   ];
 in {
-  programs.home-manager.enable = true; # Let Home Manager install and manage itself.
-  home.stateVersion = homeStateVersion; # don't touch this or everybody dies
-
   # Use XDG Base Directory Specification (XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME)
   xdg.enable = true;
 
+  programs.home-manager.enable = true; # Let Home Manager install and manage itself.
+
   # --------------------------------------------------------------------------
   # My Home Manager Modules
-  my.zsh.enable = true;
-  my.tmux.enable = true;
-  my.dotfiles.enable = true;
-
-  home.username = username;
-  home.homeDirectory =
-    if pkgs.stdenv.isDarwin
-    then "/Users/${username}"
-    else "/home/${username}";
-
-  home.packages =
-    commonPackages
-    ++ (
-      if pkgs.stdenv.isDarwin
-      then darwinOnlyPackages
-      else linuxOnlyPackages
-    )
-    ++ [
-      # Custom packages from this flake
-      inputs.self.packages.${pkgs.system}.scripts
-    ];
-
-  programs.ssh = {
-    enable = true;
-    forwardAgent = true;
-    extraConfig = ''
-      Include ${config.home.homeDirectory}/.config/colima/ssh_config
-      IdentityAgent ${
-        if pkgs.stdenv.isDarwin
-        then ''"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"''
-        else "~/.1password/agent.sock"
-      }
-    '';
-    matchBlocks = {
-      "kiwi" = {
-        user = "angel";
-        hostname = "kiwi";
-      };
-    };
+  my = {
+    zsh.enable = true;
+    tmux.enable = true;
+    dotfiles.enable = true;
   };
 
-  programs.direnv = {
-    enable = true; # load .envrc files automatically
-    enableZshIntegration = true;
-    nix-direnv.enable = true;
-    silent = true;
-    config = {
-      load_dotenv = true; # also load .env files
+  # --------------------------------------------------------------------------
+  # HOME
+  home = {
+    username = username;
+    homeDirectory =
+      if pkgs.stdenv.isDarwin
+      then "/Users/${username}"
+      else "/home/${username}";
+
+    packages =
+      commonPackages
+      ++ (
+        if pkgs.stdenv.isDarwin
+        then darwinOnlyPackages
+        else linuxOnlyPackages
+      )
+      ++ [ inputs.self.packages.${pkgs.system}.scripts ]; # Custom packages from this flake
+
+      stateVersion = homeStateVersion; # don't touch this or everybody dies
+  };
+
+  # --------------------------------------------------------------------------
+  # PROGRAMS
+  programs = {
+    # ----------
+    ssh = {
+      enable = true;
+      forwardAgent = true;
+      extraConfig = ''
+        Include ${config.home.homeDirectory}/.config/colima/ssh_config
+        IdentityAgent ${
+          if pkgs.stdenv.isDarwin
+          then ''"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"''
+          else "~/.1password/agent.sock"
+        }
+      '';
+      matchBlocks = {
+        "kiwi" = {
+          user = "angel";
+          hostname = "kiwi";
+        };
+      };
     };
 
+    # ----------
+    direnv = {
+      enable = true; # load .envrc files automatically
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+      silent = true;
+      config = {
+        load_dotenv = true; # also load .env files
+      };
+    };
   };
 
   # Home Manager can also manage your environment variables through
