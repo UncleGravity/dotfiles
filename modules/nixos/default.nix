@@ -1,7 +1,7 @@
 {
   imports = [
+    ../common/sops.nix
     ./_core.nix
-    ../sops.nix
     ./display-manager.nix
     ./docker.nix
     ./escape-hatch.nix

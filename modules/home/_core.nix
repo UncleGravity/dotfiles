@@ -76,6 +76,7 @@
     nix-output-monitor
     direnv
     devenv
+    nix-tree
 
     lazygit
     lazydocker

@@ -5,7 +5,7 @@
   lib,
   ...
 }: let
-  secretsDir = ../secrets;
+  secretsDir = ../../secrets;
 in {
   #############################################################
   #  SOPS
