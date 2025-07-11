@@ -8,6 +8,7 @@
 }: let
   cfg = config.my.homebrew;
 in {
+  ##### 1. Options #############################################################
   options.my.homebrew = {
     enable = lib.mkEnableOption "Homebrew with curated casks and apps";
 
@@ -30,6 +31,7 @@ in {
     };
   };
 
+  ##### 2. Implementation ######################################################
   config = lib.mkIf cfg.enable {
     homebrew = {
       enable = true;

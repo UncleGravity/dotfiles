@@ -7,6 +7,7 @@
 with lib; let
   cfg = config.my.apfs-snapshots;
 in {
+  ##### 1. Options #############################################################
   options.my.apfs-snapshots = {
     enable = mkEnableOption "APFS snapshot management service";
 
@@ -29,6 +30,7 @@ in {
     };
   };
 
+  ##### 2. Implementation ######################################################
   config = mkIf cfg.enable {
     launchd.daemons.apfs-snapshots = {
       path = [pkgs.ripgrep pkgs.bash pkgs.coreutils];
