@@ -9,19 +9,23 @@
   self,
   ...
 }: {
-  # # --------------------------------------------------------------------------
+  # --------------------------------------------------------------------------
   # My Darwin Modules
-  my.homebrew.enable = true;
-  my.apfs-snapshots.enable = true;
+  my = {
+    homebrew.enable = true;
+    apfs-snapshots.enable = true;
+  };
 
   #############################################################
   #  Host & User config
   #############################################################
-  networking.hostName = hostname;
-  networking.localHostName = hostname;
-  networking.computerName = hostname;
-  # system.defaults.smb.NetBIOSName = lib.mkDefault hostname; # Often derived from hostname
-  networking.wakeOnLan.enable = lib.mkDefault true;
+  networking = {
+    hostName = hostname;
+    localHostName = hostname;
+    computerName = hostname;
+    # system.defaults.smb.NetBIOSName = lib.mkDefault hostname; # Often derived from hostname
+    wakeOnLan.enable = lib.mkDefault true;
+  };
 
   users.users."${username}" = {
     home = "/Users/${username}";
@@ -31,8 +35,6 @@
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLpjzihuPI+t7xYjznPNLALMCunS2WKw/cqYRMAG1YILTGiLmdYRWck9Ic7muK7SXWj0XP8nWTze1iRhA/iTyxA=" # CRISPR (termius)
     ];
   };
-
-  nix.settings.trusted-users = [username];
 
   #############################################################
   #  Packages
@@ -47,22 +49,27 @@
   #############################################################
   #  Nix
   #############################################################
-  nix.settings.experimental-features = "nix-command flakes";
-  nixpkgs.config.allowUnfree = true;
 
-  # Binary caches for faster builds
-  nix.settings.substituters = [
-    "https://nix-community.cachix.org?priority=41"
-    "https://numtide.cachix.org?priority=42"
-  ];
-  nix.settings.trusted-public-keys = [
-    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-  ];
-  nix.settings.always-allow-substitutes = true;
+  nix.channel.enable = false; # Flake gang
+  nixpkgs.config.allowUnfree = true; # gomenasai :(
 
-  # Flake gang
-  nix.channel.enable = false;
+  nix.settings = {
+    experimental-features = "nix-command flakes";
+
+    # -------------------------------
+    # Binary caches for faster builds
+    substituters = [
+      "https://nix-community.cachix.org?priority=41"
+      "https://numtide.cachix.org?priority=42"
+    ];
+    trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+    ];
+    always-allow-substitutes = true;
+    # -------------------------------
+    trusted-users = [username];
+  };
 
   # Garbage collection everything older than 30 days
   nix.gc = {
@@ -77,14 +84,17 @@
     options = lib.mkDefault "--delete-older-than 30d";
   };
 
-  # https://github.com/NixOS/nix/issues/7273#issuecomment-2295429401
-  nix.optimise.automatic = lib.mkDefault true;
-
+  # -------------------------------
+  # Bug
   # Disable auto-optimise-store because of this issue:
   #   https://github.com/NixOS/nix/issues/7273
   # "error: cannot link '/nix/store/.tmp-link-xxxxx-xxxxx' to '/nix/store/.links/xxxx': File exists"
   nix.settings.auto-optimise-store = lib.mkDefault false;
+  # https://github.com/NixOS/nix/issues/7273#issuecomment-2295429401
+  nix.optimise.automatic = lib.mkDefault true;
+  # -------------------------------
 
+  # Use the Git hash as nix generation revision
   system.configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
 
   ###################################################################################
@@ -103,10 +113,10 @@
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
       # Remove channel symlinks (they get recreated despite nix.channel.enable = false)
-      rm -rf /Users/${username}/.nix-defexpr/channels
-      rm -rf /Users/${username}/.nix-defexpr/channels_root
-      rm -f /Users/${username}/.nix-profile
-      rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
+      # rm -rf /Users/${username}/.nix-defexpr/channels
+      # rm -rf /Users/${username}/.nix-defexpr/channels_root
+      # rm -f /Users/${username}/.nix-profile
+      # rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
     '';
 
     keyboard = {
@@ -193,8 +203,11 @@
   }; # ----------------- System end
 
   # Enable TouchID for sudo authentication
-  security.pam.services.sudo_local.touchIdAuth = lib.mkDefault true;
-  security.pam.services.sudo_local.reattach = lib.mkDefault true; # TMUX fix https://github.com/LnL7/nix-darwin/pull/787
+  security.pam.services.sudo_local = {
+    enable = lib.mkDefault true;
+    touchIdAuth = lib.mkDefault true;
+    reattach = lib.mkDefault true; # TMUX fix https://github.com/LnL7/nix-darwin/pull/787
+  };
 
   # Karabiner-Elements
   # TODO: Broken for now, install with homebrew instead.
