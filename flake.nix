@@ -282,6 +282,7 @@
           nix-output-monitor
           just
           statix
+          vulnix
           # self.packages.${system}.scripts  # Your scripts available in dev shell
         ];
 
