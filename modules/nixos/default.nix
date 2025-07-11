@@ -1,6 +1,6 @@
 {
   imports = [
-    ../common/sops.nix
+    ../common
     ./_core.nix
     ./display-manager.nix
     ./docker.nix

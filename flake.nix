@@ -39,7 +39,6 @@
     # Overlays
 
     # Opencode from upstream
-    # AI coding agent
     opencode = {
       url = "github:sst/opencode/v0.2.27";
       flake = false;

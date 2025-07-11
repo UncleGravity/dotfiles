@@ -33,10 +33,13 @@
 
   # ---------------------------------------------------------------------------
   # Automatic garbage collection
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 30d";
+  programs.nh = {
+    enable = true;
+    clean = {
+      enable = true;
+      dates = "weekly";
+      extraArgs = "--keep 5 --keep-since 30d"; # keep 30 days, at least 5
+    };
   };
 
   # ---------------------------------------------------------------------------

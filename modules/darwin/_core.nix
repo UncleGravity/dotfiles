@@ -14,6 +14,11 @@
   my = {
     homebrew.enable = true;
     apfs-snapshots.enable = true;
+    # services.nh-clean = {
+    #   enable        = true;
+    #   keepSinceDays = 14;   # keep two weeks of generations
+    #   keep = 5;
+    # };
   };
 
   #############################################################
@@ -71,17 +76,15 @@
     trusted-users = [username];
   };
 
-  # Garbage collection everything older than 30 days
-  nix.gc = {
-    automatic = lib.mkDefault true;
-    interval = lib.mkDefault [
-      {
-        Hour = 1;
-        Minute = 0;
-        Weekday = 1;
-      }
-    ];
-    options = lib.mkDefault "--delete-older-than 30d";
+  # ---------------------------------------------------------------------------
+  # Garbage collect EVERYTHING older than 30 days
+  programs.nh = {
+    enable = true;
+    clean = {
+      enable = true;
+      interval = { Weekday = 0; Hour = 0; }; # Every Sunday at midnight
+      extraArgs = "--keep 5 --keep-since 30d"; # Remove older than 30d, keep at least 5
+    };
   };
 
   # -------------------------------
