@@ -41,7 +41,7 @@
     # Opencode from upstream
     # AI coding agent
     opencode = {
-      url = "github:sst/opencode/v0.2.13";
+      url = "github:sst/opencode/v0.2.27";
       flake = false;
     };
 
@@ -88,7 +88,7 @@
         # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
         zig = inputs.zig.packages.${prev.system}.master;
         opencode = prev.opencode.overrideAttrs (old: {
-          version = "0.2.20";
+          version = "0.2.27";
           src = inputs.opencode;
           node_modules = old.node_modules.overrideAttrs (nmOld: {
             outputHash =
@@ -97,7 +97,7 @@
               else throw "Unsupported system for opencode: ${prev.system}";
           });
           tui = old.tui.overrideAttrs (tuiOld: {
-            vendorHash = "sha256-Qvn59PU95TniPy7JaZDJhn/wUCfFYM+7bzav1jxNv34=";
+            vendorHash = "sha256-5PG81ca/MPLdYbiQu6tj7DL+4HSEgHpwi4zekOnbf/c=";
           });
         });
       })
@@ -281,6 +281,7 @@
           nh
           nix-output-monitor
           just
+          nix-tree
           statix
           vulnix
           # self.packages.${system}.scripts  # Your scripts available in dev shell
