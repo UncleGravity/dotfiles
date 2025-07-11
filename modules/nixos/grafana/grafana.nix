@@ -1,5 +1,8 @@
-{ pkgs, config, ... }:
-
+{
+  pkgs,
+  config,
+  ...
+}:
 let
   # Store our dashboards JSON under ./dashboards/*.json relative to this file
   dashboardDir = "/etc/grafana/dashboards";
@@ -88,19 +91,31 @@ in
   services.prometheus = {
     enable = true;
     port = 9090;
+    extraFlags = [ "--web.enable-otlp-receiver" ];
     globalConfig.scrape_interval = "10s"; # "1m"
     exporters = {
       node = {
         enable = true;
-        enabledCollectors = ["systemd" "processes"];
+        enabledCollectors = [
+          "systemd"
+          "processes"
+        ];
       };
+      # restic = {
+      #   enable = true;
+      #   repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
+      #   passwordFile = config.sops.secrets."backup/b2/restic/password".path;
+      #   environmentFile = config.sops.secrets."backup/b2.env".path;
+      #   port = 9753;
+      #   refreshInterval = 86400; # 1x/day - keep high since it's expensive
+      # };
     };
     scrapeConfigs = [
       {
         job_name = "kiwi";
         static_configs = [
           {
-            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.node.port}"];
+            targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
           }
         ];
       }
@@ -108,10 +123,17 @@ in
         job_name = "telegraf";
         static_configs = [
           {
-            targets = ["127.0.0.1:9273"]; # Telegraf Prometheus output port
+            targets = [ "127.0.0.1:9273" ]; # Telegraf Prometheus output port
           }
         ];
       }
+      # {
+      #   job_name = "restic-b2";
+      #   static_configs = [{
+      #     targets = [ "127.0.0.1:9753" ]; # Restic B2 exporter
+      #   }];
+      #   scrape_interval = "86400s"; # Match the refresh interval
+      # }
     ];
   };
 
@@ -150,15 +172,23 @@ in
         };
 
         # Memory metrics
-        mem = {};
+        mem = { };
 
         # Disk metrics
         disk = {
-          ignore_fs = ["tmpfs" "devtmpfs" "devfs" "iso9660" "overlay" "aufs" "squashfs"];
+          ignore_fs = [
+            "tmpfs"
+            "devtmpfs"
+            "devfs"
+            "iso9660"
+            "overlay"
+            "aufs"
+            "squashfs"
+          ];
         };
 
         # Disk I/O metrics
-        diskio = {};
+        diskio = { };
 
         # Network metrics
         net = {
@@ -166,16 +196,24 @@ in
         };
 
         # System load
-        system = {};
+        system = { };
 
         # Process metrics
-        processes = {};
+        processes = { };
 
         # Kernel metrics
-        kernel = {};
+        kernel = { };
       };
     };
   };
 
-  networking.firewall.allowedTCPPorts = [3131 9273]; # Caddy needs this to access the web interface, and Telegraf Prometheus endpoint
+  # Make dashboards available to Grafana
+  # environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
+  # environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+
+  networking.firewall.allowedTCPPorts = [
+    3131
+    9273
+    9753
+  ]; # Grafana, Telegraf, and restic exporters
 }
