@@ -6,6 +6,197 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 <summary>Repository Structure</summary>
 
 <!-- readme-tree start -->
+```
+.
+├── .envrc
+├── .github
+│   └── workflows
+│       └── update-tree.yml
+├── .gitignore
+├── .sops.yaml
+├── README.md
+├── flake.lock
+├── flake.nix
+├── justfile
+├── machines
+│   ├── aarch64-darwin
+│   │   ├── BENGKUI
+│   │   │   ├── configuration.nix
+│   │   │   └── home.nix
+│   │   └── banana
+│   │       ├── configuration.nix
+│   │       ├── home.nix
+│   │       └── linux-builder.nix
+│   ├── aarch64-linux
+│   │   ├── nixos
+│   │   │   ├── configuration.nix
+│   │   │   ├── hardware.nix
+│   │   │   └── home.nix
+│   │   └── pi
+│   │       ├── dirty-post-install.sh
+│   │       └── home.nix
+│   ├── x86_64-darwin
+│   │   └── BASURA
+│   │       ├── configuration.nix
+│   │       └── home.nix
+│   └── x86_64-linux
+│       └── kiwi
+│           ├── backup
+│           │   ├── cleanup-snapshots.sh
+│           │   ├── create-snapshots.sh
+│           │   ├── default.nix
+│           │   └── resolve-snapshot-paths.sh
+│           ├── configuration.nix
+│           ├── disko.nix
+│           ├── hardware.nix
+│           ├── home.nix
+│           ├── mounts.nix
+│           ├── samba.nix
+│           ├── wifi.nix
+│           └── zfs.nix
+├── modules
+│   ├── common
+│   │   ├── default.nix
+│   │   └── sops.nix
+│   ├── darwin
+│   │   ├── _core.nix
+│   │   ├── apfs-snapshots.nix
+│   │   ├── default.nix
+│   │   ├── homebrew.nix
+│   │   └── nh.nix
+│   ├── home
+│   │   ├── _core.nix
+│   │   ├── default.nix
+│   │   ├── dotfiles
+│   │   │   ├── aichat
+│   │   │   │   └── config.yaml
+│   │   │   ├── default.nix
+│   │   │   ├── ghostty
+│   │   │   │   └── config
+│   │   │   ├── git
+│   │   │   │   └── config
+│   │   │   ├── karabiner
+│   │   │   │   └── karabiner.json
+│   │   │   ├── kitty
+│   │   │   │   ├── current-theme.conf
+│   │   │   │   ├── gruvbox-material-dark-hard.conf
+│   │   │   │   ├── gruvbox-material-dark-medium.conf
+│   │   │   │   ├── kanagawa.conf
+│   │   │   │   ├── kanagawa_dragon.conf
+│   │   │   │   └── kitty.conf
+│   │   │   ├── lazygit
+│   │   │   │   └── config.yml
+│   │   │   ├── nvim
+│   │   │   │   ├── .stylua.toml
+│   │   │   │   ├── init.lua
+│   │   │   │   └── lua
+│   │   │   │       ├── config
+│   │   │   │       │   ├── autocommands.lua
+│   │   │   │       │   ├── init.lua
+│   │   │   │       │   ├── keymaps.lua
+│   │   │   │       │   ├── lazy.lua
+│   │   │   │       │   └── options.lua
+│   │   │   │       ├── extra
+│   │   │   │       │   └── foldtext.lua
+│   │   │   │       └── plugins
+│   │   │   │           ├── _cmp.lua
+│   │   │   │           ├── _debug.lua
+│   │   │   │           ├── _lsp.lua
+│   │   │   │           ├── _mini.lua
+│   │   │   │           ├── ai_avante.lua
+│   │   │   │           ├── ai_codecompanion.lua
+│   │   │   │           ├── ai_llama.lua
+│   │   │   │           ├── ai_supermaven.lua
+│   │   │   │           ├── bqf.lua
+│   │   │   │           ├── colorscheme.lua
+│   │   │   │           ├── dashboard.lua
+│   │   │   │           ├── flash.lua
+│   │   │   │           ├── formatting.lua
+│   │   │   │           ├── gitsigns.lua
+│   │   │   │           ├── lualine.lua
+│   │   │   │           ├── markdown.lua
+│   │   │   │           ├── neo-tree.lua
+│   │   │   │           ├── noice.lua
+│   │   │   │           ├── scrollbar.lua
+│   │   │   │           ├── snacks.lua
+│   │   │   │           ├── telescope.lua
+│   │   │   │           ├── treesitter.lua
+│   │   │   │           ├── which-key.lua
+│   │   │   │           ├── yazi.lua
+│   │   │   │           └── z_utils.lua
+│   │   │   └── sops
+│   │   │       └── .sops.yaml
+│   │   ├── helix.nix
+│   │   ├── nvim
+│   │   │   ├── colorscheme.nix
+│   │   │   ├── default.nix
+│   │   │   ├── formatting.nix
+│   │   │   ├── gitsigns.nix
+│   │   │   ├── lsp.nix
+│   │   │   ├── lua
+│   │   │   │   └── extra
+│   │   │   │       ├── foldtext.lua
+│   │   │   │       └── persist-view.lua
+│   │   │   ├── mini.nix
+│   │   │   ├── snacks.nix
+│   │   │   ├── treesitter.nix
+│   │   │   └── which-key.nix
+│   │   ├── tmux
+│   │   │   ├── default.nix
+│   │   │   └── tmux.conf
+│   │   ├── yazi
+│   │   │   └── default.nix
+│   │   └── zsh
+│   │       ├── aliases.zsh
+│   │       ├── bat.nix
+│   │       ├── default.nix
+│   │       ├── fzf.zsh
+│   │       ├── macos
+│   │       │   └── dev.zsh
+│   │       └── p10k.zsh
+│   └── nixos
+│       ├── _core.nix
+│       ├── default.nix
+│       ├── display-manager.nix
+│       ├── docker.nix
+│       ├── escape-hatch.nix
+│       ├── grafana
+│       │   ├── dashboards
+│       │   │   ├── restic-backups.json
+│       │   │   └── system-overview.json
+│       │   └── grafana.nix
+│       ├── guacamole
+│       │   ├── default.nix
+│       │   └── user-mapping.xml.sops
+│       ├── hackrf.nix
+│       ├── immich.nix
+│       └── tailscale.nix
+├── packages
+│   ├── default.nix
+│   └── scripts
+│       ├── _completions
+│       │   ├── _ntfy
+│       │   ├── _push
+│       │   ├── _t
+│       │   └── _vm
+│       ├── all
+│       │   ├── ntfy
+│       │   ├── push
+│       │   └── t
+│       ├── darwin
+│       │   ├── decrypt
+│       │   ├── encrypt
+│       │   └── vm
+│       ├── default.nix
+│       └── install.sh
+├── secrets
+│   ├── keys.sh
+│   ├── new.sh
+│   └── secrets.yaml
+└── tree.bak
+
+49 directories, 138 files
+```
 <!-- readme-tree end -->
 
 </details>
