@@ -40,7 +40,7 @@
 
     # Opencode from upstream
     opencode = {
-      url = "github:sst/opencode/v0.2.27";
+      url = "github:sst/opencode/v0.2.33";
       flake = false;
     };
 
@@ -87,16 +87,17 @@
         # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
         zig = inputs.zig.packages.${prev.system}.master;
         opencode = prev.opencode.overrideAttrs (old: {
-          version = "0.2.27";
+          version = "0.2.33";
           src = inputs.opencode;
           node_modules = old.node_modules.overrideAttrs (nmOld: {
             outputHash =
               if prev.system == "aarch64-darwin" then "sha256-uk8HQfHCKTAW54rNHZ1Rr0piZzeJdx6i4o0+xKjfFZs="
               else if prev.system == "x86_64-linux" then "sha256-1ZxetDrrRdNNOfDOW2uMwMwpEs5S3BLF+SejWcRdtik="
+              else if prev.system == "aarch64-linux" then "sha256-gDQh8gfFKl0rAujtos1XsCUnxC2Vjyq9xH5FLZoNW5s="
               else throw "Unsupported system for opencode: ${prev.system}";
           });
           tui = old.tui.overrideAttrs (tuiOld: {
-            vendorHash = "sha256-5PG81ca/MPLdYbiQu6tj7DL+4HSEgHpwi4zekOnbf/c=";
+            vendorHash = "sha256-0vf4fOk32BLF9/904W8g+5m0vpe6i6tUFRXqDHVcMIQ=";
           });
         });
       })
