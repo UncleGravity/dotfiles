@@ -1,0 +1,29 @@
+name: Update Repository Structure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tree:
+    runs-on: ubuntu-latest
+    name: readme-tree
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tree
+        uses: RavelloH/readme-tree@latest
+        with:
+          ignoregit: 'yes'
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update repository structure in README"
+          git push || (echo "Push failed" && exit 1)
