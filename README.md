@@ -2,6 +2,14 @@
 
 NOTE: Incomplete readme, please refer to the flake.nix for now to understand how this all works.
 
+<details>
+<summary>Repository Structure</summary>
+
+<!-- readme-tree start -->
+<!-- readme-tree end -->
+
+</details>
+
 ## Nixos Rebuild
 
 ### First time:
@@ -51,7 +59,7 @@ Requirement: configure iCloud for clipboard sharing.
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
-   > 💡 You will need to explicitly say `no` when prompted to install Determinate Nix
+   > 💡 You will need to explicitly say `no` when prompted to install Determinate Nix. We want _upstream_ Nix.
 
    > 💡 If you get an error about `Nix build user group`, run the following:
    ```bash
