@@ -14,9 +14,10 @@ system_type := `
 `
 
 # Rebuild the system configuration
-sync:
+sync: nixpkgs-status
     #!/usr/bin/env bash
     echo "🔄 Rebuilding system configuration for host: $(hostname) on platform: {{system_type}}..."
+
     case "{{system_type}}" in
         "nixos")
             HOSTNAME=$(hostname)
@@ -180,6 +181,14 @@ deploy host:
 
     echo "✅ Experimental deployment for '{{host}}' completed successfully!"
     echo "ℹ️  Remote flake directory is located at: {{host}}:$REMOTE_PATH"
+
+# Check nixpkgs version status
+nixpkgs-status:
+    #!/usr/bin/env bash
+    LAST_MODIFIED=$(jq -r '.nodes.nixpkgs.locked.lastModified' flake.lock 2>/dev/null || echo "unknown")
+    CURRENT_TIME=$(date +%s)
+    DAYS_AGO=$(( (CURRENT_TIME - LAST_MODIFIED) / 86400 ))
+    echo "📦 nixpkgs last updated: $DAYS_AGO days ago"
 
 # Display available commands
 help:
