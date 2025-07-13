@@ -254,15 +254,15 @@
     };
 
     # Home Manager Configurations
-    homeConfigurations = {
-      # Raspberry Pi (home-manager only)
-      pi = mkHomeManagerSystem {
-        system = systems.aarch64-linux;
-        pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
-        username = "pi";
-        homeStateVersion = "24.05";
-      };
-    };
+    # homeConfigurations = {
+    #   # Raspberry Pi (home-manager only)
+    #   pi = mkHomeManagerSystem {
+    #     system = systems.aarch64-linux;
+    #     pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
+    #     username = "pi";
+    #     homeStateVersion = "24.05";
+    #   };
+    # };
 
     # Packages
     packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
@@ -284,6 +284,7 @@
           nix-tree
           statix
           vulnix
+          omnix
           # self.packages.${system}.scripts  # Your scripts available in dev shell
         ];
 

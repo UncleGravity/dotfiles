@@ -1,0 +1,79 @@
+name: "Update flake.lock"
+
+on:
+  workflow_dispatch: # allows manual triggering
+  # schedule:
+  #   - cron: "0 0 * * 0" # runs weekly on Sunday at 00:00
+
+jobs:
+  update-flake-lock:
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - name: Check flake inputs
+        uses: DeterminateSystems/flake-checker-action@main
+        with:
+          # fail-mode: false
+          # check-outdated: true
+          # check-supported: false
+          send-statistics: false
+
+      # - name: Update flake.lock
+      #   uses: DeterminateSystems/update-flake-lock@main
+      #   with:
+      #     pr-title: "chore: update Nix flake inputs"
+      #     pr-labels: |
+      #       dependencies
+      #       automated
+
+      - name: Update flake
+        run: nix flake update
+
+      - name: Verify flake after update
+        run: nix flake check
+
+      - name: Build all flake outputs?
+        uses: nixbuild/nixbuild-action@v19
+        with:
+          nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
+      - run: nix flake update
+      - run: nix flake check
+      - run: nix run --verbose nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push ${{ secrets.CACHIX_CACHE }}
+
+      # -----------------------------------------------------------
+      # Notifications
+      - name: Notify success
+        if: success()
+        uses: niniyas/ntfy-action@master
+        with:
+          url: "https://ntfy.sh"
+          topic: ${{ secrets.NTFY_TOPIC }}
+          priority: 4
+          tags: +1,partying_face,tree,success
+          title: "Repository Structure Updated"
+          details: "The repository structure update workflow completed successfully!"
+
+      - name: Notify failure
+        if: failure()
+        uses: niniyas/ntfy-action@master
+        with:
+          url: "https://ntfy.sh"
+          topic: ${{ secrets.NTFY_TOPIC }}
+          priority: urgent
+          tags: x,warning,tree,failed
+          title: "Repository Structure Update Failed"
+          details: "The repository structure update workflow failed!"
