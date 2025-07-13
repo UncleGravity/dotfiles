@@ -1,29 +1,60 @@
 name: Update Repository Structure
 
+# Triggers: Manual dispatch only
 on:
   workflow_dispatch:
 
+# Permissions: Write access to commit changes
 permissions:
   contents: write
+
+# Environment: NTFY topic
+env:
+  NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
 
 jobs:
   tree:
     runs-on: ubuntu-latest
     name: readme-tree
     steps:
+      # Checkout Repo
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      # Generate Repo Tree, save to README
       - name: Tree
         uses: RavelloH/readme-tree@latest
         with:
-          ignoregit: 'yes'
+          ignoregit: "yes"
+
+      # Commit / Push
       - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "Update repository structure in README"
-          git push || (echo "Push failed" && exit 1)
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "Update repository structure in README"
+          commit_user_name: "GitHub Action"
+          commit_user_email: "action@github.com"
+
+      # Notifications
+      - name: Notify success
+        if: success()
+        uses: niniyas/ntfy-action@master
+        with:
+          url: "https://ntfy.sh"
+          topic: ${{ secrets.NTFY_TOPIC }}
+          priority: 4
+          tags: +1,partying_face,tree,success
+          title: "Repository Structure Updated"
+          details: "The repository structure update workflow completed successfully!"
+
+      - name: Notify failure
+        if: failure()
+        uses: niniyas/ntfy-action@master
+        with:
+          url: "https://ntfy.sh"
+          topic: ${{ secrets.NTFY_TOPIC }}
+          priority: urgent
+          tags: x,warning,tree,failed
+          title: "Repository Structure Update Failed"
+          details: "The repository structure update workflow failed!"
