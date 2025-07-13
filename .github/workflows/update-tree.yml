@@ -32,9 +32,9 @@ jobs:
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          commit_message: "Update repository structure in README"
-          commit_user_name: "GitHub Action"
-          commit_user_email: "action@github.com"
+          commit_message: "README Repo Tree Updated"
+          # commit_user_name: "GitHub Action"
+          # commit_user_email: "action@github.com"
 
       # Notifications
       - name: Notify success
