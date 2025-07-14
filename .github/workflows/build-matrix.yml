@@ -6,6 +6,10 @@ on:
   #   branches: [main]
   workflow_dispatch:
 
+# Write access to commit changes
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -33,8 +37,14 @@ jobs:
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
       - name: Test
         run: 'echo "System: ${{ matrix.system }}, Runner: ${{ matrix.runner }}"'
 
-      # - name: Build packages
-      #   run: nix run nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push mycache
+      - name: Build packages
+        run: nix run nixpkgs#omnix -- ci run . --include-all-dependencies --systems ${{ matrix.system }}
+        # run: nix run nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push mycache
+        # run: nix build -L .#darwinConfigurations.banana.system
+
+      - name: Cachix Push
+        run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
