@@ -6,9 +6,10 @@ on:
   #   branches: [main]
   workflow_dispatch:
 
-# Write access to commit changes
+# Write access to commit changes and create pull requests
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-flake:
