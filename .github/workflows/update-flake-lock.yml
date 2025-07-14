@@ -56,9 +56,10 @@ jobs:
         uses: nixbuild/nixbuild-action@v19
         with:
           nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
+
       - run: nix flake update
       - run: nix flake check
-      - run: nix run --verbose nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push ${{ secrets.CACHIX_CACHE }}
+      - run: nix run nixpkgs#omnix -- ci run --include-all-dependencies --systems github:nix-systems/default | xargs cachix push ${{ secrets.CACHIX_CACHE }}
 
       # -----------------------------------------------------------
       # Notifications
