@@ -41,12 +41,13 @@ runs:
         fi
 
         if [ -z "$MESSAGE" ]; then
-          MESSAGE="${{ github.workflow }} completed successfully! View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="${{ github.workflow }} completed successfully!"
         fi
 
         curl -H "Title: $TITLE" \
           -H "Priority: 4" \
           -H "Tags: white_check_mark" \
+          -H "Actions: view, Open Job, ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}, clear=true" \
           -d "$MESSAGE" \
           "${{ inputs.url }}/${{ inputs.topic }}"
 
@@ -63,11 +64,12 @@ runs:
         fi
 
         if [ -z "$MESSAGE" ]; then
-          MESSAGE="${{ github.workflow }} failed! View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="${{ github.workflow }} failed!"
         fi
 
         curl -H "Title: $TITLE" \
           -H "Priority: 5" \
           -H "Tags: x" \
+          -H "Actions: view, Open Job, ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}, clear=true" \
           -d "$MESSAGE" \
           "${{ inputs.url }}/${{ inputs.topic }}"
