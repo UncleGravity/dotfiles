@@ -25,11 +25,12 @@ runs:
       run: |
         if [ "${{ job.status }}" = "success" ]; then
           TITLE="[Github] Action Success"
-          PRIORITY="4"
+          PRIORITY="1"
           TAGS="white_check_mark"
           MESSAGE="${{ github.workflow }} - ${{ matrix.system || 'build' }} successful
         Repo: ${{ github.repository }}
         Commit: ${{ github.sha }}"
+
           else
           TITLE="[Github] Action Failure"
           PRIORITY="5"
