@@ -1,0 +1,42 @@
+name: "Build Matrix"
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        system: [aarch64-linux, x86_64-linux, aarch64-darwin, x86_64-darwin]
+        include:
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - system: x86_64-linux
+            runner: ubuntu-latest
+          - system: aarch64-darwin
+            runner: macos-latest
+          # - system: x86_64-darwin
+          #   runner: macos-13
+    runs-on: ${{ matrix.runner }}
+    name: "Build ${{ matrix.system }}"
+    steps:
+      - uses: ./.github/actions/ntfy-notify # NTFY
+        if: always()
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+      - uses: actions/checkout@v4 # Checkout
+      - uses: ./.github/actions/free-up-space # Free up space
+      - uses: DeterminateSystems/nix-installer-action@main # Install Nix
+      - uses: cachix/cachix-action@v15 # Setup Cachix
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      - name: Test
+        run: 'echo "System: ${{ matrix.system }}, Runner: ${{ matrix.runner }}"'
+
+      # - name: Build packages
+      #   run: nix run nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push mycache

@@ -17,6 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     name: readme-tree
     steps:
+      # Notifications
+      - uses: ./.github/actions/ntfy-notify
+        if: always()
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+
       # Checkout Repo
       - uses: actions/checkout@v4
         with:
@@ -35,26 +41,3 @@ jobs:
           commit_message: "README Repo Tree Updated"
           # commit_user_name: "GitHub Action"
           # commit_user_email: "action@github.com"
-
-      # Notifications
-      - name: Notify success
-        if: success()
-        uses: niniyas/ntfy-action@master
-        with:
-          url: "https://ntfy.sh"
-          topic: ${{ secrets.NTFY_TOPIC }}
-          priority: 4
-          tags: +1,partying_face,tree,success
-          title: "Repository Structure Updated"
-          details: "The repository structure update workflow completed successfully!"
-
-      - name: Notify failure
-        if: failure()
-        uses: niniyas/ntfy-action@master
-        with:
-          url: "https://ntfy.sh"
-          topic: ${{ secrets.NTFY_TOPIC }}
-          priority: urgent
-          tags: x,warning,tree,failed
-          title: "Repository Structure Update Failed"
-          details: "The repository structure update workflow failed!"

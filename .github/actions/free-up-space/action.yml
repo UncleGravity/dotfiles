@@ -1,0 +1,42 @@
+name: "Free Up Space"
+description: "Free up disk space on GitHub Actions runners across different operating systems"
+inputs:
+  hatchet-protocol:
+    description: "Protocol for Linux space cleanup (holster, carve, cleave, rampage)"
+    required: false
+    default: "holster"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Free up space (Linux)
+      if: runner.os == 'Linux'
+      uses: wimpysworld/nothing-but-nix@main
+      with:
+        hatchet-protocol: ${{ inputs.hatchet-protocol }}
+
+    - name: Reclaim space (Darwin)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        echo "::group::disk space (before)"
+        sudo df -h
+        echo "::endgroup::"
+
+        echo "::group::disable mds"
+        sudo mdutil -i off -a || echo "mdutil failed"
+        sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist \
+          || echo "launchctl unload failed"
+        echo "::endgroup::"
+
+        echo "Background space expansion started. /nix will grow as space becomes available."
+        sudo rm -rf \
+          /Applications/Xcode_* \
+          /Library/Developer/CoreSimulator \
+          /Library/Frameworks \
+          /Users/runner/.dotnet \
+          /Users/runner/.rustup \
+          /Users/runner/Library/Android \
+          /Users/runner/Library/Caches \
+          /Users/runner/Library/Developer/CoreSimulator \
+          /Users/runner/hostedtoolcache &
