@@ -1,0 +1,49 @@
+name: "NTFY Notify"
+description: "Send notifications via NTFY for job success or failure"
+inputs:
+  topic:
+    description: "NTFY topic to send notifications to"
+    required: true
+  url:
+    description: "NTFY server URL"
+    required: false
+    default: "https://ntfy.sh"
+  success-title:
+    description: "Title for success notifications (defaults to workflow name + ' Successful')"
+    required: false
+    default: ""
+  success-message:
+    description: "Message for success notifications (defaults to workflow name + ' completed successfully!')"
+    required: false
+    default: ""
+  failure-title:
+    description: "Title for failure notifications (defaults to workflow name + ' Failed')"
+    required: false
+    default: ""
+  failure-message:
+    description: "Message for failure notifications (defaults to workflow name + ' failed!')"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Notify success
+      if: success()
+      uses: niniyas/ntfy-action@master
+      with:
+        url: ${{ inputs.url }}
+        topic: ${{ inputs.topic }}
+        priority: 4
+        title: ${{ inputs.success-title || format('{0} Successful', github.workflow) }}
+        details: ${{ inputs.success-message || format('{0} completed successfully!', github.workflow) }}
+
+    - name: Notify failure
+      if: failure()
+      uses: niniyas/ntfy-action@master
+      with:
+        url: ${{ inputs.url }}
+        topic: ${{ inputs.topic }}
+        priority: urgent
+        title: ${{ inputs.failure-title || format('{0} Failed', github.workflow) }}
+        details: ${{ inputs.failure-message || format('{0} failed!', github.workflow) }}
