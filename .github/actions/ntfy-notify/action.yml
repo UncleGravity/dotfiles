@@ -8,68 +8,42 @@ inputs:
     description: "NTFY server URL"
     required: false
     default: "https://ntfy.sh"
-  success-title:
-    description: "Title for success notifications (defaults to workflow name + ' Successful')"
+  runs-on:
+    description: "When to send notifications: success, failure, or both"
     required: false
-    default: ""
-  success-message:
-    description: "Message for success notifications (defaults to workflow name + ' completed successfully!')"
-    required: false
-    default: ""
-  failure-title:
-    description: "Title for failure notifications (defaults to workflow name + ' Failed')"
-    required: false
-    default: ""
-  failure-message:
-    description: "Message for failure notifications (defaults to workflow name + ' failed!')"
-    required: false
-    default: ""
+    default: "both"
 
 runs:
   using: "composite"
   steps:
-    - name: Notify success
-      if: job.status == 'success'
+    - name: Send notification
+      if: |
+        (inputs.runs-on == 'both') ||
+        (inputs.runs-on == 'success' && job.status == 'success') ||
+        (inputs.runs-on == 'failure' && job.status == 'failure')
       shell: bash
       run: |
-        TITLE="${{ inputs.success-title }}"
-        MESSAGE="${{ inputs.success-message }}"
-
-        # Use defaults if not provided
-        if [ -z "$TITLE" ]; then
-          TITLE="${{ github.workflow }} Successful"
-        fi
-
-        if [ -z "$MESSAGE" ]; then
-          MESSAGE="${{ github.workflow }} completed successfully!"
+        if [ "${{ job.status }}" = "success" ]; then
+          TITLE="[Github] Action Success"
+          PRIORITY="4"
+          TAGS="white_check_mark"
+          MESSAGE="${{ github.workflow }} - ${{ matrix.system || 'build' }} successful
+                    Repo: ${{ github.repository }}
+                    Commit: ${{ github.sha }}
+                    Status: ${{ job.status }}"
+        else
+          TITLE="[Github] Action Failure"
+          PRIORITY="5"
+          TAGS="x"
+          MESSAGE="${{ github.workflow }} - ${{ matrix.system || 'build' }} failed
+                    Repo: ${{ github.repository }}
+                    Commit: ${{ github.sha }}
+                    Status: ${{ job.status }}"
         fi
 
         curl -H "Title: $TITLE" \
-          -H "Priority: 4" \
-          -H "Tags: white_check_mark" \
-          -H "Actions: view, Open Job, ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}, clear=true" \
-          -d "$MESSAGE" \
-          "${{ inputs.url }}/${{ inputs.topic }}"
-
-    - name: Notify failure
-      if: job.status == 'failure'
-      shell: bash
-      run: |
-        TITLE="${{ inputs.failure-title }}"
-        MESSAGE="${{ inputs.failure-message }}"
-
-        # Use defaults if not provided
-        if [ -z "$TITLE" ]; then
-          TITLE="${{ github.workflow }} Failed"
-        fi
-
-        if [ -z "$MESSAGE" ]; then
-          MESSAGE="${{ github.workflow }} failed!"
-        fi
-
-        curl -H "Title: $TITLE" \
-          -H "Priority: 5" \
-          -H "Tags: x" \
+          -H "Priority: $PRIORITY" \
+          -H "Tags: $TAGS" \
           -H "Actions: view, Open Job, ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}, clear=true" \
           -d "$MESSAGE" \
           "${{ inputs.url }}/${{ inputs.topic }}"

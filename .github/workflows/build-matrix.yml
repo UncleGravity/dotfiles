@@ -55,5 +55,4 @@ jobs:
         if: always()
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
-          success-title: "[Github] - ${{ matrix.system }}"
-          failure-title: "[Github] - ${{ matrix.system }}"
+          runs-on: both
