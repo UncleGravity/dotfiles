@@ -86,7 +86,7 @@ list-generations:
             sudo nix-env -p /nix/var/nix/profiles/system --list-generations
             ;;
         "darwin")
-            nix-store --gc --print-roots | grep darwin-system
+            sudo darwin-rebuild --list-generations
             ;;
         "home-manager")
             nix-store --gc --print-roots | grep home-manager-generation
