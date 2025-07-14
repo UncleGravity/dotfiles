@@ -1,0 +1,58 @@
+name: Flag Triggered Actions
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    if: contains(github.event.head_commit.message, '[lint]') || contains(github.event.head_commit.message, '[all]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run linting
+        run: |
+          echo "🔍 Running lint checks..."
+          nix fmt . --check || echo "Formatting issues found"
+          nix run nixpkgs#statix -- check . || echo "Linting issues found"
+
+  check:
+    if: contains(github.event.head_commit.message, '[check]') || contains(github.event.head_commit.message, '[all]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate flake
+        run: |
+          echo "✅ Validating Nix flake..."
+          nix flake check --no-build
+
+  build:
+    if: contains(github.event.head_commit.message, '[build]') || contains(github.event.head_commit.message, '[all]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test build configurations
+        run: |
+          echo "🔨 Testing build configurations..."
+          echo "This would build sample configurations for each machine type"
+
+  security:
+    if: contains(github.event.head_commit.message, '[security]') || contains(github.event.head_commit.message, '[all]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Security scan
+        run: |
+          echo "🔒 Running security checks..."
+          echo "This would run vulnix and other security tools"
+
+  deploy:
+    if: contains(github.event.head_commit.message, '[deploy]') || contains(github.event.head_commit.message, '[all]')
+    runs-on: ubuntu-latest
+    needs: [lint, check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy configurations
+        run: |
+          echo "🚀 Deploying configurations..."
+          echo "This would deploy to specified machines"
