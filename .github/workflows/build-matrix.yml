@@ -1,9 +1,9 @@
 name: "Build Matrix"
 
 on:
-  pull_request:
-  push:
-    branches: [main]
+  # pull_request:
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        system: [aarch64-linux, x86_64-linux, aarch64-darwin, x86_64-darwin]
+        system: [aarch64-linux, x86_64-linux, aarch64-darwin]
         include:
           - system: aarch64-linux
             runner: ubuntu-24.04-arm
@@ -19,8 +19,6 @@ jobs:
             runner: ubuntu-latest
           - system: aarch64-darwin
             runner: macos-latest
-          # - system: x86_64-darwin
-          #   runner: macos-13
     runs-on: ${{ matrix.runner }}
     name: "Build ${{ matrix.system }}"
     steps:
