@@ -17,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     name: readme-tree
     steps:
+      # Checkout Repo
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
       # Notifications
       - uses: ./.github/actions/ntfy-notify
         if: always()
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
-
-      # Checkout Repo
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       # Generate Repo Tree, save to README
       - name: Tree
