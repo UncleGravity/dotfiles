@@ -27,10 +27,6 @@ jobs:
     name: "Build ${{ matrix.system }}"
     steps:
       - uses: actions/checkout@v4 # Checkout
-      - uses: ./.github/actions/ntfy-notify # NTFY
-        if: always()
-        with:
-          topic: ${{ secrets.NTFY_TOPIC }}
       - uses: ./.github/actions/free-up-space # Free up space
       - uses: DeterminateSystems/nix-installer-action@main # Install Nix
       - uses: cachix/cachix-action@v15 # Setup Cachix
@@ -39,12 +35,20 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Test
-        run: 'echo "System: ${{ matrix.system }}, Runner: ${{ matrix.runner }}"'
+        run: echo "Testing ${{ matrix.system }}"
 
-      - name: Build packages
-        run: nix run nixpkgs#omnix -- ci run . --include-all-dependencies --systems ${{ matrix.system }}
-        # run: nix run nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push mycache
-        # run: nix build -L .#darwinConfigurations.banana.system
+      # - name: Build packages
+      #   run: nix run nixpkgs#omnix -- ci run . --include-all-dependencies --systems ${{ matrix.system }}
+      #   # run: nix run nixpkgs#omnix -- ci run --include-all-dependencies | xargs cachix push mycache
+      #   # run: nix build -L .#darwinConfigurations.banana.system
 
-      - name: Cachix Push
-        run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
+      # - name: Push build to Cachix
+      #   run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
+
+      - name: Notify build result
+        uses: ./.github/actions/ntfy-notify
+        if: always()
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          success-title: "Build Successful - ${{ matrix.system }}"
+          failure-title: "Build Failed - ${{ matrix.system }}"
