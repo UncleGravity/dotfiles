@@ -29,16 +29,14 @@ runs:
           TAGS="white_check_mark"
           MESSAGE="${{ github.workflow }} - ${{ matrix.system || 'build' }} successful
         Repo: ${{ github.repository }}
-        Commit: ${{ github.sha }}
-        Status: ${{ job.status }}"
+        Commit: ${{ github.sha }}"
           else
           TITLE="[Github] Action Failure"
           PRIORITY="5"
           TAGS="x"
           MESSAGE="${{ github.workflow }} - ${{ matrix.system || 'build' }} failed
         Repo: ${{ github.repository }}
-        Commit: ${{ github.sha }}
-        Status: ${{ job.status }}"
+        Commit: ${{ github.sha }}"
         fi
 
         curl -H "Title: $TITLE" \
