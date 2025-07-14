@@ -40,3 +40,7 @@ runs:
           /Users/runner/Library/Caches \
           /Users/runner/Library/Developer/CoreSimulator \
           /Users/runner/hostedtoolcache &
+
+        echo "::group::disk space (after)"
+        sudo df -h
+        echo "::endgroup::"
