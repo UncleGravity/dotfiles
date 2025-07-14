@@ -48,6 +48,7 @@ alias df="duf --hide-mp '/dev, *ystem*, /private*, /nix*'"
 
 alias ts="tailscale"
 alias j="just"
+alias oc="bunx opencode-ai@latest"
 # export NVIM_APPNAME=lazyvim
 # export NVIM_APPNAME=my-nvim
 # alias nvim="NVIM_APPNAME=lazyvim nvim"
