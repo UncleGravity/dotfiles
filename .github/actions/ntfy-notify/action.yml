@@ -30,20 +30,44 @@ runs:
   steps:
     - name: Notify success
       if: success()
-      uses: niniyas/ntfy-action@master
-      with:
-        url: ${{ inputs.url }}
-        topic: ${{ inputs.topic }}
-        priority: 4
-        title: ${{ inputs.success-title || format('{0} Successful', github.workflow) }}
-        details: ${{ inputs.success-message || format('{0} completed successfully!', github.workflow) }}
+      shell: bash
+      run: |
+        TITLE="${{ inputs.success-title }}"
+        MESSAGE="${{ inputs.success-message }}"
+
+        # Use defaults if not provided
+        if [ -z "$TITLE" ]; then
+          TITLE="${{ github.workflow }} Successful"
+        fi
+
+        if [ -z "$MESSAGE" ]; then
+          MESSAGE="${{ github.workflow }} completed successfully! View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        fi
+
+        curl -H "Title: $TITLE" \
+          -H "Priority: 4" \
+          -H "Tags: white_check_mark" \
+          -d "$MESSAGE" \
+          "${{ inputs.url }}/${{ inputs.topic }}"
 
     - name: Notify failure
       if: failure()
-      uses: niniyas/ntfy-action@master
-      with:
-        url: ${{ inputs.url }}
-        topic: ${{ inputs.topic }}
-        priority: urgent
-        title: ${{ inputs.failure-title || format('{0} Failed', github.workflow) }}
-        details: ${{ inputs.failure-message || format('{0} failed!', github.workflow) }}
+      shell: bash
+      run: |
+        TITLE="${{ inputs.failure-title }}"
+        MESSAGE="${{ inputs.failure-message }}"
+
+        # Use defaults if not provided
+        if [ -z "$TITLE" ]; then
+          TITLE="${{ github.workflow }} Failed"
+        fi
+
+        if [ -z "$MESSAGE" ]; then
+          MESSAGE="${{ github.workflow }} failed! View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        fi
+
+        curl -H "Title: $TITLE" \
+          -H "Priority: 5" \
+          -H "Tags: x" \
+          -d "$MESSAGE" \
+          "${{ inputs.url }}/${{ inputs.topic }}"
