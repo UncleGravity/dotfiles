@@ -32,12 +32,12 @@ jobs:
             git add flake.lock
             git commit -m "chore: update flake.lock"
           fi
-      - name: Upload updated repository
+      - name: Upload updated flake.lock
         if: steps.update.outputs.updated == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: updated-repo
-          path: .
+          name: updated-flake-lock
+          path: flake.lock
 
   build:
     needs: update-flake
@@ -56,10 +56,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: "Build ${{ matrix.system }}"
     steps:
-      - name: Download updated repository
+      - uses: actions/checkout@v4
+      - name: Download updated flake.lock
         uses: actions/download-artifact@v4
         with:
-          name: updated-repo
+          name: updated-flake-lock
           path: .
       - uses: ./.github/actions/free-up-space # Free up space
       - uses: DeterminateSystems/nix-installer-action@main # Install Nix
@@ -84,10 +85,11 @@ jobs:
     runs-on: ubuntu-latest
     name: "Create Pull Request"
     steps:
-      - name: Download updated repository
+      - uses: actions/checkout@v4
+      - name: Download updated flake.lock
         uses: actions/download-artifact@v4
         with:
-          name: updated-repo
+          name: updated-flake-lock
           path: .
       - name: Create Pull Request with updated flake.lock
         id: create-pr
