@@ -29,7 +29,7 @@ runs:
   using: "composite"
   steps:
     - name: Notify success
-      if: success()
+      if: job.status == 'success'
       shell: bash
       run: |
         TITLE="${{ inputs.success-title }}"
@@ -52,7 +52,7 @@ runs:
           "${{ inputs.url }}/${{ inputs.topic }}"
 
     - name: Notify failure
-      if: failure()
+      if: job.status == 'failure'
       shell: bash
       run: |
         TITLE="${{ inputs.failure-title }}"
