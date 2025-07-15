@@ -39,10 +39,10 @@
     # Overlays
 
     # Opencode from upstream
-    opencode = {
-      url = "github:sst/opencode/v0.2.33";
-      flake = false;
-    };
+    # opencode = {
+    #   url = "github:sst/opencode/v0.3.2";
+    #   flake = false;
+    # };
 
     # Zig nightly
     zig = {
@@ -86,20 +86,20 @@
       (final: prev: {
         # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
         zig = inputs.zig.packages.${prev.system}.master;
-        opencode = prev.opencode.overrideAttrs (old: {
-          version = "0.2.33";
-          src = inputs.opencode;
-          node_modules = old.node_modules.overrideAttrs (nmOld: {
-            outputHash =
-              if prev.system == "aarch64-darwin" then "sha256-uk8HQfHCKTAW54rNHZ1Rr0piZzeJdx6i4o0+xKjfFZs="
-              else if prev.system == "x86_64-linux" then "sha256-1ZxetDrrRdNNOfDOW2uMwMwpEs5S3BLF+SejWcRdtik="
-              else if prev.system == "aarch64-linux" then "sha256-gDQh8gfFKl0rAujtos1XsCUnxC2Vjyq9xH5FLZoNW5s="
-              else throw "Unsupported system for opencode: ${prev.system}";
-          });
-          tui = old.tui.overrideAttrs (tuiOld: {
-            vendorHash = "sha256-0vf4fOk32BLF9/904W8g+5m0vpe6i6tUFRXqDHVcMIQ=";
-          });
-        });
+        # opencode = prev.opencode.overrideAttrs (old: {
+        #   version = "0.3.2";
+        #   src = inputs.opencode;
+        #   node_modules = old.node_modules.overrideAttrs (nmOld: {
+        #     outputHash =
+        #       if prev.system == "aarch64-darwin" then "sha256-uk8HQfHCKTAW54rNHZ1Rr0piZzeJdx6i4o0+xKjfFZs="
+        #       else if prev.system == "x86_64-linux" then "sha256-1ZxetDrrRdNNOfDOW2uMwMwpEs5S3BLF+SejWcRdtik="
+        #       else if prev.system == "aarch64-linux" then "sha256-gDQh8gfFKl0rAujtos1XsCUnxC2Vjyq9xH5FLZoNW5s="
+        #       else throw "Unsupported system for opencode: ${prev.system}";
+        #   });
+        #   tui = old.tui.overrideAttrs (tuiOld: {
+        #     vendorHash = "sha256-0vf4fOk32BLF9/904W8g+5m0vpe6i6tUFRXqDHVcMIQ=";
+        #   });
+        # });
       })
     ];
 
@@ -111,9 +111,7 @@
     }: {
       home-manager = {
         extraSpecialArgs = {
-          inherit inputs self;
-          inherit username;
-          inherit homeStateVersion;
+          inherit inputs self username homeStateVersion;
         };
         useGlobalPkgs = true;
         useUserPackages = true;
@@ -162,8 +160,7 @@
       darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
-          inherit inputs self;
-          inherit username hostname systemStateVersion homeStateVersion;
+          inherit inputs self username hostname systemStateVersion homeStateVersion;
         };
         modules = [
           ./modules/darwin
@@ -192,8 +189,7 @@
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
-          inherit inputs;
-          inherit username homeStateVersion;
+          inherit inputs username homeStateVersion;
         };
         modules = [
           ./machines/${system}/${username}/home.nix
