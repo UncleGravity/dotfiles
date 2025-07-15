@@ -8,9 +8,7 @@
 in {
   #TODO: Load secret ENVIRONMENT variables from sops-nix
 
-  imports = [
-    ./bat.nix
-  ];
+  imports = [];
 
   options.my.zsh.enable = lib.mkEnableOption "Enable Nix-managed zsh configuration";
 
