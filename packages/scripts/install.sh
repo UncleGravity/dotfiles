@@ -15,7 +15,7 @@ if [ -d all ]; then
 fi
 
 # Install Darwin only scripts
-if [ -d darwin ] && [[ "$system" == *"darwin"* ]]; then
+if [ -d darwin ] && [[ $system == *"darwin"* ]]; then
   for script in darwin/*; do
     if [ -f "$script" ]; then
       install -Dm755 "$script" "$out/bin/$(basename "$script")"
@@ -24,7 +24,7 @@ if [ -d darwin ] && [[ "$system" == *"darwin"* ]]; then
 fi
 
 # Install Linux only scripts
-if [ -d linux ] && [[ "$system" == *"linux"* ]]; then
+if [ -d linux ] && [[ $system == *"linux"* ]]; then
   for script in linux/*; do
     if [ -f "$script" ]; then
       install -Dm755 "$script" "$out/bin/$(basename "$script")"
@@ -49,4 +49,4 @@ if [ -d backup ]; then
       install -Dm644 "$file" "$out/share/scripts/backup/$(basename "$file")"
     fi
   done
-fi 
+fi
