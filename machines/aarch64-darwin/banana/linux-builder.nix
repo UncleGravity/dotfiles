@@ -16,16 +16,16 @@
     ephemeral = true;
     # systems = ["x86_64-linux" "aarch64-linux"];
     # config.boot.binfmt.emulatedSystems = ["x86_64-linux"];
-    maxJobs = 4;
+    # maxJobs = 4;
     config = {
       # environment.systemPackages = [pkgs.git pkgs.neovim];
       virtualisation = {
         darwin-builder = {
           # hostPort = 22;
           diskSize = 40 * 1024; # 40GB
-          memorySize = 8 * 1024; # 8GB
+          memorySize = 16 * 1024; # 8GB
         };
-        cores = 6;
+        cores = 4;
       };
     };
   };
