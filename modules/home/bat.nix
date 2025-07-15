@@ -1,4 +1,9 @@
-{config, lib, pkgs, ...}: let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   bat = "${pkgs.bat}/bin/bat";
 in {
   programs.bat.enable = true;
