@@ -1,5 +1,6 @@
 {
   imports = [
+    ./aichat.nix
     ./bat.nix
     ./dotfiles
     ./helix.nix
