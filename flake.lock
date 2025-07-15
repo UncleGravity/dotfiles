@@ -259,23 +259,6 @@
         "type": "github"
       }
     },
-    "opencode": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752282579,
-        "narHash": "sha256-l/V9YHwuIPN73ieMT++enL1O5vecA9L0qBDGr8eRVxY=",
-        "owner": "sst",
-        "repo": "opencode",
-        "rev": "1254f4813553077509cc74d9e40b3df4181afd37",
-        "type": "github"
-      },
-      "original": {
-        "owner": "sst",
-        "ref": "v0.2.33",
-        "repo": "opencode",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -285,7 +268,6 @@
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
-        "opencode": "opencode",
         "sops-nix": "sops-nix",
         "tmux-tokyo-night": "tmux-tokyo-night",
         "tmux-vim-navigator": "tmux-vim-navigator",
