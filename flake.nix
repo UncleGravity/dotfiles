@@ -184,24 +184,23 @@
           }
         ];
       };
-
-    mkHomeManagerSystem = {
-      system,
-      pkgs,
-      username,
-      homeStateVersion,
-    }:
-      home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = {
-          inherit inputs username homeStateVersion;
-        };
-        modules = [
-          ./machines/${system}/${username}/home.nix
-          inputs.nixvim.homeManagerModules.nixvim
-          ./modules/home
-        ];
-      };
+    # mkHomeManagerSystem = {
+    #   system,
+    #   pkgs,
+    #   username,
+    #   homeStateVersion,
+    # }:
+    #   home-manager.lib.homeManagerConfiguration {
+    #     inherit pkgs;
+    #     extraSpecialArgs = {
+    #       inherit inputs username homeStateVersion;
+    #     };
+    #     modules = [
+    #       ./machines/${system}/${username}/home.nix
+    #       inputs.nixvim.homeManagerModules.nixvim
+    #       ./modules/home
+    #     ];
+    #   };
   in {
     # Darwin Configurations
     darwinConfigurations = {
@@ -270,9 +269,7 @@
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in
-        import ./packages {
-          inherit inputs system pkgs;
-        }
+        import ./packages {inherit inputs system pkgs;}
     );
 
     # Development shells
