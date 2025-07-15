@@ -14,11 +14,6 @@
   my = {
     homebrew.enable = true;
     apfs-snapshots.enable = true;
-    # services.nh-clean = {
-    #   enable        = true;
-    #   keepSinceDays = 14;   # keep two weeks of generations
-    #   keep = 5;
-    # };
   };
 
   #############################################################
@@ -108,11 +103,8 @@
 
   ###################################################################################
   #  macOS's System configuration
-  #
-  #  All the configuration options are documented here:
-  #    https://daiderd.com/nix-darwin/manual/index.html#sec-options
-  #  Extra options are documented here:
-  #    https://macos-defaults.com/
+  # nix-darwin options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
+  # extra options: https://macos-defaults.com/
   ###################################################################################
   system = {
     primaryUser = username;
@@ -122,10 +114,10 @@
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
       # Remove channel symlinks (they get recreated despite nix.channel.enable = false)
-      # rm -rf /Users/${username}/.nix-defexpr/channels
-      # rm -rf /Users/${username}/.nix-defexpr/channels_root
-      # rm -f /Users/${username}/.nix-profile
-      # rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
+      rm -rf /Users/${username}/.nix-defexpr/channels
+      rm -rf /Users/${username}/.nix-defexpr/channels_root
+      rm -f /Users/${username}/.nix-profile
+      rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
     '';
 
     keyboard = {
