@@ -72,6 +72,9 @@
     # tailscale
 
     # Nix
+    cachix
+    omnix
+    statix
     nh
     nix-output-monitor
     direnv
@@ -160,6 +163,8 @@
 
   linuxOnlyPackages = with pkgs; [
   ];
+
+  myPkgs = inputs.self.myPackages.${pkgs.system};
 in {
   # Use XDG Base Directory Specification (XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME)
   xdg.enable = true;
@@ -190,9 +195,9 @@ in {
         then darwinOnlyPackages
         else linuxOnlyPackages
       )
-      ++ [ inputs.self.packages.${pkgs.system}.scripts ]; # Custom packages from this flake
+      ++ [inputs.self.packages.${pkgs.system}.scripts]; # Custom packages from this flake
 
-      stateVersion = homeStateVersion; # don't touch this or everybody dies
+    stateVersion = homeStateVersion; # don't touch this or everybody dies
   };
 
   # --------------------------------------------------------------------------
