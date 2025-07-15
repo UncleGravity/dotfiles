@@ -124,6 +124,8 @@
     sesh
 
     # replacements
+    coreutils # basic utilities
+    # uutils-coreutils # coreutils... in rust
     fastfetch # better neofetch
     btop # better top
     eza # better ls/tree
