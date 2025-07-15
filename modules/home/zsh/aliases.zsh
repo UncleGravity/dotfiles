@@ -29,8 +29,6 @@ alias ..3='cd ../../..'
 alias ..4='cd ../../../..'
 alias ..5='cd ../../../../..'
 
-alias zshrst="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
-
 # git
 alias lg="lazygit"
 
