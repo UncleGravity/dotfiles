@@ -23,5 +23,6 @@ secrets.sh
 *.backup
 .aider*
 
+# Nix
 .direnv/
-result/
+result
