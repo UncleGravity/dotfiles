@@ -1,6 +1,7 @@
 set shell := ["bash", "-c"]
 
 # Determine the system type
+
 system_type := `
     if [ -d /etc/nixos ]; then
         echo "nixos"
@@ -16,9 +17,9 @@ system_type := `
 # Rebuild the system configuration
 sync: nixpkgs-status
     #!/usr/bin/env bash
-    echo "🔄 Rebuilding system configuration for host: $(hostname) on platform: {{system_type}}..."
+    echo "🔄 Rebuilding system configuration for host: $(hostname) on platform: {{ system_type }}..."
 
-    case "{{system_type}}" in
+    case "{{ system_type }}" in
         "nixos")
             HOSTNAME=$(hostname)
             if ! nh os switch . -H $HOSTNAME; then
@@ -68,7 +69,7 @@ update-sync: update sync
 # Garbage collect old generations (default: 30 days)
 gc days="30d":
     @echo "🧹 Performing garbage collection..."
-    nh clean all --keep-since {{days}} --ask
+    nh clean all --keep-since {{ days }} --ask
     @echo "✅ Garbage collection completed!"
 
 # Remove unused nix store paths
@@ -80,8 +81,8 @@ trim:
 # List system generations
 list-generations:
     #!/usr/bin/env bash
-    echo "📋 Listing system generations for {{system_type}}..."
-    case "{{system_type}}" in
+    echo "📋 Listing system generations for {{ system_type }}..."
+    case "{{ system_type }}" in
         "nixos")
             sudo nix-env -p /nix/var/nix/profiles/system --list-generations
             ;;
@@ -100,7 +101,7 @@ list-generations:
 # Check system status
 status:
     @echo "📊 System Status:"
-    @echo "System Type: {{system_type}}"
+    @echo "System Type: {{ system_type }}"
     @echo "Hostname: $(hostname)"
     @echo "Current User: $(whoami)"
     @echo "Nix Version: $(nix --version)"
@@ -111,13 +112,13 @@ status:
 [confirm("DANGER: This will destroy, format, and mount the disk according to the Disko configuration for the specified host. THIS IS A DESTRUCTIVE OPERATION. Are you sure you want to continue?")]
 disko hostname:
     #!/usr/bin/env bash
-    echo "💾 Preparing to format and mount disk using Disko for hostname: {{hostname}}"
-    if [ "{{system_type}}" != "nixos" ]; then
+    echo "💾 Preparing to format and mount disk using Disko for hostname: {{ hostname }}"
+    if [ "{{ system_type }}" != "nixos" ]; then
         echo "❌ Disko command is only supported on NixOS systems."
         exit 1
     fi
 
-    DISKO_CONFIG="./machines/{{hostname}}/disko.nix"
+    DISKO_CONFIG="./machines/{{ hostname }}/disko.nix"
 
     if [ ! -f "$DISKO_CONFIG" ]; then
         echo "❌ Disko configuration file not found: $DISKO_CONFIG"
@@ -137,13 +138,10 @@ disko hostname:
 # remote-sync user host:
 #     #!/usr/bin/env bash
 #     set -euo pipefail
-
 #     echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
-
 #     # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
 #     # named after the target host (e.g., nixosConfigurations.myremoteserver).
 #     echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
-
 #     if ! nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
 #         --flake ".#{{host}}" \
 #         --build-host "{{user}}@{{host}}" \
@@ -153,34 +151,33 @@ disko hostname:
 #         echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
 #         exit 1
 #     fi
-
 #     echo "✅ Remote synchronization for '{{host}}' completed successfully!"
-
 # [EXPERIMENTAL] Rsync entire flake directory and switch using nh
 # Usage: just deploy <hostname>
+
 # Example: just deploy myremoteserver
 deploy host:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{host}}..."
+    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{ host }}..."
 
     REMOTE_PATH="/tmp/nix-flake-$(basename $(pwd))"
 
-    echo "📁 Rsyncing flake directory to {{host}}:$REMOTE_PATH..."
-    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{host}}:$REMOTE_PATH/"; then
+    echo "📁 Rsyncing flake directory to {{ host }}:$REMOTE_PATH..."
+    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{ host }}:$REMOTE_PATH/"; then
         echo "❌ Failed to rsync flake directory to remote host."
         exit 1
     fi
 
     echo "🚀 Running 'nh os switch .' on remote host..."
-    if ! ssh -t "{{host}}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
+    if ! ssh -t "{{ host }}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
         echo "❌ Failed to run 'nh os switch .' on remote host."
         exit 1
     fi
 
-    echo "✅ Experimental deployment for '{{host}}' completed successfully!"
-    echo "ℹ️  Remote flake directory is located at: {{host}}:$REMOTE_PATH"
+    echo "✅ Experimental deployment for '{{ host }}' completed successfully!"
+    echo "ℹ️  Remote flake directory is located at: {{ host }}:$REMOTE_PATH"
 
 # Check nixpkgs version status
 nixpkgs-status:

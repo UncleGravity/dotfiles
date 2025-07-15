@@ -439,9 +439,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "showThresholdLabels": false,
@@ -508,9 +506,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "showThresholdLabels": false,
@@ -645,11 +641,7 @@
   "refresh": "5s",
   "schemaVersion": 36,
   "style": "dark",
-  "tags": [
-    "telegraf",
-    "system",
-    "monitoring"
-  ],
+  "tags": ["telegraf", "system", "monitoring"],
   "templating": {
     "list": []
   },
@@ -663,4 +655,4 @@
   "uid": "telegraf-system-overview",
   "version": 1,
   "weekStart": ""
-} 
+}

@@ -80,9 +80,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "textMode": "auto"
@@ -453,9 +451,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "showThresholdLabels": false,
@@ -520,9 +516,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": ""
         },
         "showThresholdLabels": false,
@@ -766,11 +760,7 @@
   "refresh": "30s",
   "schemaVersion": 36,
   "style": "dark",
-  "tags": [
-    "restic",
-    "backup",
-    "monitoring"
-  ],
+  "tags": ["restic", "backup", "monitoring"],
   "templating": {
     "list": []
   },

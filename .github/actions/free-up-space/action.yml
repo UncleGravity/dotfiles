@@ -5,7 +5,6 @@ inputs:
     description: "Protocol for Linux space cleanup (holster, carve, cleave, rampage)"
     required: false
     default: "holster"
-
 runs:
   using: "composite"
   steps:
@@ -14,7 +13,6 @@ runs:
       uses: wimpysworld/nothing-but-nix@main
       with:
         hatchet-protocol: ${{ inputs.hatchet-protocol }}
-
     - name: Reclaim space (Darwin)
       if: runner.os == 'macOS'
       shell: bash
