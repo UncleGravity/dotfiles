@@ -1,17 +1,13 @@
 name: Update Repository Structure
-
 # Triggers: Manual dispatch only
 on:
   workflow_dispatch:
-
 # Permissions: Write access to commit changes
 permissions:
   contents: write
-
 # Environment: NTFY topic
 env:
   NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-
 jobs:
   tree:
     runs-on: ubuntu-latest
@@ -21,19 +17,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-
       # Notifications
       - uses: ./.github/actions/ntfy-notify
         if: always()
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
-
       # Generate Repo Tree, save to README
       - name: Tree
         uses: RavelloH/readme-tree@latest
         with:
           ignoregit: "yes"
-
       # Commit / Push
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v6

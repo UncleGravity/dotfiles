@@ -1,11 +1,9 @@
 nerdFontsVersion: "3"
-
 git:
   paging:
     colorArg: always
     # pager: delta --paging=never
     pager: delta --dark --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
-
 # git:
 #   paging:
 #     colorArg: always
@@ -14,10 +12,8 @@ git:
 # git:
 #   paging:
 #     externalDiffCommand: difft --color=always
-
 gui:
   sidePanelWidth: 0.2
-
 os:
   copyToClipboardCmd: printf "\033]52;c;$(printf {{text}} | base64)\a" > /dev/tty
   editPreset: nvim

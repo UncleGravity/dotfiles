@@ -26,7 +26,6 @@ inputs:
     description: "Button URL (defaults to current workflow run)"
     required: false
     default: ""
-
 runs:
   using: "composite"
   steps:

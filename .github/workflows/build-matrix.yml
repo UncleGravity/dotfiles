@@ -1,16 +1,13 @@
 name: "Build Matrix"
-
 on:
   # pull_request:
   # push:
   #   branches: [main]
   workflow_dispatch:
-
 # Write access to commit changes and create pull requests
 permissions:
   contents: write
   pull-requests: write
-
 jobs:
   update-flake:
     runs-on: ubuntu-latest
@@ -39,7 +36,6 @@ jobs:
         with:
           name: updated-flake-lock
           path: flake.lock
-
   build:
     needs: update-flake
     if: needs.update-flake.outputs.flake-updated == 'true'
@@ -69,17 +65,14 @@ jobs:
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-
       - name: Build Flake Ouputs
         run: |
           nix run nixpkgs#omnix -- ci run . \
             --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
             --include-all-dependencies \
             --systems ${{ matrix.system }}
-
       - name: Push result to Cachix
         run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
-
   create-pr:
     needs: [update-flake, build]
     if: needs.update-flake.outputs.flake-updated == 'true'
@@ -119,7 +112,6 @@ jobs:
             ${{ github.workflow }} - Pull request created
             Repo: ${{ github.repository }}
           button_url: ${{ steps.create-pr.outputs.pull-request-url }}
-
   notify:
     needs: [update-flake, build, create-pr]
     if: always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
