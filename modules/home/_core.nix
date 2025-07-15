@@ -102,7 +102,7 @@
     ollama
     claude-code
     # codex  # Commented out due to OpenSSL build issues
-    opencode
+    # opencode
     # goose-cli
     # aider-chat
 

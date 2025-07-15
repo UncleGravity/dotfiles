@@ -281,6 +281,7 @@
           statix
           vulnix
           omnix
+          cachix
           # self.packages.${system}.scripts  # Your scripts available in dev shell
         ];
 
