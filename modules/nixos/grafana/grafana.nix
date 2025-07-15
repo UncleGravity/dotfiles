@@ -2,12 +2,10 @@
   pkgs,
   config,
   ...
-}:
-let
+}: let
   # Store our dashboards JSON under ./dashboards/*.json relative to this file
   dashboardDir = "/etc/grafana/dashboards";
-in
-{
+in {
   sops.secrets."grafana/password" = {
     mode = "0600";
     owner = "grafana";
@@ -91,7 +89,7 @@ in
   services.prometheus = {
     enable = true;
     port = 9090;
-    extraFlags = [ "--web.enable-otlp-receiver" ];
+    extraFlags = ["--web.enable-otlp-receiver"];
     globalConfig.scrape_interval = "10s"; # "1m"
     exporters = {
       node = {
@@ -115,7 +113,7 @@ in
         job_name = "kiwi";
         static_configs = [
           {
-            targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
+            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.node.port}"];
           }
         ];
       }
@@ -123,7 +121,7 @@ in
         job_name = "telegraf";
         static_configs = [
           {
-            targets = [ "127.0.0.1:9273" ]; # Telegraf Prometheus output port
+            targets = ["127.0.0.1:9273"]; # Telegraf Prometheus output port
           }
         ];
       }
@@ -172,7 +170,7 @@ in
         };
 
         # Memory metrics
-        mem = { };
+        mem = {};
 
         # Disk metrics
         disk = {
@@ -188,7 +186,7 @@ in
         };
 
         # Disk I/O metrics
-        diskio = { };
+        diskio = {};
 
         # Network metrics
         net = {
@@ -196,13 +194,13 @@ in
         };
 
         # System load
-        system = { };
+        system = {};
 
         # Process metrics
-        processes = { };
+        processes = {};
 
         # Kernel metrics
-        kernel = { };
+        kernel = {};
       };
     };
   };

@@ -15,7 +15,6 @@ in {
   options.my.zsh.enable = lib.mkEnableOption "Enable Nix-managed zsh configuration";
 
   config = lib.mkIf cfg.enable {
-
     programs.zsh = {
       enable = true;
       dotDir = ".config/zsh";
