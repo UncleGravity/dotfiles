@@ -188,7 +188,7 @@ nixpkgs-status:
     LAST_MODIFIED=$(jq -r '.nodes.nixpkgs.locked.lastModified' flake.lock 2>/dev/null || echo "unknown")
     CURRENT_TIME=$(date +%s)
     DAYS_AGO=$(( (CURRENT_TIME - LAST_MODIFIED) / 86400 ))
-    echo "📦 nixpkgs last updated: $DAYS_AGO days ago"
+    echo "📦 nixpkgs last updated: $DAYS_AGO days ago ($(date -d @$LAST_MODIFIED '+%Y-%m-%d %H:%M:%S'))"
 
 # Display available commands
 help:
