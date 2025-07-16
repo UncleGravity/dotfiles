@@ -5,9 +5,7 @@
   ...
 }: {
   imports = [
-    # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
-    inputs.disko.nixosModules.disko
-    ./disko.nix
+    ./disko.nix # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
     ./hardware.nix
     ./mounts.nix
     ./zfs.nix

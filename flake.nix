@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
 
     # nix-darwin
     darwin = {
@@ -41,21 +40,12 @@
     };
 
     # ---------------------------------------------------------------------------------------------
-    # Overlays
-
-    # Opencode from upstream
-    # opencode = {
-    #   url = "github:sst/opencode/v0.3.2";
-    #   flake = false;
-    # };
+    # Overlay Inputs
 
     # Zig nightly
     zig = {
       url = "github:mitchellh/zig-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # ---------------------------------------------------------------------------------------------
@@ -72,42 +62,43 @@
     };
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
     home-manager,
     darwin,
     ...
-  } @ inputs: let
+  }: let
+    # --------------------------------------------------------------------------
+    # Platform Helpers
+    # --------------------------------------------------------------------------
     systems = {
       aarch64-linux = "aarch64-linux";
-      aarch64-darwin = "aarch64-darwin";
       x86_64-linux = "x86_64-linux";
+      aarch64-darwin = "aarch64-darwin";
       x86_64-darwin = "x86_64-darwin";
     };
 
-    # Shared overlays for both NixOS and Darwin
+    # Map a function over every supported system, passing it { system, pkgs, lib }
+    forAllSystems = f:
+      nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
+        let
+          pkgs = import nixpkgs { inherit system overlays; };
+        in f { inherit system pkgs; lib = pkgs.lib; });
+
+    # --------------------------------------------------------------------------
+    # Overlays
+    # --------------------------------------------------------------------------
     overlays = [
       (final: prev: {
         # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
         zig = inputs.zig.packages.${prev.system}.master;
-        # opencode = prev.opencode.overrideAttrs (old: {
-        #   version = "0.3.2";
-        #   src = inputs.opencode;
-        #   node_modules = old.node_modules.overrideAttrs (nmOld: {
-        #     outputHash =
-        #       if prev.system == "aarch64-darwin" then "sha256-uk8HQfHCKTAW54rNHZ1Rr0piZzeJdx6i4o0+xKjfFZs="
-        #       else if prev.system == "x86_64-linux" then "sha256-1ZxetDrrRdNNOfDOW2uMwMwpEs5S3BLF+SejWcRdtik="
-        #       else if prev.system == "aarch64-linux" then "sha256-gDQh8gfFKl0rAujtos1XsCUnxC2Vjyq9xH5FLZoNW5s="
-        #       else throw "Unsupported system for opencode: ${prev.system}";
-        #   });
-        #   tui = old.tui.overrideAttrs (tuiOld: {
-        #     vendorHash = "sha256-0vf4fOk32BLF9/904W8g+5m0vpe6i6tUFRXqDHVcMIQ=";
-        #   });
-        # });
       })
     ];
 
+    # --------------------------------------------------------------------------
+    # System config helpers
+    # --------------------------------------------------------------------------
     mkHomeManagerConfig = {
       system,
       username,
@@ -144,14 +135,22 @@
           inherit username hostname systemStateVersion homeStateVersion;
         };
         modules = [
+          # Input modules
+          inputs.home-manager.nixosModules.home-manager
+          inputs.disko.nixosModules.disko
           inputs.sops-nix.nixosModules.sops
-          home-manager.nixosModules.home-manager
+
+          # My modules
           ./modules/nixos
+
+          # System config
           ./machines/${system}/${hostname}/configuration.nix
+
+          # Home Manager Config
           (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
-          {
-            nixpkgs.overlays = overlays;
-          }
+
+          # Overlays
+          { nixpkgs.overlays = overlays; }
         ];
       };
 
@@ -168,39 +167,56 @@
           inherit inputs self username hostname systemStateVersion homeStateVersion;
         };
         modules = [
-          ./modules/darwin
+          # System Config
           ./machines/${system}/${hostname}/configuration.nix
           inputs.sops-nix.darwinModules.sops
+
+          # Input Modules
           home-manager.darwinModules.home-manager
-          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
           inputs.nix-homebrew.darwinModules.nix-homebrew
+
+          # My modules
+          ./modules/darwin
+
+          # Home Manager Config
+          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
+
           {
+            # Nix-Homebrew Config
             nix-homebrew = {
               enable = true;
               user = username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
             };
+
+            # Overlays
             nixpkgs.overlays = overlays;
           }
         ];
       };
-    # mkHomeManagerSystem = {
-    #   system,
-    #   pkgs,
-    #   username,
-    #   homeStateVersion,
-    # }:
-    #   home-manager.lib.homeManagerConfiguration {
-    #     inherit pkgs;
-    #     extraSpecialArgs = {
-    #       inherit inputs username homeStateVersion;
-    #     };
-    #     modules = [
-    #       ./machines/${system}/${username}/home.nix
-    #       inputs.nixvim.homeManagerModules.nixvim
-    #       ./modules/home
-    #     ];
-    #   };
+
+    mkHomeManagerSystem = {
+      system,
+      pkgs,
+      username,
+      homeStateVersion,
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {
+          inherit inputs self username homeStateVersion;
+        };
+        modules = [
+          # Input Modules
+          inputs.nixvim.homeManagerModules.nixvim
+
+          # My Home Modules
+          ./modules/home
+
+          # Home Manager Config
+          ./machines/${system}/${username}/home.nix
+        ];
+      };
   in {
     # Darwin Configurations
     darwinConfigurations = {
@@ -254,70 +270,78 @@
     };
 
     # Home Manager Configurations
-    # homeConfigurations = {
-    #   # Raspberry Pi (home-manager only)
-    #   pi = mkHomeManagerSystem {
-    #     system = systems.aarch64-linux;
-    #     pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
-    #     username = "pi";
-    #     homeStateVersion = "24.05";
-    #   };
-    # };
-
-    # Packages
-    packages = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
-        import ./packages {inherit inputs system pkgs;}
-    );
-
-    # Development shells
-    devShells = nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: {
-      default = nixpkgs.legacyPackages.${system}.mkShell {
-        packages = with nixpkgs.legacyPackages.${system}; [
-          nh
-          nix-output-monitor
-          just
-          nix-tree
-          statix
-          vulnix
-          omnix
-          cachix
-          # self.packages.${system}.scripts  # Your scripts available in dev shell
-        ];
-
-        # shellHook = ''
-        #   exec zsh
-        # '';
+    homeConfigurations = {
+      # Raspberry Pi (home-manager only)
+      pi = mkHomeManagerSystem {
+        system = systems.aarch64-linux;
+        pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
+        username = "pi";
+        homeStateVersion = "24.05";
       };
-    });
+    };
 
-    # Default formatter - Run with `nix fmt .`
-    formatter = nixpkgs.lib.genAttrs (builtins.attrNames systems) (
-      system:
-        inputs.treefmt-nix.lib.mkWrapper nixpkgs.legacyPackages.${system} {
-          projectRootFile = "flake.nix";
-          programs = {
-            alejandra.enable = true;
-            taplo.enable = true;
-            yamlfmt = {
-              enable = true;
-              excludes = ["**/secrets.yaml" ".sops.yaml" "**/.sops.yaml" "**/secrets/*.yaml"];
-            };
-            prettier = {
-              enable = true;
-              includes = ["*.json"];
-            };
-            # stylua.enable = true;
-            just.enable = true;
-            shfmt = {
-              enable = true;
-              includes = ["*.sh" "*.zsh" "*.bash" ".env" ".envrc"];
-              excludes = ["**/p10k.zsh" "**/powerlevel10k.zsh"];
-            };
-          };
-        }
+    # --------------------------------------------------------------------------
+    # Packages
+    # --------------------------------------------------------------------------
+    packages = forAllSystems ({ system, pkgs, ... }:
+      import ./packages { inherit inputs system pkgs; }
     );
+
+    # --------------------------------------------------------------------------
+    # Development shells
+    # --------------------------------------------------------------------------
+    devShells = forAllSystems ({ pkgs, system, ... }: {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            nh
+            nix-output-monitor
+            just
+            nix-tree
+            statix
+            vulnix
+            omnix
+            cachix
+            # self.packages.${system}.scripts  # Your scripts available in dev shell
+          ];
+
+          # shellHook = ''
+          #   exec zsh
+          # '';
+        };
+      }
+    );
+
+    # --------------------------------------------------------------------------
+    # Default formatter - Run with `nix fmt .`
+    formatter = forAllSystems ({ pkgs, ... }:
+      inputs.treefmt-nix.lib.mkWrapper pkgs {
+        projectRootFile = "flake.nix";
+        programs = {
+          alejandra.enable = true;
+          taplo.enable = true;
+          yamlfmt = {
+            enable = true;
+            excludes = ["**/secrets.yaml" ".sops.yaml" "**/.sops.yaml" "**/secrets/*.yaml"];
+          };
+          prettier = {
+            enable = true;
+            includes = ["*.json"];
+          };
+          just.enable = true;
+          shfmt = {
+            enable = true;
+            includes = ["*.sh" "*.zsh" "*.bash" ".env" ".envrc"];
+            excludes = ["**/p10k.zsh" "**/powerlevel10k.zsh"];
+          };
+        };
+      }
+    );
+
+    # checks."<system>"."<name>" = derivation; # nix flake check
+    # packages."<system>"."<name>" = derivation; # nix build .#<name>
+    # apps."<system>"."<name>" = { type = "app"; program = "<store-path>"; }; # nix run .#<name>
+    # formatter."<system>" = derivation; # nix fmt
+    # nixosConfigurations."<hostname>" = {};
+    # devShells."<system>".default = derivation; # nix develop
   };
 }
