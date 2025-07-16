@@ -15,7 +15,6 @@ in {
   options.my.dotfiles = {
     enable = lib.mkEnableOption "Enable all dotfiles management" // {default = true;};
 
-    aichat = {enable = mkEnable "aichat";};
     ghostty = {enable = mkEnable "ghostty";};
     git = {enable = mkEnable "git";};
     karabiner = {enable = mkEnable "karabiner";}; # Darwin-only below
@@ -29,11 +28,6 @@ in {
 
   config = lib.mkIf cfg.enable {
     # --- directory-style dotfiles (link to $XDG_CONFIG_HOME/<name>) ----------
-    xdg.configFile."aichat" = lib.mkIf cfg.aichat.enable {
-      source = ./aichat;
-      recursive = true;
-    };
-
     xdg.configFile."ghostty" = lib.mkIf cfg.ghostty.enable {
       source = ./ghostty;
     };
