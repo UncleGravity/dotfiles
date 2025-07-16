@@ -25,4 +25,5 @@ secrets.sh
 
 # Nix
 .direnv/
+result/
 result
