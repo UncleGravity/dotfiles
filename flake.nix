@@ -317,7 +317,10 @@
       inputs.treefmt-nix.lib.mkWrapper pkgs {
         projectRootFile = "flake.nix";
         programs = {
-          alejandra.enable = true;
+          alejandra = {
+            enable = true;
+            excludes = ["flake.nix"];
+          };
           taplo.enable = true;
           yamlfmt = {
             enable = true;
