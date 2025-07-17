@@ -10,10 +10,19 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 .
 ├── .envrc
 ├── .github
+│   ├── actions
+│   │   ├── free-up-space
+│   │   │   └── action.yml
+│   │   └── ntfy-notify
+│   │       └── action.yml
 │   └── workflows
+│       ├── build-matrix.yml
+│       ├── flag-triggered.yml
+│       ├── update-flake-lock.yml
 │       └── update-tree.yml
 ├── .gitignore
 ├── .sops.yaml
+├── AGENTS.md
 ├── README.md
 ├── flake.lock
 ├── flake.nix
@@ -57,19 +66,21 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── modules
 │   ├── common
 │   │   ├── default.nix
+│   │   ├── packages.nix
 │   │   └── sops.nix
 │   ├── darwin
 │   │   ├── _core.nix
+│   │   ├── _nh.nix
 │   │   ├── apfs-snapshots.nix
 │   │   ├── default.nix
-│   │   ├── homebrew.nix
-│   │   └── nh.nix
+│   │   └── homebrew.nix
 │   ├── home
 │   │   ├── _core.nix
+│   │   ├── aichat.nix
+│   │   ├── bat.nix
 │   │   ├── default.nix
+│   │   ├── direnv.nix
 │   │   ├── dotfiles
-│   │   │   ├── aichat
-│   │   │   │   └── config.yaml
 │   │   │   ├── default.nix
 │   │   │   ├── ghostty
 │   │   │   │   └── config
@@ -141,6 +152,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   ├── snacks.nix
 │   │   │   ├── treesitter.nix
 │   │   │   └── which-key.nix
+│   │   ├── packages.nix
+│   │   ├── ssh.nix
 │   │   ├── tmux
 │   │   │   ├── default.nix
 │   │   │   └── tmux.conf
@@ -148,7 +161,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── default.nix
 │   │   └── zsh
 │   │       ├── aliases.zsh
-│   │       ├── bat.nix
 │   │       ├── default.nix
 │   │       ├── fzf.zsh
 │   │       ├── macos
@@ -168,6 +180,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       ├── guacamole
 │       │   ├── default.nix
 │       │   └── user-mapping.xml.sops
+│       ├── gui.nix
 │       ├── hackrf.nix
 │       ├── immich.nix
 │       └── tailscale.nix
@@ -190,12 +203,10 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       ├── default.nix
 │       └── install.sh
 ├── secrets
-│   ├── keys.sh
-│   ├── new.sh
 │   └── secrets.yaml
 └── tree.bak
 
-49 directories, 138 files
+51 directories, 147 files
 ```
 <!-- readme-tree end -->
 
