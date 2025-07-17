@@ -2,19 +2,12 @@
 
 ## Build/Test Commands
 - `just sync` - Rebuild system configuration (auto-detects NixOS/Darwin/Home Manager)
-- `just update` - Update flake inputs
-- `just update-sync` - Update inputs and rebuild system
-- `nix fmt .` - Format all Nix files using alejandra/treefmt
+- `nix fmt .` - Format all Nix
 - `nix flake check` - Validate flake configuration
 - `statix check .` - Lint Nix files for best practices
-- `vulnix` - Check for security vulnerabilities
-- `just nvim` - Create symlink for Neovim config testing
-- `just gc [days]` - Garbage collect old generations (default: 30d)
-- `just status` - Show system and flake status
 
 ## Code Style Guidelines
 - **Formatting**: Use `alejandra` formatter via `nix fmt .` (configured in flake.nix)
-- **Imports**: Group at top, use relative paths for local modules (e.g., `./modules/home`)
 - **Naming**: kebab-case for files/directories, camelCase for Nix attributes
 - **Indentation**: 2 spaces, no tabs
 - **Strings**: Double quotes for strings, avoid inline comments
