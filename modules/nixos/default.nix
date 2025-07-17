@@ -9,6 +9,7 @@
     ./guacamole
     ./hackrf.nix
     ./immich.nix
+    ./gui.nix
     ./tailscale.nix
   ];
 }
