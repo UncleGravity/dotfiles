@@ -1,6 +1,8 @@
 name: Update Repository Structure
 # Triggers: Manual dispatch only
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 # Permissions: Write access to commit changes
 permissions:
