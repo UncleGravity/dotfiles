@@ -184,7 +184,7 @@
           {
             # Nix-Homebrew Config
             nix-homebrew = {
-              enable = true;
+              enable = hostname != "BENGKUI"; # false for bengkui
               user = username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
             };
