@@ -15,7 +15,7 @@ in {
   config = lib.mkIf cfg.enable {
     programs.zsh = {
       enable = true;
-      dotDir = ".config/zsh";
+      dotDir = config.xdg.configHome + "/zsh";
 
       # History -----------------------------------------------------------------------------------
       history = {
