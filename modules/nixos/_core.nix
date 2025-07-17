@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   hostname,
   username,
@@ -166,15 +167,7 @@
   environment = {
     shells = with pkgs; [bash zsh];
     pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
-
-    systemPackages = with pkgs; [
-      vim
-      wget
-      git
-      distrobox
-      chromium
-      ghostty
-    ];
+    systemPackages = config.my.common.systemPackages;
   };
 
   programs.zsh = {

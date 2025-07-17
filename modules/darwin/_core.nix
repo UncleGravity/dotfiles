@@ -1,5 +1,6 @@
 # This file defines the common configuration shared across different machines.
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -37,13 +38,7 @@
   #############################################################
   #  Packages
   #############################################################
-  environment.systemPackages = with pkgs; [
-    curl
-    wget
-    vim
-    git
-    cowsay
-  ];
+  environment.systemPackages = config.my.common.systemPackages;
 
   #############################################################
   #  Nix
