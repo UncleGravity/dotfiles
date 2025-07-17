@@ -20,6 +20,7 @@
     settings = {
       experimental-features = ["nix-command" "flakes"]; # Enable Flakes
       sandbox = "relaxed"; # Allow packages with __noChroot = false; to use external dependencies
+      auto-optimise-store = lib.mkDefault false; # Avoiding some heavy IO
 
       # -------------------------------
       # Binary caches for faster builds
@@ -167,7 +168,7 @@
     pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
 
     systemPackages = with pkgs; [
-      vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      vim
       wget
       git
       distrobox
