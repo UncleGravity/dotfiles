@@ -5,7 +5,7 @@
   ...
 }: {
   programs.helix = {
-    enable = true;
+    enable = false;
     # package = pkgs.evil-helix;
 
     settings = {

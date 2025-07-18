@@ -1,3 +1,6 @@
+# -----------------------------------------------------------------------------
+# ALL MY BASH SCRIPTS GO HERE
+# -----------------------------------------------------------------------------
 {
   lib,
   stdenvNoCC,
@@ -18,6 +21,6 @@ stdenvNoCC.mkDerivation {
 
   meta = with lib; {
     description = "Personal shell scripts and completions";
-    platforms = platforms.all;
+    platforms = platforms.all; # or ["x86_64-linux", "aarch64-linux", "etc..."]
   };
 }
