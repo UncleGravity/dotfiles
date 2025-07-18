@@ -1,6 +1,6 @@
 {
   imports = [
-    ./packages.nix
+    ./pkgs.nix
     ./aichat.nix
     ./bat.nix
     ./direnv.nix
