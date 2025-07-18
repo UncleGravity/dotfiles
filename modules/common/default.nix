@@ -1,6 +1,6 @@
 {
   imports = [
     ./sops.nix
-    ./packages.nix
+    ./pkgs.nix
   ];
 }
