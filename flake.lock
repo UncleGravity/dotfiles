@@ -271,6 +271,7 @@
         "tmux-tokyo-night": "tmux-tokyo-night",
         "tmux-vim-navigator": "tmux-vim-navigator",
         "treefmt-nix": "treefmt-nix",
+        "wrapper-manager": "wrapper-manager",
         "zig": "zig"
       }
     },
@@ -388,6 +389,21 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "wrapper-manager": {
+      "locked": {
+        "lastModified": 1751998186,
+        "narHash": "sha256-np2RxS8tRz/jGfUSYKxzg7cCi4dS8PL8gutLZfPMbIY=",
+        "owner": "viperML",
+        "repo": "wrapper-manager",
+        "rev": "8ad2484b485acad0632cb0af15b5eb704e3c1d0a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "viperML",
+        "repo": "wrapper-manager",
         "type": "github"
       }
     },

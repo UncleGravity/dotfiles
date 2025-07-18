@@ -15,6 +15,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    wrapper-manager.url = "github:viperML/wrapper-manager";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -91,20 +93,21 @@
     # --------------------------------------------------------------------------
     overlays = [
       (final: prev: {
-        # opencode = inputs.nixpkgs_opencode.legacyPackages.${prev.system}.opencode;
+        # --- 1. nixpkgs
         zig = inputs.zig.packages.${prev.system}.master;
+
+        # --- 2. Personal packages (scripts + wrapped)
+        my = prev.lib.recurseIntoAttrs {
+          wrapped = inputs.self.packages.${prev.system}.wrapped;
+          scripts = inputs.self.packages.${prev.system}.scripts;
+        };
       })
     ];
 
     # --------------------------------------------------------------------------
     # System config helpers
     # --------------------------------------------------------------------------
-    mkHomeManagerConfig = {
-      system,
-      username,
-      hostname,
-      homeStateVersion,
-    }: {
+    mkHomeManagerConfig = { system, username, hostname, homeStateVersion,}:{
       home-manager = {
         extraSpecialArgs = {
           inherit inputs self username homeStateVersion;
@@ -121,13 +124,7 @@
       };
     };
 
-    mkNixos = {
-      system,
-      username,
-      hostname,
-      systemStateVersion,
-      homeStateVersion,
-    }:
+    mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }:
       nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
@@ -154,13 +151,7 @@
         ];
       };
 
-    mkDarwin = {
-      system,
-      username,
-      hostname,
-      systemStateVersion,
-      homeStateVersion,
-    }:
+    mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }:
       darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
@@ -195,12 +186,7 @@
         ];
       };
 
-    mkHomeManagerSystem = {
-      system,
-      pkgs,
-      username,
-      homeStateVersion,
-    }:
+    mkHomeManagerSystem = { system, pkgs, username, homeStateVersion }:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
@@ -217,6 +203,7 @@
           ./machines/${system}/${username}/home.nix
         ];
       };
+
   in {
     # Darwin Configurations
     darwinConfigurations = {
@@ -284,7 +271,10 @@
     # Packages
     # --------------------------------------------------------------------------
     packages = forAllSystems ({ system, pkgs, ... }:
-      import ./packages { inherit inputs system pkgs; }
+      import ./packages {
+        inherit system pkgs;
+        wrapper-manager = inputs.wrapper-manager;
+      }
     );
 
     # --------------------------------------------------------------------------

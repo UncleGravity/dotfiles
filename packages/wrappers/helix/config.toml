@@ -1,0 +1,41 @@
+theme = "kanagawa"
+
+[editor]
+auto-format = false
+bufferline = "multiple"
+color-modes = true
+line-number = "relative"
+mouse = true
+rulers = [100]
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.indent-guides]
+character = "┆"
+render = true
+skip-levels = 1
+
+[editor.lsp]
+display-inlay-hints = true
+
+[editor.whitespace.characters]
+newline = "⏎"
+space = "·"
+tab = "→"
+tabpad = "·"
+
+[editor.whitespace.render]
+newline = "none"
+space = "none"
+tab = "all"
+
+[keys.insert]
+C-s = ["normal_mode", ":w", "insert_mode"]
+
+[keys.normal]
+C-f = ":format"
+C-q = ":q"
+C-s = ":w"
