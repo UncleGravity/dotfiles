@@ -24,6 +24,7 @@ jobs:
         if: always()
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[Github] Updated Repo Tree"
       # Generate Repo Tree, save to README
       - name: Tree
         uses: RavelloH/readme-tree@latest

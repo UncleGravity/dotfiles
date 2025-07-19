@@ -21,7 +21,7 @@ inputs:
     default: ""
   message:
     description: "Notification message"
-    required: true
+    required: false
   button_url:
     description: "Button URL (defaults to current workflow run)"
     required: false
@@ -44,6 +44,6 @@ runs:
         fi
 
         CURL_ARGS+=(-H "Actions: view, Open, $BUTTON_URL, clear=true")
-        CURL_ARGS+=(-d "${{ inputs.message }}")
+        if [ -n "${{ inputs.message }}" ]; then CURL_ARGS+=(-d "${{ inputs.message }}") fi
 
         curl "${CURL_ARGS[@]}" "${{ inputs.url }}/${{ inputs.topic }}"
