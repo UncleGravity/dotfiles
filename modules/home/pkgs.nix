@@ -165,14 +165,13 @@
   ###########################################################################
   # 3. Custom packages from this flake                                      #
   ###########################################################################
-  custom =
-    [
-      # inputs.self.packages.${pkgs.system}.scripts
-      # inputs.self.packages.${pkgs.system}.wrapped.hello
-      pkgs.my.scripts.default
-      pkgs.my.wrapped.hello
-      pkgs.my.wrapped.helix
-    ] ;
+  custom = [
+    # inputs.self.packages.${pkgs.system}.scripts
+    # inputs.self.packages.${pkgs.system}.wrapped.hello
+    pkgs.my.scripts.default
+    pkgs.my.wrapped.hello
+    pkgs.my.wrapped.helix
+  ];
 
   ###########################################################################
   # 4. Assemble the final list                                              #

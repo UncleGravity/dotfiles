@@ -1,7 +1,7 @@
-{ pkgs
-, wrapper-manager
+{
+  pkgs,
+  wrapper-manager,
 }:
-
 # -----------------------------------------------------------------------------
 # All wrapper-manager modules go here.
 # https://github.com/viperML/wrapper-manager/
@@ -19,7 +19,6 @@
 #   environment.systemPackages = builtins.attrValues wrapped.build.packages;
 # -----------------------------------------------------------------------------
 let
-
   wmEval = wrapper-manager.lib {
     inherit pkgs;
     modules = [
@@ -30,4 +29,4 @@ let
   };
 in
   # Forward individual wrappers AND bulk helpers (`build` attrset).
-  wmEval.config.build.packages // { build = wmEval.config.build; }
+  wmEval.config.build.packages // {build = wmEval.config.build;}

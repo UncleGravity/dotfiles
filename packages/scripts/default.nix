@@ -1,23 +1,26 @@
-
-{ lib, pkgs, stdenvNoCC, system }:
-
+{
+  lib,
+  pkgs,
+  stdenvNoCC,
+  system,
+}:
 ##############################################################################
 # 1.  Main “fat” bundle – installs every relevant script + completions
 ##############################################################################
 let
   # Directories that contain scripts for the current platform
   platformDirs =
-    [ ./all ]
-    ++ lib.optionals pkgs.stdenv.isDarwin [ ./darwin ]
-    ++ lib.optionals pkgs.stdenv.isLinux  [ ./linux ];
+    [./all]
+    ++ lib.optionals pkgs.stdenv.isDarwin [./darwin]
+    ++ lib.optionals pkgs.stdenv.isLinux [./linux];
 
   bundle = stdenvNoCC.mkDerivation {
-    pname   = "scripts";
+    pname = "scripts";
     version = "1.0.0";
-    src     = ./.;
+    src = ./.;
 
     dontConfigure = true;
-    dontBuild     = true;
+    dontBuild = true;
 
     installPhase = ''
       mkdir -p "$out/bin" "$out/share/zsh/site-functions"
@@ -42,33 +45,32 @@ let
 
     meta = {
       description = "Personal shell scripts and Z-sh completions (full bundle)";
-      platforms   = lib.platforms.all;
-      mainProgram = "placeholder";  # suppressed by wrappers below
+      platforms = lib.platforms.all;
+      mainProgram = "placeholder"; # suppressed by wrappers below
     };
   };
 
-##############################################################################
-# 2.  Discover script names present in the bundle
-##############################################################################
+  ##############################################################################
+  # 2.  Discover script names present in the bundle
+  ##############################################################################
   scriptsFromDir = dir:
     lib.attrNames (lib.filterAttrs (_: t: t == "regular") (builtins.readDir dir));
 
-  scriptNames =
-    lib.unique (
-      scriptsFromDir ./all
-      ++ lib.optionals pkgs.stdenv.isDarwin (scriptsFromDir ./darwin)
-      ++ lib.optionals pkgs.stdenv.isLinux  (scriptsFromDir ./linux)
-    );
+  scriptNames = lib.unique (
+    scriptsFromDir ./all
+    ++ lib.optionals pkgs.stdenv.isDarwin (scriptsFromDir ./darwin)
+    ++ lib.optionals pkgs.stdenv.isLinux (scriptsFromDir ./linux)
+  );
 
-##############################################################################
-# 3.  Produce one lightweight wrapper derivation per script
-##############################################################################
+  ##############################################################################
+  # 3.  Produce one lightweight wrapper derivation per script
+  ##############################################################################
   inherit (pkgs) symlinkJoin;
 
   mkScript = name:
     symlinkJoin {
-      name  = "script-${name}";
-      paths = [ bundle ];
+      name = "script-${name}";
+      paths = [bundle];
 
       postBuild = ''
         mkdir -p "$out/bin"
@@ -77,15 +79,14 @@ let
 
       meta = {
         description = "Standalone wrapper for '${name}' script";
-        mainProgram = name;  # enables `nix run .#scripts.${name}`
-        platforms   = lib.platforms.all;
+        mainProgram = name; # enables `nix run .#scripts.${name}`
+        platforms = lib.platforms.all;
       };
     };
 
   perScriptPkgs = lib.genAttrs scriptNames mkScript;
-
-##############################################################################
-# 4.  Expose everything
-##############################################################################
+  ##############################################################################
+  # 4.  Expose everything
+  ##############################################################################
 in
-perScriptPkgs // { default = bundle; }
+  perScriptPkgs // {default = bundle;}
