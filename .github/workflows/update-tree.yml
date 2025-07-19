@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+      - uses: DeterminateSystems/nix-installer-action@main
       # Notifications
       - uses: ./.github/actions/ntfy-notify
         if: always()
@@ -28,19 +29,23 @@ jobs:
       # Generate tree and update README
       - name: Generate and update tree
         run: |
-          # Generate tree structure
-          tree -a -I '.git|.direnv' > tree_output.tmp
-
-          # Update README between markers
-          sed -i '/<!-- readme-tree start -->/,/<!-- readme-tree end -->/c\
-          <!-- readme-tree start -->\
-          ```\
-          '"$(cat tree_output.tmp | sed 's/$/\\/')"'\
-          ```\
-          <!-- readme-tree end -->' README.md
-
-          # Clean up temp file
-          rm -f tree_output.tmp
+          nix run nixpkgs#tree -- -a -I '.git|.direnv' > new_tree.txt
+          nix run nixpkgs#python3 -- -c "
+          import re
+          with open('README.md', 'r') as f:
+              content = f.read()
+          with open('new_tree.txt', 'r') as f:
+              tree = f.read()
+          new_content = re.sub(
+              r'(<!-- readme-tree start -->).*?(<!-- readme-tree end -->)',
+              r'\1\n```\n' + tree + '```\n\2',
+              content,
+              flags=re.DOTALL
+          )
+          with open('README.md', 'w') as f:
+              f.write(new_content)
+          "
+          rm new_tree.txt
       # Commit / Push
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v6
