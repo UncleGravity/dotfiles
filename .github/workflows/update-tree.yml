@@ -22,7 +22,6 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       # Notifications
       - uses: ./.github/actions/ntfy-notify
-        if: always()
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
           title: "[Github] Updated Repo Tree"
