@@ -16,8 +16,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   └── ntfy-notify
 │   │       └── action.yml
 │   └── workflows
-│       ├── build-matrix.yml
-│       ├── flag-triggered.yml
 │       ├── update-flake-lock.yml
 │       └── update-tree.yml
 ├── .gitignore
@@ -211,7 +209,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   └── secrets.yaml
 └── tree.bak
 
-53 directories, 150 files
+53 directories, 148 files
 ```
 <!-- readme-tree end -->
 
