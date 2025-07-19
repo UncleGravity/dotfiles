@@ -66,7 +66,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── modules
 │   ├── common
 │   │   ├── default.nix
-│   │   ├── packages.nix
+│   │   ├── pkgs.nix
 │   │   └── sops.nix
 │   ├── darwin
 │   │   ├── _core.nix
@@ -152,7 +152,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   ├── snacks.nix
 │   │   │   ├── treesitter.nix
 │   │   │   └── which-key.nix
-│   │   ├── packages.nix
+│   │   ├── pkgs.nix
 │   │   ├── ssh.nix
 │   │   ├── tmux
 │   │   │   ├── default.nix
@@ -186,27 +186,32 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       └── tailscale.nix
 ├── packages
 │   ├── default.nix
-│   └── scripts
-│       ├── _completions
-│       │   ├── _ntfy
-│       │   ├── _push
-│       │   ├── _t
-│       │   └── _vm
-│       ├── all
-│       │   ├── ntfy
-│       │   ├── push
-│       │   └── t
-│       ├── darwin
-│       │   ├── decrypt
-│       │   ├── encrypt
-│       │   └── vm
+│   ├── scripts
+│   │   ├── _completions
+│   │   │   ├── _ntfy
+│   │   │   ├── _push
+│   │   │   ├── _t
+│   │   │   └── _vm
+│   │   ├── all
+│   │   │   ├── ntfy
+│   │   │   ├── push
+│   │   │   └── t
+│   │   ├── darwin
+│   │   │   ├── decrypt
+│   │   │   ├── encrypt
+│   │   │   └── vm
+│   │   └── default.nix
+│   └── wrappers
 │       ├── default.nix
-│       └── install.sh
+│       ├── helix
+│       │   ├── config.toml
+│       │   └── default.nix
+│       └── hello.nix
 ├── secrets
 │   └── secrets.yaml
 └── tree.bak
 
-51 directories, 147 files
+53 directories, 150 files
 ```
 <!-- readme-tree end -->
 
