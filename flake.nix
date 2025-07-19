@@ -64,13 +64,8 @@
     };
   };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    home-manager,
-    darwin,
-    ...
-  }: let
+  outputs = inputs @ { self, nixpkgs, home-manager, darwin, ... }:
+  let
     # --------------------------------------------------------------------------
     # Platform Helpers
     # --------------------------------------------------------------------------
