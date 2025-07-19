@@ -22,7 +22,7 @@ set -euo pipefail
 #   tmux.sh a my_session
 #   tmux.sh kill my_session
 
-action="$1"
+action="${1:-}"
 session_name="${2:-}"
 
 case "$action" in
@@ -81,4 +81,4 @@ case "$action" in
     echo "Actions: ls, new, attach (a), kill, switch, ks, edit (e)"
     exit 1
     ;;
-esac 
+esac
