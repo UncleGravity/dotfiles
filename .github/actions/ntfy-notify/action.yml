@@ -44,6 +44,8 @@ runs:
         fi
 
         CURL_ARGS+=(-H "Actions: view, Open, $BUTTON_URL, clear=true")
-        if [ -n "${{ inputs.message }}" ]; then CURL_ARGS+=(-d "${{ inputs.message }}") fi
+        if [ -n "${{ inputs.message }}" ]; then
+          CURL_ARGS+=(-d "${{ inputs.message }}")
+        fi
 
         curl "${CURL_ARGS[@]}" "${{ inputs.url }}/${{ inputs.topic }}"
