@@ -40,9 +40,16 @@ jobs:
           commit_message: "docs: update repository tree structure"
           commit_user_name: "GitHub Action"
           commit_user_email: "action@github.com"
-      # Notifications
+
+  notify:
+    runs-on: ubuntu-latest
+    name: notify-status
+    needs: tree
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/ntfy-notify
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
-          message: "${{ github.workflow }}"
-          title: "[Github] Updated Repo Tree"
+          title: "[Github] ${{ github.workflow }} - ${{ needs.tree.result == 'success' && 'SUCCESS' || 'FAILED' }}"
+          message: "Tree update job completed with status: ${{ needs.tree.result }}"
