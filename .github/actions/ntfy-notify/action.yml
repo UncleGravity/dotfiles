@@ -22,6 +22,7 @@ inputs:
   message:
     description: "Notification message"
     required: true
+    default: ""
   button_url:
     description: "Button URL (defaults to current workflow run)"
     required: false

@@ -20,11 +20,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - uses: DeterminateSystems/nix-installer-action@main
-      # Notifications
-      - uses: ./.github/actions/ntfy-notify
-        with:
-          topic: ${{ secrets.NTFY_TOPIC }}
-          title: "[Github] Updated Repo Tree"
       # Generate tree and update README
       - name: Generate and update tree
         run: |
@@ -45,3 +40,9 @@ jobs:
           commit_message: "docs: update repository tree structure"
           commit_user_name: "GitHub Action"
           commit_user_email: "action@github.com"
+      # Notifications
+      - uses: ./.github/actions/ntfy-notify
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          message: "${{ github.workflow }}"
+          title: "[Github] Updated Repo Tree"
