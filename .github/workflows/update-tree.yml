@@ -1,4 +1,4 @@
-name: Update Repository Structure
+name: Update Repo Tree
 # Triggers: Manual dispatch only
 on:
   push:
@@ -25,15 +25,26 @@ jobs:
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
           title: "[Github] Updated Repo Tree"
-      # Generate Repo Tree, save to README
-      - name: Tree
-        uses: RavelloH/readme-tree@latest
-        with:
-          ignoregit: "yes"
+      # Generate tree and update README
+      - name: Generate and update tree
+        run: |
+          # Generate tree structure
+          tree -a -I '.git|.direnv' > tree_output.tmp
+
+          # Update README between markers
+          sed -i '/<!-- readme-tree start -->/,/<!-- readme-tree end -->/c\
+          <!-- readme-tree start -->\
+          ```\
+          '"$(cat tree_output.tmp | sed 's/$/\\/')"'\
+          ```\
+          <!-- readme-tree end -->' README.md
+
+          # Clean up temp file
+          rm -f tree_output.tmp
       # Commit / Push
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          commit_message: "README Repo Tree Updated"
+          commit_message: "docs: update repository tree structure"
           commit_user_name: "GitHub Action"
           commit_user_email: "action@github.com"
