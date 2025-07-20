@@ -11,6 +11,7 @@
     ./zfs.nix
     ./backup
     ./samba.nix
+    ./grafana/grafana.nix
     # ./wifi.nix
     "${self}/modules/nixos/_core.nix"
   ];
