@@ -1,4 +1,4 @@
-name: "Build Matrix"
+name: "Update flake.lock"
 on:
   # pull_request:
   schedule:
