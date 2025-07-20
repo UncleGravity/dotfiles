@@ -68,6 +68,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │           └── zfs.nix
 ├── modules
 │   ├── common
+│   │   ├── config.nix
 │   │   ├── default.nix
 │   │   ├── pkgs.nix
 │   │   └── sops.nix
@@ -209,7 +210,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-53 directories, 148 files
+53 directories, 149 files
 ```
 <!-- readme-tree end -->
 
