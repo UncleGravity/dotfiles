@@ -18,6 +18,7 @@ set -euo pipefail
 #   ntfy --title "Build finished" --priority high "All tests passed ✅"
 #   echo "Backup complete" | ntfy --tags backup,floppy
 #   ntfy -c https://example.com "Someone is at the door 🚪"
+#   long-command && ntfy success || ntfy fail
 
 NTFY_URL="${NTFY_URL:-https://ntfy.sh/large-language-mofongo}"
 

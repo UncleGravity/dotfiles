@@ -3,5 +3,9 @@
   wrappers.helix = {
     basePackage = pkgs.helix;
     appendFlags = ["--config" ./config.toml];
+    pathAdd = [
+          # pkgs.nixd
+          # etc
+        ];
   };
 }
