@@ -93,7 +93,7 @@
 
         # --- 2. Personal packages (scripts + wrapped)
         my = prev.lib.recurseIntoAttrs {
-          wrapped = inputs.self.packages.${prev.system}.wrapped;
+          wrappers = inputs.self.packages.${prev.system}.wrappers;
           scripts = inputs.self.packages.${prev.system}.scripts;
         };
       })
@@ -270,6 +270,26 @@
         inherit system pkgs;
         wrapper-manager = inputs.wrapper-manager;
       }
+    );
+
+    # --------------------------------------------------------------------------
+    # Apps - for `nix run .#<name>` to support wrappers + scripts bundles
+    # --------------------------------------------------------------------------
+    apps = forAllSystems ({ system, pkgs, ... }:
+      let
+        # Get the individual packages to create apps from
+        scriptsResult = pkgs.callPackage ./packages/scripts {inherit system;};
+        wrappedResult = pkgs.callPackage ./packages/wrappers {wrapper-manager = inputs.wrapper-manager;};
+
+        # Both now provide clean packages attribute sets
+        allPackages = scriptsResult.packages // wrappedResult.packages;
+
+        mkApp = name: package: {
+          type = "app";
+          program = "${package}/bin/${package.meta.mainProgram or name}";
+        };
+      in
+        builtins.mapAttrs mkApp allPackages
     );
 
     # --------------------------------------------------------------------------

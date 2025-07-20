@@ -6,17 +6,9 @@
 # All wrapper-manager modules go here.
 # https://github.com/viperML/wrapper-manager/
 #
-# 1.  `modules` is a hand-maintained list of files, each exporting a
-#     wrapper-manager module (attrset).
-# 2.  We call `wrapper-manager.lib` once with that list.
-# 3.  We return:
-#       • every wrapped derivation under its name   (e.g. `hello`)
-#       • a `build` attrset containing { packages, toplevel, … } for bulk use
-#
-# Example usage after importing this attrset as `wrapped`:
-#
-#   nix run .#wrapped.hello
-#   environment.systemPackages = builtins.attrValues wrapped.build.packages;
+# Returns both individual packages and the toplevel bundle for clean usage:
+#   • packages: Individual wrapped derivations for apps
+#   • toplevel: Single bundle derivation for systemPackages
 # -----------------------------------------------------------------------------
 let
   wmEval = wrapper-manager.lib {
@@ -27,6 +19,7 @@ let
       # add more modules here (./git.nix, ./fzf.nix, …)
     ];
   };
-in
-  # Forward individual wrappers AND bulk helpers (`build` attrset).
-  wmEval.config.build.packages // {build = wmEval.config.build;}
+in {
+  packages = wmEval.config.build.packages; # Used by flake "apps" output, to call each script individually from terminal with `nix run .#<name>` or `nix run .#apps.<system>.<name>
+  toplevel = wmEval.config.build.toplevel; # Used by flake "packages" output, passed to systemPackages list for bulk install of all scripts with `inputs.self.packages.${pkgs.system}.wrapped.<name>`
+}

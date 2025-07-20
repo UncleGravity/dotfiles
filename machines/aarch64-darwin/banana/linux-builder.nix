@@ -25,7 +25,7 @@
           diskSize = 40 * 1024; # 40GB
           memorySize = 16 * 1024; # 8GB
         };
-        cores = 4;
+        cores = 8;
       };
     };
   };

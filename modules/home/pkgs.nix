@@ -168,9 +168,8 @@
   custom = [
     # inputs.self.packages.${pkgs.system}.scripts
     # inputs.self.packages.${pkgs.system}.wrapped.hello
-    pkgs.my.scripts.default
-    pkgs.my.wrapped.hello
-    pkgs.my.wrapped.helix
+    pkgs.my.scripts
+    pkgs.my.wrappers
   ];
 
   ###########################################################################

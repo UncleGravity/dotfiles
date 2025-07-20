@@ -12,7 +12,7 @@ let
   platformDirs =
     [./all]
     ++ lib.optionals pkgs.stdenv.isDarwin [./darwin]
-    ++ lib.optionals pkgs.stdenv.isLinux [./linux];
+    ++ lib.optionals pkgs.stdenv.isLinux [./linux]; # Create this dir if needed
 
   bundle = stdenvNoCC.mkDerivation {
     pname = "scripts";
@@ -54,7 +54,9 @@ let
   # 2.  Discover script names present in the bundle
   ##############################################################################
   scriptsFromDir = dir:
-    lib.attrNames (lib.filterAttrs (_: t: t == "regular") (builtins.readDir dir));
+    if builtins.pathExists dir
+    then lib.attrNames (lib.filterAttrs (_: t: t == "regular") (builtins.readDir dir))
+    else [];
 
   scriptNames = lib.unique (
     scriptsFromDir ./all
@@ -86,7 +88,9 @@ let
 
   perScriptPkgs = lib.genAttrs scriptNames mkScript;
   ##############################################################################
-  # 4.  Expose everything
+  # 4.  Expose everything with consistent interface
   ##############################################################################
-in
-  perScriptPkgs // {default = bundle;}
+in {
+  packages = perScriptPkgs; # Used by flake "apps" output, to call each script individually from terminal with `nix run .#<name>` or `nix run .#apps.<system>.<name>
+  toplevel = bundle; # Used by flake "packages" output, passed to systemPackages list for bulk install of all scripts with `inputs.self.packages.${pkgs.system}.wrapped.<name>`
+}
