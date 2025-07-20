@@ -55,6 +55,11 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │           │   └── resolve-snapshot-paths.sh
 │           ├── configuration.nix
 │           ├── disko.nix
+│           ├── grafana
+│           │   ├── dashboards
+│           │   │   ├── restic-backups.json
+│           │   │   └── system-overview.json
+│           │   └── grafana.nix
 │           ├── hardware.nix
 │           ├── home.nix
 │           ├── mounts.nix
@@ -170,11 +175,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       ├── display-manager.nix
 │       ├── docker.nix
 │       ├── escape-hatch.nix
-│       ├── grafana
-│       │   ├── dashboards
-│       │   │   ├── restic-backups.json
-│       │   │   └── system-overview.json
-│       │   └── grafana.nix
 │       ├── guacamole
 │       │   ├── default.nix
 │       │   └── user-mapping.xml.sops
