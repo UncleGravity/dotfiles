@@ -2,9 +2,13 @@
   config,
   lib,
   pkgs,
+  username,
   ...
 }: {
-  sops.secrets."ntfy/topic" = {}; # For NTFY notifications
+  sops.secrets."ntfy/topic" = {
+    owner = username;
+    mode = "0400";
+  }; # For NTFY notifications
 
   environment = {
     systemPackages = [pkgs.ntfy-sh];
