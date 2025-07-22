@@ -287,6 +287,7 @@
         mkApp = name: package: {
           type = "app";
           program = "${package}/bin/${package.meta.mainProgram or name}";
+          meta = package.meta or {};
         };
       in
         builtins.mapAttrs mkApp allPackages

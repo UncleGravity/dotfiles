@@ -90,6 +90,7 @@ in {
   #  macOS's System configuration
   # nix-darwin options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
   # extra options: https://macos-defaults.com/
+  # Manually find options with: https://github.com/joshryandavis/defaults2nix
   ###################################################################################
   system = {
     primaryUser = username;
