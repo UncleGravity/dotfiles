@@ -1,3 +1,5 @@
+# Inspired by:
+# https://github.com/MattSturgeon/nixpkgs-review-gha/blob/cfe1d72456a33d226de4bc2830112109750941c3/.github/actions/setup-nix/action.yml
 name: "Free Up Space"
 description: "Free up disk space on GitHub Actions runners across different operating systems"
 inputs:

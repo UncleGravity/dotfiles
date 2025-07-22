@@ -1,108 +1,54 @@
+# -----------------------------------------------------------------------------
+# Workflow: update-flake-lock.yml
+#
+# Purpose
+#   • Runs `DeterminateSystems/update-flake-lock` to bump `flake.lock`
+#   • Opens/updates a PR when changes are found
+#   • Sends a ntfy notification when a PR is (re)created
+#
+# Heavy multi-platform builds are handled by the regular CI workflow.
+# -----------------------------------------------------------------------------
 name: "Update flake.lock"
-on:
-  # pull_request:
-  schedule:
-    - cron: "0 2 * * 0" # Run every Sunday at 2 AM UTC
-  workflow_dispatch:
-# Write access to commit changes and create pull requests
-permissions:
-  contents: write
-  pull-requests: write
-jobs:
-  update-flake:
-    runs-on: ubuntu-latest
-    name: "Update flake.lock"
-    outputs:
-      flake-updated: ${{ steps.update.outputs.updated }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - name: Update flake.lock
-        id: update
-        run: |
-          nix flake update
-          if git diff --quiet flake.lock; then
-            echo "updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "updated=true" >> $GITHUB_OUTPUT
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add flake.lock
-            git commit -m "chore: update flake.lock"
-          fi
-      - name: Upload updated flake.lock
-        if: steps.update.outputs.updated == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: updated-flake-lock
-          path: flake.lock
-  build:
-    needs: update-flake
-    if: needs.update-flake.outputs.flake-updated == 'true'
-    strategy:
-      fail-fast: true
-      matrix:
-        system: [aarch64-linux, x86_64-linux, aarch64-darwin]
-        include:
-          - system: aarch64-linux
-            runner: ubuntu-24.04-arm
-          - system: x86_64-linux
-            runner: ubuntu-latest
-          - system: aarch64-darwin
-            runner: macos-latest
-    runs-on: ${{ matrix.runner }}
-    name: "Build ${{ matrix.system }}"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download updated flake.lock
-        uses: actions/download-artifact@v4
-        with:
-          name: updated-flake-lock
-          path: .
-      - uses: ./.github/actions/free-up-space # Free up space
-      - uses: DeterminateSystems/nix-installer-action@main # Install Nix
-      - uses: cachix/cachix-action@v15 # Setup Cachix
-        with:
-          name: ${{ secrets.CACHIX_CACHE }}
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-      - name: Build Flake Ouputs
-        run: |
-          nix run nixpkgs#omnix -- ci run . \
-            --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
-            --include-all-dependencies \
-            --systems ${{ matrix.system }}
-      - name: Push result to Cachix
-        run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
-  create-pr:
-    needs: [update-flake, build]
-    if: needs.update-flake.outputs.flake-updated == 'true'
-    runs-on: ubuntu-latest
-    name: "Create Pull Request"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download updated flake.lock
-        uses: actions/download-artifact@v4
-        with:
-          name: updated-flake-lock
-          path: .
-      - name: Create Pull Request with updated flake.lock
-        id: create-pr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update flake.lock"
-          title: "chore: update flake.lock"
-          body: |
-            Automated update of flake.lock file.
 
-            This PR was automatically created by the ${{ github.workflow }} workflow.
-            All matrix builds passed successfully.
-          branch: update-flake-lock
-          delete-branch: true
-          base: main
-      - name: Send pull request notification
-        if: steps.create-pr.outputs.pull-request-url
-        uses: ./.github/actions/ntfy-notify
+on:
+  schedule:
+    # Every Sunday at 02:00 UTC
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write # push branch with new lockfile
+  pull-requests: write # open / update PR
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      PR_BRANCH: update-flake-lock
+    steps:
+      - uses: actions/checkout@v4 # Checkout repo
+      - uses: DeterminateSystems/nix-installer-action@main # Install Nix
+
+      # Update flake inputs + Open pull request
+      - name: Update flake.lock & open PR
+        id: update-flake
+        uses: DeterminateSystems/update-flake-lock@v20
+        with:
+          commit-msg: "chore: update flake.lock"
+          pr-title: "chore: update flake.lock"
+          # Short PR body; CI runs will appear automatically
+          pr-body: |
+            Automated update of `flake.lock`.
+
+            A lightweight `nix flake check` will run in CI; the full
+            multi-platform build matrix will follow as standard PR checks.
+          branch: ${{ env.PR_BRANCH }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Notify (only when a PR is freshly created)
+      - name: Send pull-request notification
+        if: steps.update-flake.outputs.pull-request-operation == 'created'
+        uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
           title: "[Github] PR Created"
@@ -111,26 +57,4 @@ jobs:
           message: |
             ${{ github.workflow }} - Pull request created
             Repo: ${{ github.repository }}
-          button_url: ${{ steps.create-pr.outputs.pull-request-url }}
-  notify:
-    needs: [update-flake, build, create-pr]
-    if: always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
-    runs-on: ubuntu-latest
-    name: "Notify Uncaptured Failures"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Notify uncaptured failure
-        uses: ./.github/actions/ntfy-notify
-        with:
-          topic: ${{ secrets.NTFY_TOPIC }}
-          title: "[Github] Workflow Failure"
-          priority: "5"
-          tags: "x"
-          message: |
-            ${{ github.workflow }} - Uncaptured failure detected
-            Repo: ${{ github.repository }}
-
-            Job Results:
-            - update-flake: ${{ needs.update-flake.result }}
-            - build: ${{ needs.build.result }}
-            - create-pr: ${{ needs.create-pr.result }}
+          button_url: ${{ steps.update-flake.outputs.pull-request-url }}

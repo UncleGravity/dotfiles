@@ -3,6 +3,8 @@ name: Update Repo Tree
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "README.md" # Avoid recursion
   workflow_dispatch:
 # Permissions: Write access to commit changes
 permissions:
@@ -48,7 +50,7 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/ntfy-notify
+      - uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
           title: "[Github] ${{ github.workflow }} - ${{ needs.tree.result == 'success' && 'SUCCESS' || 'FAILED' }}"

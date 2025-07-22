@@ -1,0 +1,87 @@
+# -----------------------------------------------------------------------------
+# Workflow: ci.yml
+#
+# Purpose
+#   • Validates Nix flake configuration across multiple platforms
+#   • Builds all flake outputs for aarch64-linux, x86_64-linux, aarch64-darwin
+#   • Save build outputs to Cachix to avoid rebuilding on my Nix hosts
+#   • Sends notifications on CI failures via ntfy
+#
+# Triggered on pull requests to ensure changes work across all supported systems.
+# -----------------------------------------------------------------------------
+name: "CI"
+
+on:
+  # push:
+  # branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flake-check:
+    runs-on: ubuntu-latest
+    name: "Flake Check"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: Run nix flake check
+        run: nix flake check --all-systems --no-build --show-trace
+
+  build:
+    needs: flake-check
+    strategy:
+      fail-fast: true
+      matrix:
+        system: [aarch64-linux, x86_64-linux, aarch64-darwin]
+        include:
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - system: x86_64-linux
+            runner: ubuntu-latest
+          - system: aarch64-darwin
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
+    name: "Build ${{ matrix.system }}"
+    steps:
+      - uses: actions/checkout@v4 # Checkout
+      - uses: ./.github/actions/free-up-space # Free disk space
+      - uses: DeterminateSystems/nix-installer-action@main # Install Nix
+
+      # Configure Cachix binary cache
+      - uses: cachix/cachix-action@v15
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      # Build all flake outputs for the target system
+      - name: Build flake outputs
+        run: |
+          nix run nixpkgs#omnix -- ci run . \
+            --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
+            --include-all-dependencies \
+            --systems ${{ matrix.system }}
+
+      # Upload build results to Cachix
+      - name: Push result to Cachix
+        run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
+
+  notify:
+    needs: [flake-check, build]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    name: "Notify CI Failures"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ntfy
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[Github] CI Workflow Fail"
+          priority: "5"
+          tags: "x"
+          message: |
+            CI build job failed
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
