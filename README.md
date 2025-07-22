@@ -13,9 +13,10 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── actions
 │   │   ├── free-up-space
 │   │   │   └── action.yml
-│   │   └── ntfy-notify
+│   │   └── ntfy
 │   │       └── action.yml
 │   └── workflows
+│       ├── ci.yml
 │       ├── update-flake-lock.yml
 │       └── update-tree.yml
 ├── .gitignore
@@ -26,7 +27,10 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── flake.nix
 ├── justfile
 ├── machines
-│   ├── aarch64-darwin
+│   ├── darwin
+│   │   ├── BASURA
+│   │   │   ├── configuration.nix
+│   │   │   └── home.nix
 │   │   ├── BENGKUI
 │   │   │   ├── configuration.nix
 │   │   │   └── home.nix
@@ -34,42 +38,41 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │       ├── configuration.nix
 │   │       ├── home.nix
 │   │       └── linux-builder.nix
-│   ├── aarch64-linux
-│   │   ├── nixos
-│   │   │   ├── configuration.nix
-│   │   │   ├── hardware.nix
-│   │   │   └── home.nix
+│   ├── hm
 │   │   └── pi
 │   │       ├── dirty-post-install.sh
 │   │       └── home.nix
-│   ├── x86_64-darwin
-│   │   └── BASURA
-│   │       ├── configuration.nix
-│   │       └── home.nix
-│   └── x86_64-linux
-│       └── kiwi
-│           ├── backup
-│           │   ├── cleanup-snapshots.sh
-│           │   ├── create-snapshots.sh
-│           │   ├── default.nix
-│           │   └── resolve-snapshot-paths.sh
+│   └── nixos
+│       ├── kiwi
+│       │   ├── configuration.nix
+│       │   ├── hardware
+│       │   │   ├── disko.nix
+│       │   │   ├── hardware.nix
+│       │   │   ├── mounts.nix
+│       │   │   └── zfs.nix
+│       │   ├── home.nix
+│       │   └── services
+│       │       ├── backup
+│       │       │   ├── cleanup-snapshots.sh
+│       │       │   ├── create-snapshots.sh
+│       │       │   ├── default.nix
+│       │       │   └── resolve-snapshot-paths.sh
+│       │       ├── grafana
+│       │       │   ├── dashboards
+│       │       │   │   ├── restic-backups.json
+│       │       │   │   └── system-overview.json
+│       │       │   └── grafana.nix
+│       │       ├── samba.nix
+│       │       └── wifi.nix
+│       └── nixos
 │           ├── configuration.nix
-│           ├── disko.nix
-│           ├── grafana
-│           │   ├── dashboards
-│           │   │   ├── restic-backups.json
-│           │   │   └── system-overview.json
-│           │   └── grafana.nix
 │           ├── hardware.nix
-│           ├── home.nix
-│           ├── mounts.nix
-│           ├── samba.nix
-│           ├── wifi.nix
-│           └── zfs.nix
+│           └── home.nix
 ├── modules
 │   ├── common
 │   │   ├── config.nix
 │   │   ├── default.nix
+│   │   ├── ntfy.nix
 │   │   ├── pkgs.nix
 │   │   └── sops.nix
 │   ├── darwin
@@ -186,14 +189,13 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── new_tree.txt
 ├── packages
 │   ├── default.nix
+│   ├── greet.nix
 │   ├── scripts
 │   │   ├── _completions
-│   │   │   ├── _ntfy
 │   │   │   ├── _push
 │   │   │   ├── _t
 │   │   │   └── _vm
 │   │   ├── all
-│   │   │   ├── ntfy
 │   │   │   ├── push
 │   │   │   └── t
 │   │   ├── darwin
@@ -210,7 +212,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-53 directories, 149 files
+54 directories, 150 files
 ```
 <!-- readme-tree end -->
 
