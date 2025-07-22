@@ -14,12 +14,6 @@ in {
       default = true;
       description = "Whether to enable rootless Docker";
     };
-
-    unprivilegedPortStart = lib.mkOption {
-      type = lib.types.int;
-      default = 80;
-      description = "Lowest port number that rootless Docker can bind to";
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -41,7 +35,7 @@ in {
 
     # Rootless Docker won't have permission to use ports below 1024 by default
     boot.kernel.sysctl = lib.mkIf cfg.enableRootless {
-      "net.ipv4.ip_unprivileged_port_start" = cfg.unprivilegedPortStart;
+      "net.ipv4.ip_unprivileged_port_start" = 80;
     };
   };
 }

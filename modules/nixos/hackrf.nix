@@ -16,9 +16,7 @@ in {
     # https://github.com/NixOS/nixpkgs/blob/d1b9c95fdfe16e551737edc6e0b9646cfb9a6850/nixos/modules/hardware/hackrf.nix
 
     users.users.${username}.extraGroups = ["plugdev"];
-
-    # Create the plugdev group if it doesn't exist
-    users.groups.plugdev = {};
+    users.groups.plugdev = {}; # Create the plugdev group if it doesn't exist
 
     # Add udev rule to allow access to the hackrf device
     services.udev.extraRules = ''
