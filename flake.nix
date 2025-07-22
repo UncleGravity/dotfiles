@@ -102,16 +102,16 @@
     # --------------------------------------------------------------------------
     # System config helpers
     # --------------------------------------------------------------------------
-    mkHomeManagerConfig = { system, username, hostname, homeStateVersion,}:{
+    mkHomeManagerConfig = { platform, username, hostname, homeStateVersion,}:{
       home-manager = {
         extraSpecialArgs = {
           inherit inputs self username homeStateVersion;
         };
         useGlobalPkgs = true;
         useUserPackages = true;
-        # This assumes that the home.nix file is in the machines/${system}/${hostname} directory.
+        # This assumes that the home.nix file is in the machines/${platform}/${hostname} directory.
         # ie. This only works for a single user.
-        users.${username} = import ./machines/${system}/${hostname}/home.nix;
+        users.${username} = import ./machines/${platform}/${hostname}/home.nix;
         sharedModules = [
           inputs.nixvim.homeManagerModules.nixvim
           ./modules/home
@@ -136,10 +136,10 @@
           ./modules/nixos
 
           # System config
-          ./machines/${system}/${hostname}/configuration.nix
+          ./machines/nixos/${hostname}/configuration.nix
 
           # Home Manager Config
-          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
+          (mkHomeManagerConfig {platform = "nixos"; inherit username hostname homeStateVersion;})
 
           # Overlays
           { nixpkgs.overlays = overlays; }
@@ -154,7 +154,7 @@
         };
         modules = [
           # System Config
-          ./machines/${system}/${hostname}/configuration.nix
+          ./machines/darwin/${hostname}/configuration.nix
           inputs.sops-nix.darwinModules.sops
 
           # Input Modules
@@ -165,7 +165,7 @@
           ./modules/darwin
 
           # Home Manager Config
-          (mkHomeManagerConfig {inherit system username hostname homeStateVersion;})
+          (mkHomeManagerConfig {platform = "darwin"; inherit username hostname homeStateVersion;})
 
           {
             # Nix-Homebrew Config
@@ -195,7 +195,7 @@
           ./modules/home
 
           # Home Manager Config
-          ./machines/${system}/${username}/home.nix
+          ./machines/hm/${username}/home.nix
         ];
       };
 
