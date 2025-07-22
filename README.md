@@ -263,9 +263,9 @@ Requirement: configure iCloud for clipboard sharing.
 
 3. Install Nix (Determinate Installer)
    ```bash
-   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
    ```
-   > 💡 You will need to explicitly say `no` when prompted to install Determinate Nix. We want _upstream_ Nix.
+   > 💡 Say `no` if prompted to install Determinate Nix. We want _upstream_ Nix.
 
    > 💡 If you get an error about `Nix build user group`, run the following:
    ```bash
