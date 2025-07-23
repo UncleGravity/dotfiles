@@ -19,6 +19,7 @@ on:
 permissions:
   contents: write # push branch with new lockfile
   pull-requests: write # open / update PR
+  actions: write # allow this workflow to trigger CI
 
 jobs:
   update:
