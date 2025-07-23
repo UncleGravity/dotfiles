@@ -33,7 +33,7 @@ jobs:
       # Update flake inputs + Open pull request
       - name: Update flake.lock & open PR
         id: update-flake
-        uses: DeterminateSystems/update-flake-lock@v20
+        uses: DeterminateSystems/update-flake-lock@v27
         with:
           commit-msg: "chore: update flake.lock"
           pr-title: "chore: update flake.lock"
