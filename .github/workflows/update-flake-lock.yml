@@ -48,7 +48,7 @@ jobs:
 
       # Notify (only when a PR is freshly created)
       - name: Send pull-request notification
-        if: steps.update-flake.outputs.pull-request-operation == 'created'
+        if: steps.update-flake.outputs.pull-request-operation == 'created' || steps.update-flake.outputs.pull-request-operation == 'updated'
         uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
