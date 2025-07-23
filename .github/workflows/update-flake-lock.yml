@@ -44,7 +44,7 @@ jobs:
             A lightweight `nix flake check` will run in CI; the full
             multi-platform build matrix will follow as standard PR checks.
           branch: ${{ env.PR_BRANCH }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_PAT }}
 
       # Notify (only when a PR is freshly created)
       - name: Send pull-request notification
