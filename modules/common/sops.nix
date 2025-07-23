@@ -18,6 +18,7 @@ in {
     # age.keyFile = "${config.users.users.${username}.home}/.config/sops/age/keys.txt";
     defaultSopsFile = "${secretsDir}/secrets.yaml";
     validateSopsFiles = true;
+    # validateSopsFiles = builtins.pathExists "/etc/ssh/ssh_host_ed25519_key"; # Only validate when SSH key exists (not in CI)
 
     secrets = lib.mkMerge [
       # Work secrets, only on macOS machines
