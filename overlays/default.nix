@@ -1,6 +1,6 @@
 { inputs }:[
 
-#   # Option . Declare overlays in this file
+#   # Option 1. Declare overlays in this file
 #   (final: prev: {
 
 #   zig = inputs.zig.packages.${prev.system}.master;
