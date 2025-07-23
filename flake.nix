@@ -67,6 +67,11 @@
   outputs = inputs @ { self, nixpkgs, home-manager, darwin, ... }:
   let
     # --------------------------------------------------------------------------
+    # Overlays
+    # --------------------------------------------------------------------------
+    overlays = import ./overlays { inherit inputs; };
+
+    # --------------------------------------------------------------------------
     # Platform Helpers
     # --------------------------------------------------------------------------
     systems = {
@@ -82,22 +87,6 @@
         let
           pkgs = import nixpkgs { inherit system overlays; };
         in f { inherit system pkgs; lib = pkgs.lib; });
-
-    # --------------------------------------------------------------------------
-    # Overlays
-    # --------------------------------------------------------------------------
-    overlays = [
-      (final: prev: {
-        # --- 1. nixpkgs
-        zig = inputs.zig.packages.${prev.system}.master;
-
-        # --- 2. Personal packages (scripts + wrapped)
-        my = prev.lib.recurseIntoAttrs {
-          wrappers = inputs.self.packages.${prev.system}.wrappers;
-          scripts = inputs.self.packages.${prev.system}.scripts;
-        };
-      })
-    ];
 
     # --------------------------------------------------------------------------
     # System config helpers
