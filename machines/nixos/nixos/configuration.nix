@@ -6,12 +6,11 @@
   username,
   hostname,
   systemStateVersion,
-  self,
   ...
 }: {
   imports = [
     ./hardware.nix
-    "${self}/modules/nixos/_core.nix"
+    "${inputs.self}/modules/nixos/_core.nix"
   ];
 
   # ---------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 {
-  self,
   inputs,
   systemStateVersion,
   ...
@@ -13,7 +12,7 @@
     ./services/samba.nix
     ./services/grafana/grafana.nix
     # ./services/wifi.nix
-    "${self}/modules/nixos/_core.nix"
+    "${inputs.self}/modules/nixos/_core.nix"
   ];
 
   # ---------------------------------------------------------------------------

@@ -64,7 +64,7 @@
     };
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, darwin, ... }:
+  outputs = inputs @ { nixpkgs, ... }:
   let
     # --------------------------------------------------------------------------
     # Overlays
@@ -94,25 +94,25 @@
     mkHomeManagerConfig = { platform, username, hostname, homeStateVersion,}:{
       home-manager = {
         extraSpecialArgs = {
-          inherit inputs self username homeStateVersion;
+          inherit inputs username homeStateVersion;
         };
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        # This assumes that the home.nix file is in the machines/${platform}/${hostname} directory.
-        # ie. This only works for a single user.
-        users.${username} = import ./machines/${platform}/${hostname}/home.nix;
         sharedModules = [
           inputs.nixvim.homeManagerModules.nixvim
           ./modules/home
         ];
+        useGlobalPkgs = true; # Share pkgs with darwin/nixos
+        useUserPackages = true;
+        # This assumes that the home.nix file is in the machines/${platform}/${hostname} directory.
+        # ie. This only works for a single user.
+        users.${username} = import ./machines/${platform}/${hostname}/home.nix;
       };
     };
 
     mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }:
       nixpkgs.lib.nixosSystem {
-        inherit system;
+        # inherit system;
         specialArgs = {
-          inherit inputs self;
+          inherit inputs;
           inherit username hostname systemStateVersion homeStateVersion;
         };
         modules = [
@@ -130,25 +130,28 @@
           # Home Manager Config
           (mkHomeManagerConfig {platform = "nixos"; inherit username hostname homeStateVersion;})
 
-          # Overlays
-          { nixpkgs.overlays = overlays; }
+          # Nixpkgs Config
+          {
+            nixpkgs.hostPlatform = system;
+            nixpkgs.overlays = overlays;
+          }
         ];
       };
 
     mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }:
-      darwin.lib.darwinSystem {
-        inherit system;
+      inputs.darwin.lib.darwinSystem {
+        # inherit system;
         specialArgs = {
-          inherit inputs self username hostname systemStateVersion homeStateVersion;
+          inherit inputs username hostname systemStateVersion homeStateVersion;
         };
         modules = [
+          # Input Modules
+          inputs.sops-nix.darwinModules.sops
+          inputs.home-manager.darwinModules.home-manager
+          inputs.nix-homebrew.darwinModules.nix-homebrew
+
           # System Config
           ./machines/darwin/${hostname}/configuration.nix
-          inputs.sops-nix.darwinModules.sops
-
-          # Input Modules
-          home-manager.darwinModules.home-manager
-          inputs.nix-homebrew.darwinModules.nix-homebrew
 
           # My modules
           ./modules/darwin
@@ -164,17 +167,18 @@
               autoMigrate = true;
             };
 
-            # Overlays
+            # Nixpkgs
             nixpkgs.overlays = overlays;
+            nixpkgs.hostPlatform = system;
           }
         ];
       };
 
     mkHomeManagerSystem = { system, pkgs, username, homeStateVersion }:
-      home-manager.lib.homeManagerConfiguration {
+      inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
-          inherit inputs self username homeStateVersion;
+          inherit inputs username homeStateVersion;
         };
         modules = [
           # Input Modules
@@ -296,7 +300,7 @@
             vulnix
             omnix
             cachix
-            # self.packages.${system}.scripts  # Your scripts available in dev shell
+            # inputs.self.packages.${system}.scripts  # Your scripts available in dev shell
           ];
 
           # shellHook = ''

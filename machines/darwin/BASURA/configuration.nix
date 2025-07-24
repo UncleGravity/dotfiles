@@ -5,12 +5,11 @@
   inputs,
   username,
   hostname,
-  self,
   systemStateVersion,
   ...
 }: {
   imports = [
-    "${self}/modules/darwin/_core.nix"
+    "${inputs.self}/modules/darwin/_core.nix"
   ];
 
   # --- Overrides or Machine-Specific Settings ---
