@@ -94,7 +94,7 @@
     mkHomeManagerConfig = { platform, username, hostname, homeStateVersion,}:{
       home-manager = {
         extraSpecialArgs = {
-          inherit inputs username homeStateVersion;
+          inherit inputs username;
         };
         sharedModules = [
           inputs.nixvim.homeManagerModules.nixvim
@@ -104,7 +104,10 @@
         useUserPackages = true;
         # This assumes that the home.nix file is in the machines/${platform}/${hostname} directory.
         # ie. This only works for a single user.
-        users.${username} = import ./machines/${platform}/${hostname}/home.nix;
+        users.${username} = {
+          imports = [ ./machines/${platform}/${hostname}/home.nix ];
+          home.stateVersion = homeStateVersion;
+        };
       };
     };
 
@@ -113,7 +116,7 @@
         # inherit system;
         specialArgs = {
           inherit inputs;
-          inherit username hostname systemStateVersion homeStateVersion;
+          inherit username hostname homeStateVersion;
         };
         modules = [
           # Input modules
@@ -121,20 +124,23 @@
           inputs.disko.nixosModules.disko
           inputs.sops-nix.nixosModules.sops
 
-          # My modules
-          ./modules/nixos
-
-          # System config
-          ./machines/nixos/${hostname}/configuration.nix
+          ./modules/nixos # My modules
+          ./machines/nixos/${hostname}/configuration.nix # System config
 
           # Home Manager Config
           (mkHomeManagerConfig {platform = "nixos"; inherit username hostname homeStateVersion;})
 
-          # Nixpkgs Config
+          # -- Global NixOS Config ------------------------------------------
           {
-            nixpkgs.hostPlatform = system;
-            nixpkgs.overlays = overlays;
+            # Nixpkgs Config
+            nixpkgs = {
+              hostPlatform = system;
+              overlays = overlays;
+              config.allowUnfree = true; # buhaoyisi duibuqi
+            };
+            system.stateVersion = systemStateVersion; # no change or u will regret
           }
+          # -----------------------------------------------------------------
         ];
       };
 
@@ -142,7 +148,7 @@
       inputs.darwin.lib.darwinSystem {
         # inherit system;
         specialArgs = {
-          inherit inputs username hostname systemStateVersion homeStateVersion;
+          inherit inputs username hostname homeStateVersion;
         };
         modules = [
           # Input Modules
@@ -150,27 +156,31 @@
           inputs.home-manager.darwinModules.home-manager
           inputs.nix-homebrew.darwinModules.nix-homebrew
 
-          # System Config
-          ./machines/darwin/${hostname}/configuration.nix
-
-          # My modules
-          ./modules/darwin
+          ./modules/darwin # My modules
+          ./machines/darwin/${hostname}/configuration.nix # System Config
 
           # Home Manager Config
           (mkHomeManagerConfig {platform = "darwin"; inherit username hostname homeStateVersion;})
 
+          # -- Global Darwin Config -----------------------------------------
           {
-            # Nix-Homebrew Config
+            # Nix-Homebrew
             nix-homebrew = {
               enable = hostname != "BENGKUI"; # false for bengkui
               user = username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
             };
 
-            # Nixpkgs
-            nixpkgs.overlays = overlays;
-            nixpkgs.hostPlatform = system;
+            # Nixpkgs Config
+            nixpkgs = {
+              hostPlatform = system;
+              overlays = overlays;
+              config.allowUnfree = true; # gomenasai
+            };
+
+            system.stateVersion = systemStateVersion; # no change or u will regret
           }
+          # ---------------------------------------------------------------
         ];
       };
 
@@ -184,11 +194,19 @@
           # Input Modules
           inputs.nixvim.homeManagerModules.nixvim
 
-          # My Home Modules
-          ./modules/home
-
-          # Home Manager Config
-          ./machines/hm/${username}/home.nix
+          ./modules/home # My Home Modules
+          ./machines/hm/${username}/home.nix # Home Manager Config
+          # -- Global Home-Manager Config -----------------------------------
+          {
+            # Nixpkgs Config
+            nixpkgs = {
+              # hostPlatform = system;
+              overlays = overlays;
+              config.allowUnfree = true; # 歹勢 歹勢
+            };
+            home.stateVersion = homeStateVersion; # no toques wey
+          }
+          # -----------------------------------------------------------------
         ];
       };
 
@@ -244,9 +262,9 @@
       };
     };
 
-    # Home Manager Configurations
+    # Home Manager ONLY Configurations
     homeConfigurations = {
-      # Raspberry Pi (home-manager only)
+      # Raspberry Pi
       pi = mkHomeManagerSystem {
         system = systems.aarch64-linux;
         pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};

@@ -45,7 +45,6 @@ in {
   #############################################################
 
   nix.channel.enable = false; # Flake gang
-  nixpkgs.config.allowUnfree = true; # gomenasai :(
 
   nix.settings = {
     experimental-features = "nix-command flakes";

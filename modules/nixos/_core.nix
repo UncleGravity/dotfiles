@@ -36,8 +36,6 @@ in {
     };
   };
 
-  nixpkgs.config.allowUnfree = true; # buhaoyisi duibuqi
-
   # ---------------------------------------------------------------------------
   # Automatic garbage collection
   programs.nh = {

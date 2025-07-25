@@ -1,6 +1,5 @@
 {
   inputs,
-  systemStateVersion,
   ...
 }: {
   imports = [
@@ -46,7 +45,4 @@
   # ---------------------------------------------------------------------------
   # Escape Hatch
   programs.nix-ld.enable = true;
-
-  # ---------------------------------------------------------------------------
-  system.stateVersion = systemStateVersion; # no touch
 }

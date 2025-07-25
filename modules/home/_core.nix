@@ -2,7 +2,6 @@
   config,
   pkgs,
   username,
-  homeStateVersion,
   ...
 }: {
   # --------------------------------------------------------------------------
@@ -32,8 +31,6 @@
 
     # Single source of truth for user-space packages
     packages = config.my.home.packages;
-
-    stateVersion = homeStateVersion; # Do not change or u will regret
   };
 
   # --------------------------------------------------------------------------

@@ -5,7 +5,6 @@
   options,
   username,
   hostname,
-  systemStateVersion,
   ...
 }: {
   imports = [
@@ -27,7 +26,4 @@
   # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  # ---------------------------------------------------------------------------
-  system.stateVersion = systemStateVersion; # no touch
 }

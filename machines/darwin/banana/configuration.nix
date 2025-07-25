@@ -5,7 +5,6 @@
   inputs,
   username,
   hostname,
-  systemStateVersion,
   ...
 }: {
   imports = [
@@ -37,5 +36,5 @@
   # Example: Override a specific system default for this machine
   # system.defaults.dock.autohide = false; # Keep the dock visible on this machine
 
-  system.stateVersion = systemStateVersion; # Don't change this
+  # system.stateVersion is now set at the flake level in mkDarwin
 }
