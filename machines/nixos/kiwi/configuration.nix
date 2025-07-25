@@ -1,7 +1,4 @@
-{
-  inputs,
-  ...
-}: {
+{inputs, ...}: {
   imports = [
     ./hardware/disko.nix # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
     ./hardware/hardware.nix

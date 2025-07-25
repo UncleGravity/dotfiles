@@ -5,8 +5,7 @@
   username,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.my.config;
 in {
   # My NixOS modules
@@ -76,8 +75,6 @@ in {
 
   # Select internationalisation properties.
   i18n.defaultLocale = cfg.locale.defaultLocale;
-
-
 
   # ---------------------------------------------------------------------------
   # Disable sleep, suspend, hibernate, and hybrid-sleep

@@ -50,10 +50,6 @@
         default = "en_US.UTF-8";
         description = "Default system locale";
       };
-
-
     };
-
-
   };
 }
