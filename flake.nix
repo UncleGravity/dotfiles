@@ -81,12 +81,12 @@
       x86_64-darwin = "x86_64-darwin";
     };
 
-    # Map a function over every supported system, passing it { system, pkgs, lib }
+    # Map a function over every supported system, passing it { system, pkgs }
     forAllSystems = f:
       nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
         let
           pkgs = import nixpkgs { inherit system overlays; };
-        in f { inherit system pkgs; lib = pkgs.lib; });
+        in f { inherit system pkgs; });
 
     # --------------------------------------------------------------------------
     # System config helpers
@@ -211,7 +211,9 @@
       };
 
   in {
+    # --------------------------------------------------------------------------
     # Darwin Configurations
+    # --------------------------------------------------------------------------
     darwinConfigurations = {
       # Darwin - banana
       banana = mkDarwin {
@@ -241,7 +243,9 @@
       };
     };
 
+    # --------------------------------------------------------------------------
     # NixOS Configurations
+    # --------------------------------------------------------------------------
     nixosConfigurations = {
       # kiwi (NAS)
       kiwi = mkNixos {
@@ -262,7 +266,9 @@
       };
     };
 
+    # --------------------------------------------------------------------------
     # Home Manager ONLY Configurations
+    # --------------------------------------------------------------------------
     homeConfigurations = {
       # Raspberry Pi
       pi = mkHomeManagerSystem {
