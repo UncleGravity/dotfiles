@@ -32,6 +32,7 @@ newline = "none"
 space = "all"
 tab = "all"
 
+# Open yazi
 [keys.normal]
 C-y = [
     ':sh rm -f /tmp/unique-file',
@@ -41,4 +42,22 @@ C-y = [
     ':redraw',
     ':set mouse false',
     ':set mouse true',
+]
+
+# Drag selection
+[keys.select]
+A-k = [
+    "yank_main_selection_to_clipboard",
+    "delete_selection",
+    "move_line_up",
+    "paste_clipboard_before",
+    "select_mode",
+]
+
+A-j = [
+    "yank_main_selection_to_clipboard",
+    "delete_selection",
+    "move_line_down",
+    "paste_clipboard_before",
+    "select_mode",
 ]
