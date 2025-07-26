@@ -29,13 +29,16 @@ tabpad = "·"
 
 [editor.whitespace.render]
 newline = "none"
-space = "none"
+space = "all"
 tab = "all"
 
-[keys.insert]
-C-s = ["normal_mode", ":w", "insert_mode"]
-
 [keys.normal]
-C-f = ":format"
-C-q = ":q"
-C-s = ":w"
+C-y = [
+    ':sh rm -f /tmp/unique-file',
+    ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
+    ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+    ':open %sh{cat /tmp/unique-file}',
+    ':redraw',
+    ':set mouse false',
+    ':set mouse true',
+]
