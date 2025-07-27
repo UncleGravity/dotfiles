@@ -29,6 +29,13 @@ sync: nixpkgs-status
             ;;
         "darwin")
             HOSTNAME=$(scutil --get ComputerName)
+
+            # Check if Rosetta 2 is available
+            if ! arch -x86_64 /bin/bash -c 'exit 0' 2>/dev/null; then
+                echo "⚠️  WARNING: Rosetta 2 not available. Intel packages may fail."
+                echo ""
+            fi
+
             if ! nh darwin switch . -H $HOSTNAME; then
                 echo "❌ Failed to rebuild Darwin configuration."
                 exit 1
@@ -47,14 +54,6 @@ sync: nixpkgs-status
             ;;
     esac
     echo "✅ System configuration rebuilt successfully!"
-
-# Create symlink for Neovim configuration
-nvim:
-    @echo "🔗 Creating symlink for Neovim configuration..."
-    rm -rf "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
-    ln -sfn $(pwd)/home/dotfiles/nvim "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
-    @echo "✅ Don't forget to delete the symlink when you're done."
-    @echo "✅ Neovim configuration symlink created successfully!"
 
 # Update flake inputs
 update:

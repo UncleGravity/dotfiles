@@ -271,6 +271,7 @@
         "tmux-tokyo-night": "tmux-tokyo-night",
         "tmux-vim-navigator": "tmux-vim-navigator",
         "treefmt-nix": "treefmt-nix",
+        "virby": "virby",
         "wrapper-manager": "wrapper-manager",
         "zig": "zig"
       }
@@ -389,6 +390,26 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "virby": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1753531273,
+        "narHash": "sha256-PFtj1LqsuM5baIJyMjuALcbTOg+wETGMTbQXRCZuR84=",
+        "owner": "quinneden",
+        "repo": "virby-nix-darwin",
+        "rev": "25339514f13e5be62f1eb594d315c55201bebda0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quinneden",
+        "repo": "virby-nix-darwin",
         "type": "github"
       }
     },

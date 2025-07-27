@@ -35,6 +35,4 @@
 
   # Example: Override a specific system default for this machine
   # system.defaults.dock.autohide = false; # Keep the dock visible on this machine
-
-  # system.stateVersion is now set at the flake level in mkDarwin
 }

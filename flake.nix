@@ -36,6 +36,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    virby = {
+      url = "github:quinneden/virby-nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -155,6 +160,7 @@
           inputs.sops-nix.darwinModules.sops
           inputs.home-manager.darwinModules.home-manager
           inputs.nix-homebrew.darwinModules.nix-homebrew
+          inputs.virby.darwinModules.default
 
           ./modules/darwin # My modules
           ./machines/darwin/${hostname}/configuration.nix # System Config
