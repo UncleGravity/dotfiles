@@ -326,11 +326,12 @@ Requirement: configure iCloud for clipboard sharing.
    ```
 
 8. Build your new system:
-   - First run:
+   - First run. It collects all binary caches in the config to avoid unecessary builds.
    ```bash
-   sudo nix --experimental-features "nix-command flakes" run nix-darwin -- switch --flake .#<new-hostname>
+   nix run .#bootstrap <hostname>
    ```
    - Subsequent runs:
    ```bash
-   sudo darwin-rebuild switch --flake .#<new-hostname>
+   just sync
+   # or directly: nh darwin switch . -H <hostname>
    ```
