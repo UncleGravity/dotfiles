@@ -100,7 +100,7 @@ in {
       # Remove channel symlinks (they get recreated despite nix.channel.enable = false)
       rm -rf /Users/${username}/.nix-defexpr/channels
       rm -rf /Users/${username}/.nix-defexpr/channels_root
-      rm -f /Users/${username}/.nix-profile
+      rm -rf /Users/${username}/.nix-profile/*
       rmdir /Users/${username}/.nix-defexpr 2>/dev/null || true
     '';
 
