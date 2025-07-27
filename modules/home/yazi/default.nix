@@ -4,6 +4,17 @@
   pkgs,
   ...
 }: {
+  home.packages = with pkgs; [
+    _7zz # for archive extraction and preview
+    jq # json
+    ffmpeg # video thumbnails
+    poppler # Faster PDF
+    fd # search
+    ripgrep # search
+    fzf # nav
+    resvg # SVG Preview
+    imagemagick # Font, HEIC, and JPEG XL preview
+  ];
   programs.yazi = {
     enable = true;
     enableZshIntegration = true;
