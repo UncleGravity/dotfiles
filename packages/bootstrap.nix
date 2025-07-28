@@ -11,17 +11,22 @@ pkgs.writeShellApplication {
     #  - Evaluates the flake once to obtain per-host binary-cache info
     #  - Exports it via $NIX_CONFIG and calls `nh <platform> switch`
     # --------------------------------------------------------------------
+    #
+    # Get available hostnames from flake
+    get_available_hosts() {
+      local darwin_hosts nixos_hosts
+      darwin_hosts=$(nix eval --json .#darwinConfigurations --apply 'builtins.attrNames' 2>/dev/null | jq -r '.[]' | tr '\n' ' ')
+      nixos_hosts=$(nix eval --json .#nixosConfigurations --apply 'builtins.attrNames' 2>/dev/null | jq -r '.[]' | tr '\n' ' ')
+
+      echo "Available hostnames:"
+      [[ -n "$darwin_hosts" ]] && echo "  Darwin: $darwin_hosts"
+      [[ -n "$nixos_hosts" ]] && echo "  NixOS:  $nixos_hosts"
+    }
 
     usage() {
       echo "Usage: bootstrap <hostname>"
-      echo
-      echo "Available hostnames:"
-      nix eval --raw --expr '
-        let flake = builtins.getFlake ./.;
-        in builtins.concatStringsSep "\n" (
-          map (h: "  darwin: " + h) (builtins.attrNames flake.darwinConfigurations)
-        ++ map (h: "  nixos:  " + h) (builtins.attrNames flake.nixosConfigurations)
-        )'
+      echo ""
+      get_available_hosts
       exit 1
     }
 
