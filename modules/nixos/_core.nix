@@ -6,7 +6,7 @@
   pkgs,
   ...
 }: let
-  cfg = config.my.config;
+  cfg = config.my.global;
 in {
   # My NixOS modules
   my = {

@@ -2,10 +2,10 @@
 let
   # Shorthand to access custom configuration options defined in
   # `nix/modules/common/config.nix`.
-  cfg = config.my.config;
+  profiles = config.my.profile;
 in
 # Only enable `nh` (nix-helper) housekeeping when we're _not_ inside a VM.
-lib.mkIf (!cfg.isVM) {
+lib.mkIf (!profiles.isVM) {
   # ---------------------------------------------------------------------------
   # Automatic garbage collection & cleanup with `nh`
   programs.nh = {

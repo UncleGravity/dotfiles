@@ -4,7 +4,16 @@
   pkgs,
   ...
 }: {
-  options.my.config = {
+
+  options.my.profile = {
+    isVM = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Flag indicating if the system is a virtual machine";
+    };
+  };
+
+  options.my.global = {
     binaryCaches = {
       substituters = lib.mkOption {
         type = with lib.types; listOf str;
@@ -25,12 +34,6 @@
         ];
         description = "List of trusted public keys for binary caches";
       };
-    };
-
-    isVM = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Flag indicating if the system is a virtual machine";
     };
 
     ssh = {

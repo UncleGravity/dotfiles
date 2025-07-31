@@ -8,7 +8,7 @@
   hostname,
   ...
 }: let
-  cfg = config.my.config;
+  cfg = config.my.global;
 in {
   # --------------------------------------------------------------------------
   # My Darwin Modules
