@@ -35,16 +35,7 @@ in {
     };
   };
 
-  # ---------------------------------------------------------------------------
-  # Automatic garbage collection
-  programs.nh = {
-    enable = true;
-    clean = {
-      enable = true;
-      dates = "weekly";
-      extraArgs = "--keep 5 --keep-since 30d"; # keep 30 days, at least 5
-    };
-  };
+
 
   # ---------------------------------------------------------------------------
   # Bootloader.

@@ -10,6 +10,7 @@
     ./hackrf.nix
     ./immich.nix
     ./gui.nix
+    ./nh.nix
     ./tailscale.nix
   ];
 }
