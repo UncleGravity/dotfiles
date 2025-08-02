@@ -9,7 +9,7 @@
   # environment.systemPackages = lib.mkDefault [pkgs.qemu]; # qemu provides necessary tools
 
   nix.linux-builder = {
-    enable = true;
+    enable = false;
     ephemeral = true;
     config = {
       virtualisation = {
@@ -24,12 +24,15 @@
   };
 
   # Enable virby Linux builder
+  # Service org.nixos.virbyd
   services.virby = {
     enable = true;
-    onDemand = {
-      enable = true;
-      ttl = 180; # Idle timeout in minutes
-    };
+    cores = 12;
+    memory = 16384; # 16GB
+    # onDemand = {
+    #   enable = true;
+    #   ttl = 180; # Idle timeout in minutes
+    # };
     rosetta = true; # REQUIRES ROSETTA ENABLED MANUALLY: softwareupdate --install-rosetta --agree-to-license
     debug = true;
   };
