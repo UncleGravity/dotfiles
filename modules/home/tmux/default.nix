@@ -12,12 +12,6 @@
 
   # Plugins built via Nix (no TPM needed)
   # Using flake inputs instead of manual fetchFromGitHub
-  vim-tmux-navigator = pkgs.tmuxPlugins.mkTmuxPlugin {
-    pluginName = "vim-tmux-navigator";
-    rtpFilePath = "vim-tmux-navigator.tmux";
-    version = "unstable";
-    src = inputs.tmux-vim-navigator;
-  };
   tokyoNightPlugin = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "tmux-tokyo-night";
     rtpFilePath = "tmux-tokyo-night.tmux";
@@ -29,6 +23,8 @@ in {
 
   config = lib.mkIf cfg.enable {
     programs.fzf.tmux.enableShellIntegration = true;
+
+    # SESH
     programs.sesh = {
       enable = true;
       enableAlias = true;
@@ -49,26 +45,26 @@ in {
       enable = true;
       shell = "${pkgs.zsh}/bin/zsh";
       sensibleOnTop = true;
+      plugins = [
+        pkgs.tmuxPlugins.vim-tmux-navigator
+        {
+          plugin = tokyoNightPlugin;
+          extraConfig = ''
+            set -g @theme_session_icon "\uebc8" # 
+            set -g @theme_variation 'night'
+            # set -g @theme_plugins 'datetime'
+            set -g @theme_disable_plugins 1
+            set -g @theme_transparent_status_bar 'true'
+            # set -g @theme_active_pane_border_style '#83a598'
+          '';
+        }
+      ];
 
       extraConfig =
         builtins.readFile tmuxConf
         + ''
           # Ensure tmux uses zsh for new panes/windows
-          # set-option -g default-shell "${pkgs.zsh}/bin/zsh"
           set-option -g default-command "${pkgs.zsh}/bin/zsh -l"
-          # -----------------------------------------
-          # THEME
-          # -----------------------------------------
-          # set -g @theme_session_icon "\uf11c " # 
-          set -g @theme_session_icon "\uebc8" # 
-          set -g @theme_variation 'night'
-          # set -g @theme_plugins 'datetime'
-          set -g @theme_disable_plugins 1
-          set -g @theme_transparent_status_bar 'true'
-          set -g @theme_active_pane_border_style '#83a598'
-
-          run-shell ${vim-tmux-navigator}/share/tmux-plugins/vim-tmux-navigator/vim-tmux-navigator.tmux
-          run-shell ${tokyoNightPlugin}/share/tmux-plugins/tmux-tokyo-night/tmux-tokyo-night.tmux
         '';
     };
   };

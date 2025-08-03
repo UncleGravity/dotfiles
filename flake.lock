@@ -338,7 +338,6 @@
         "sops-nix": "sops-nix",
         "television": "television",
         "tmux-tokyo-night": "tmux-tokyo-night",
-        "tmux-vim-navigator": "tmux-vim-navigator",
         "treefmt-nix": "treefmt-nix",
         "virby": "virby",
         "wrapper-manager": "wrapper-manager",
@@ -461,22 +460,6 @@
       "original": {
         "owner": "fabioluciano",
         "repo": "tmux-tokyo-night",
-        "type": "github"
-      }
-    },
-    "tmux-vim-navigator": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752544267,
-        "narHash": "sha256-IEPnr/GdsAnHzdTjFnXCuMyoNLm3/Jz4cBAM0AJBrj8=",
-        "owner": "christoomey",
-        "repo": "vim-tmux-navigator",
-        "rev": "c45243dc1f32ac6bcf6068e5300f3b2b237e576a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "christoomey",
-        "repo": "vim-tmux-navigator",
         "type": "github"
       }
     },
