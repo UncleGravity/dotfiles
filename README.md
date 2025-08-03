@@ -145,6 +145,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
 │   │   ├── helix.nix
+│   │   ├── nix-search-tv.nix
 │   │   ├── nvim
 │   │   │   ├── colorscheme.nix
 │   │   │   ├── default.nix
@@ -161,6 +162,22 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── which-key.nix
 │   │   ├── pkgs.nix
 │   │   ├── ssh.nix
+│   │   ├── television
+│   │   │   ├── cable
+│   │   │   │   ├── alias.toml
+│   │   │   │   ├── dirs.toml
+│   │   │   │   ├── env.toml
+│   │   │   │   ├── files.toml
+│   │   │   │   ├── git-branch.toml
+│   │   │   │   ├── git-diff.toml
+│   │   │   │   ├── git-log.toml
+│   │   │   │   ├── git-reflog.toml
+│   │   │   │   ├── git-repos.toml
+│   │   │   │   ├── nixpkgs.toml
+│   │   │   │   ├── text.toml
+│   │   │   │   └── zsh-history.toml
+│   │   │   ├── config.toml
+│   │   │   └── default.nix
 │   │   ├── tmux
 │   │   │   ├── default.nix
 │   │   │   └── tmux.conf
@@ -185,13 +202,16 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       ├── gui.nix
 │       ├── hackrf.nix
 │       ├── immich.nix
+│       ├── nh.nix
 │       └── tailscale.nix
 ├── new_tree.txt
 ├── overlays
 │   ├── default.nix
 │   ├── my.nix
+│   ├── television.nix
 │   └── zig.nix
 ├── packages
+│   ├── bootstrap.nix
 │   ├── default.nix
 │   ├── greet.nix
 │   ├── scripts
@@ -216,7 +236,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-55 directories, 153 files
+57 directories, 171 files
 ```
 <!-- readme-tree end -->
 
