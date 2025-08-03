@@ -7,6 +7,7 @@
     ./dotfiles
     ./helix.nix
     ./ssh.nix
+    ./nix-search-tv.nix
     ./television
     ./zsh
     ./yazi
