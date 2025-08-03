@@ -46,6 +46,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    television = {
+      url = "github:alexpasmantier/television";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # ---------------------------------------------------------------------------------------------
     # Overlay Inputs
 
@@ -290,7 +295,7 @@
     # --------------------------------------------------------------------------
     packages = forAllSystems ({ system, pkgs, ... }:
       import ./packages {
-        inherit system pkgs;
+        inherit inputs system pkgs;
         wrapper-manager = inputs.wrapper-manager;
       }
     );
@@ -330,6 +335,7 @@
             vulnix
             omnix
             cachix
+            # inputs.self.nixosConfigurations.nixos.config.system.build.vm
             # inputs.self.packages.${system}.scripts  # Your scripts available in dev shell
           ];
 
