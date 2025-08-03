@@ -20,7 +20,7 @@
   };
   tokyoNightPlugin = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "tmux-tokyo-night";
-    rtpFile = "tmux-tokyo-night.tmux";
+    rtpFilePath = "tmux-tokyo-night.tmux";
     version = "unstable";
     src = inputs.tmux-tokyo-night;
   };
