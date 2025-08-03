@@ -1,7 +1,8 @@
 # visual
 # theme = Dracula
 theme = "Kanagawa Wave"
-# background-opacity = 0.96
+background-opacity = 0.8
+background-blur = true
 macos-titlebar-proxy-icon=hidden
 # macos-titlebar-style = "transparent"
 # macos-titlebar-style=hidden
@@ -18,7 +19,7 @@ quick-terminal-position=top
 quick-terminal-screen=mouse
 quick-terminal-animation-duration=0
 quick-terminal-autohide=false
-# quick-terminal-size = 100%,100%
+# quick-terminal-size = 100%,100% # waiting for https://github.com/ghostty-org/ghostty/issues/2384
 
 initial-window = true
 window-save-state = always
