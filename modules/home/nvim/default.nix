@@ -7,7 +7,7 @@
 }: {
   imports = [./lsp.nix ./mini.nix ./snacks.nix ./gitsigns.nix ./colorscheme.nix ./formatting.nix ./treesitter.nix ./which-key.nix];
   programs.nixvim = {
-    enable = true;
+    enable = false;
     # defaultEditor = true;
     globals = {
       mapleader = " ";

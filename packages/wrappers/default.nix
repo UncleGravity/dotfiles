@@ -1,6 +1,7 @@
 {
   pkgs,
   wrapper-manager,
+  inputs,
 }:
 # -----------------------------------------------------------------------------
 # All wrapper-manager modules go here.
@@ -14,9 +15,11 @@
 let
   wmEval = wrapper-manager.lib {
     inherit pkgs;
+    specialArgs = { inherit inputs; };
     modules = [
       ./hello.nix
       ./helix
+      ./nvim
       # add more modules here (./git.nix, ./fzf.nix, …)
     ];
   };
