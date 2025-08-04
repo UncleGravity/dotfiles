@@ -1,4 +1,7 @@
 {...}: {
+
+  home.shellAliases."ai"="aichat";
+
   programs.aichat = {
     enable = true;
     settings = {

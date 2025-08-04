@@ -79,7 +79,6 @@
     nix-tree
 
     # --- TUIs / monitoring ---------------------------------------------------------------
-    lazygit
     lazydocker
     ctop
 

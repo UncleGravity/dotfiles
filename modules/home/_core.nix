@@ -41,7 +41,7 @@
   #  /etc/profiles/per-user/angel/etc/profile.d/hm-session-vars.sh
   # --------------------------------------------------------------------------
   home.sessionVariables = {
-    NVIM_APPNAME = "nvim-lua";
+    # NVIM_APPNAME = "nvim-lua";
     # EDITOR = "nvim";
     EDITOR = "hx";
     TEST = "HELLO";
