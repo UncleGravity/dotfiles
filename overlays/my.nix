@@ -5,5 +5,6 @@ final: prev: {
   my = prev.lib.recurseIntoAttrs {
     wrappers = inputs.self.packages.${prev.system}.wrappers;
     scripts = inputs.self.packages.${prev.system}.scripts;
+    packages = inputs.self.packages.${prev.system}.packages;
   };
 }

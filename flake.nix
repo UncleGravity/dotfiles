@@ -51,6 +51,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    optnix.url = "github:water-sucks/optnix";
+
     # ---------------------------------------------------------------------------------------------
     # Overlay Inputs
 
@@ -291,29 +293,9 @@
     packages = forAllSystems ({ system, pkgs, ... }:
       import ./packages {
         inherit inputs system pkgs;
+        inherit (pkgs) lib;
         wrapper-manager = inputs.wrapper-manager;
       }
-    );
-
-    # --------------------------------------------------------------------------
-    # Apps - for `nix run .#<name>` to support wrappers + scripts bundles
-    # --------------------------------------------------------------------------
-    apps = forAllSystems ({ system, pkgs, ... }:
-      let
-        # Get the individual packages to create apps from
-        scriptsResult = pkgs.callPackage ./packages/scripts {inherit system;};
-        wrappedResult = pkgs.callPackage ./packages/wrappers {wrapper-manager = inputs.wrapper-manager;};
-
-        # Both now provide clean packages attribute sets
-        allPackages = scriptsResult.packages // wrappedResult.packages;
-
-        mkApp = name: package: {
-          type = "app";
-          program = "${package}/bin/${package.meta.mainProgram or name}";
-          meta = package.meta or {};
-        };
-      in
-        builtins.mapAttrs mkApp allPackages
     );
 
     # --------------------------------------------------------------------------

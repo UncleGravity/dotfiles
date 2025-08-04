@@ -171,6 +171,7 @@
     # inputs.self.packages.${pkgs.system}.wrapped.hello
     pkgs.my.scripts
     pkgs.my.wrappers
+    pkgs.my.packages
   ];
 
   ###########################################################################
