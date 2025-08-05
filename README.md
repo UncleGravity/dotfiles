@@ -91,8 +91,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   ├── default.nix
 │   │   │   ├── ghostty
 │   │   │   │   └── config
-│   │   │   ├── git
-│   │   │   │   └── config
 │   │   │   ├── karabiner
 │   │   │   │   └── karabiner.json
 │   │   │   ├── kitty
@@ -102,50 +100,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   │   ├── kanagawa.conf
 │   │   │   │   ├── kanagawa_dragon.conf
 │   │   │   │   └── kitty.conf
-│   │   │   ├── lazygit
-│   │   │   │   └── config.yml
-│   │   │   ├── nvim
-│   │   │   │   ├── .stylua.toml
-│   │   │   │   ├── init.lua
-│   │   │   │   └── lua
-│   │   │   │       ├── config
-│   │   │   │       │   ├── autocommands.lua
-│   │   │   │       │   ├── init.lua
-│   │   │   │       │   ├── keymaps.lua
-│   │   │   │       │   ├── lazy.lua
-│   │   │   │       │   └── options.lua
-│   │   │   │       ├── extra
-│   │   │   │       │   └── foldtext.lua
-│   │   │   │       └── plugins
-│   │   │   │           ├── _cmp.lua
-│   │   │   │           ├── _debug.lua
-│   │   │   │           ├── _lsp.lua
-│   │   │   │           ├── _mini.lua
-│   │   │   │           ├── ai_avante.lua
-│   │   │   │           ├── ai_codecompanion.lua
-│   │   │   │           ├── ai_llama.lua
-│   │   │   │           ├── ai_supermaven.lua
-│   │   │   │           ├── bqf.lua
-│   │   │   │           ├── colorscheme.lua
-│   │   │   │           ├── dashboard.lua
-│   │   │   │           ├── flash.lua
-│   │   │   │           ├── formatting.lua
-│   │   │   │           ├── gitsigns.lua
-│   │   │   │           ├── lualine.lua
-│   │   │   │           ├── markdown.lua
-│   │   │   │           ├── neo-tree.lua
-│   │   │   │           ├── noice.lua
-│   │   │   │           ├── scrollbar.lua
-│   │   │   │           ├── snacks.lua
-│   │   │   │           ├── telescope.lua
-│   │   │   │           ├── treesitter.lua
-│   │   │   │           ├── which-key.lua
-│   │   │   │           ├── yazi.lua
-│   │   │   │           └── z_utils.lua
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
-│   │   ├── helix.nix
-│   │   ├── nix-search-tv.nix
 │   │   ├── nvim
 │   │   │   ├── colorscheme.nix
 │   │   │   ├── default.nix
@@ -173,7 +129,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   │   ├── git-log.toml
 │   │   │   │   ├── git-reflog.toml
 │   │   │   │   ├── git-repos.toml
-│   │   │   │   ├── nixpkgs.toml
 │   │   │   │   ├── text.toml
 │   │   │   │   └── zsh-history.toml
 │   │   │   ├── config.toml
@@ -214,6 +169,9 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── bootstrap.nix
 │   ├── default.nix
 │   ├── greet.nix
+│   ├── nix-search-fzf.nix
+│   ├── optnix-fzf.nix
+│   ├── optnix.nix
 │   ├── scripts
 │   │   ├── _completions
 │   │   │   ├── _push
@@ -229,14 +187,60 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   └── default.nix
 │   └── wrappers
 │       ├── default.nix
+│       ├── git
+│       │   ├── config
+│       │   └── default.nix
 │       ├── helix
 │       │   ├── config.toml
 │       │   └── default.nix
-│       └── hello.nix
+│       ├── hello.nix
+│       ├── lazygit
+│       │   ├── config.yml
+│       │   └── default.nix
+│       └── nvim
+│           ├── config
+│           │   ├── .stylua.toml
+│           │   ├── init.lua
+│           │   └── lua
+│           │       ├── config
+│           │       │   ├── autocommands.lua
+│           │       │   ├── init.lua
+│           │       │   ├── keymaps.lua
+│           │       │   ├── lazy.lua
+│           │       │   └── options.lua
+│           │       ├── extra
+│           │       │   └── foldtext.lua
+│           │       └── plugins
+│           │           ├── _cmp.lua
+│           │           ├── _debug.lua
+│           │           ├── _lsp.lua
+│           │           ├── _mini.lua
+│           │           ├── ai_avante.lua
+│           │           ├── ai_codecompanion.lua
+│           │           ├── ai_llama.lua
+│           │           ├── ai_supermaven.lua
+│           │           ├── bqf.lua
+│           │           ├── colorscheme.lua
+│           │           ├── dashboard.lua
+│           │           ├── flash.lua
+│           │           ├── formatting.lua
+│           │           ├── gitsigns.lua
+│           │           ├── lualine.lua
+│           │           ├── markdown.lua
+│           │           ├── neo-tree.lua
+│           │           ├── noice.lua
+│           │           ├── scrollbar.lua
+│           │           ├── snacks.lua
+│           │           ├── telescope.lua
+│           │           ├── treesitter.lua
+│           │           ├── which-key.lua
+│           │           ├── yazi.lua
+│           │           └── z_utils.lua
+│           └── default.nix
 └── secrets
     └── secrets.yaml
 
-57 directories, 171 files
+58 directories, 174 files
 ```
 <!-- readme-tree end -->
 
