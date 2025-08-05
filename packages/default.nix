@@ -10,7 +10,9 @@
   individualPackages = {
     greet = pkgs.callPackage ./greet.nix {inherit pkgs;};
     bootstrap = pkgs.callPackage ./bootstrap.nix {inherit pkgs;};
+    optnix = pkgs.callPackage ./optnix.nix {inherit inputs pkgs lib;};
     optnix-fzf = pkgs.callPackage ./optnix-fzf.nix {inherit inputs pkgs lib;};
+    nix-search-fzf = pkgs.callPackage ./nix-search-fzf.nix {inherit inputs pkgs lib;};
   };
 
   # Halt. Everything below this line is boilerplate.
@@ -18,7 +20,7 @@
 
   # Bundle individual packages together
   packagesBundle = pkgs.symlinkJoin {
-    name = "custom-packages";
+    name = "my packages bundle";
     paths = builtins.attrValues individualPackages;
     meta = {
       description = "Bundle of all my packages";

@@ -35,6 +35,7 @@ alias j="just"
 alias oc="bunx opencode-ai@latest"
 
 alias no="optnix-fzf"
+alias ns="nix-search-fzf"
 # export NVIM_APPNAME=lazyvim
 # export NVIM_APPNAME=my-nvim
 # alias nvim="NVIM_APPNAME=lazyvim nvim"

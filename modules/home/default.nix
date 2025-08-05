@@ -6,7 +6,6 @@
     ./direnv.nix
     ./dotfiles
     ./ssh.nix
-    ./nix-search-tv.nix
     ./television
     ./zsh
     ./yazi
