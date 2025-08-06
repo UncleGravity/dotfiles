@@ -67,6 +67,9 @@
     flyctl
     doctl
     awscli2
+    speedtest-go
+    # ookla-speedtest
+    # cfspeedtest
 
     # --- Nix ecosystem helpers -----------------------------------------------------------
     cachix
