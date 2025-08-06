@@ -92,7 +92,10 @@
     forAllSystems = f:
       nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
         let
-          pkgs = import nixpkgs { inherit system overlays; };
+          pkgs = import nixpkgs {
+            inherit system overlays;
+            config.allowUnfree = true;
+          };
         in f { inherit system pkgs; });
 
     # --------------------------------------------------------------------------

@@ -1,0 +1,50 @@
+{
+  pkgs,
+  lib,
+  ...
+}:
+pkgs.writeShellApplication {
+  name = "encrypt";
+  runtimeInputs = with pkgs; [
+    age
+    _1password-cli
+  ];
+  text = ''
+    # Check if more than one argument is provided
+    if [ "$#" -gt 1 ]; then
+        echo "Usage: $0 [file_to_encrypt]" >&2
+        echo "Encrypts the specified file or reads from stdin if no file is given." >&2
+        exit 1
+    fi
+
+    INPUT_SOURCE=""
+    # If an argument is provided, use it as the source file
+    if [ "$#" -eq 1 ]; then
+        SOURCE_FILE="$1"
+        # Check if the source file exists
+        if [ ! -f "$SOURCE_FILE" ]; then
+            echo "Error: File '$SOURCE_FILE' not found." >&2
+            exit 1
+        fi
+        INPUT_SOURCE="$SOURCE_FILE"
+    # If no argument is provided, use stdin ('-')
+    else
+        INPUT_SOURCE="-"
+    fi
+
+    # Read the public key from 1Password using process substitution <(...)
+    # and pass it as the recipients file to age.
+    # -R <(...): read recipients file (public keys) from the process substitution
+    # -e: encrypt (implied when -R is used)
+    # INPUT_SOURCE will be either the filename or '-' for stdin
+    if ! age -R <(op read "op://Personal/master-ssh-key/public key") "$INPUT_SOURCE"; then
+        echo "Error during encryption." >&2
+        exit 1
+    fi
+  '';
+  meta = {
+    description = "Encrypt files using age with 1Password integration";
+    platforms = lib.platforms.darwin;
+    mainProgram = "encrypt";
+  };
+}
