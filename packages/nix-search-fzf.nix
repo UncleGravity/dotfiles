@@ -5,7 +5,7 @@
 }: let
   configFile = pkgs.writeText "nix-search-tv-config.json" /* json */ ''
     {
-      "indexes": ["nixpkgs", "home-manager", "nur", "nixos"]
+      "indexes": ["darwin", "nixpkgs", "home-manager", "nur", "nixos"]
     }
   '';
 in
