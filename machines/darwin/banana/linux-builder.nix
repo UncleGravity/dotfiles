@@ -1,10 +1,7 @@
 # linux-builder.nix
 #
 # Nix module to configure a Linux VM builder on nix-darwin
-{
-  username,
-  ...
-}: {
+{username, ...}: {
   # Ensure virtualization tools are available on the host
   # environment.systemPackages = lib.mkDefault [pkgs.qemu]; # qemu provides necessary tools
 
@@ -40,7 +37,7 @@
   # Enable distributed builds and ensure proper user trust
   nix.distributedBuilds = true;
   nix.settings = {
-    substituters = [ "https://virby-nix-darwin.cachix.org" ];
+    substituters = ["https://virby-nix-darwin.cachix.org"];
     trusted-public-keys = [
       "virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo="
     ];

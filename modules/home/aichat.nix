@@ -1,6 +1,5 @@
 {...}: {
-
-  home.shellAliases."ai"="aichat";
+  home.shellAliases."ai" = "aichat";
 
   programs.aichat = {
     enable = true;

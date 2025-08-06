@@ -1,8 +1,7 @@
-{ pkgs, ... }:
-
+{pkgs, ...}:
 pkgs.writeShellApplication {
   name = "bootstrap";
-  runtimeInputs = with pkgs; [ nh nix jq ];
+  runtimeInputs = with pkgs; [nh nix jq];
 
   text = ''
     # --------------------------------------------------------------------

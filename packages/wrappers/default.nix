@@ -15,7 +15,7 @@
 let
   wmEval = wrapper-manager.lib {
     inherit pkgs;
-    specialArgs = { inherit inputs; };
+    specialArgs = {inherit inputs;};
     modules = [
       ./hello.nix
       ./helix

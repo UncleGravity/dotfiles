@@ -8,11 +8,9 @@
   flakePath = "$\{OPTNIX_FLAKE_PATH:-$HOME/nix}";
 
   # === Validation Helpers ===
-  hasHomeManagerCmd = configType: configName:
-    ''$(nix eval ${flakePath}#${configType}.${configName}.config --json --apply 'config: config ? home-manager' 2>/dev/null || echo "false")'';
+  hasHomeManagerCmd = configType: configName: ''$(nix eval ${flakePath}#${configType}.${configName}.config --json --apply 'config: config ? home-manager' 2>/dev/null || echo "false")'';
 
-  getUsernameCmd = configType: configName:
-    ''$(nix eval ${flakePath}#${configType}.${configName}.config.home-manager.users --json --apply 'users: builtins.head (builtins.attrNames users)' | jq -r . 2>/dev/null || echo "nouser")'';
+  getUsernameCmd = configType: configName: ''$(nix eval ${flakePath}#${configType}.${configName}.config.home-manager.users --json --apply 'users: builtins.head (builtins.attrNames users)' | jq -r . 2>/dev/null || echo "nouser")'';
 
   # === Separate Config Generators ===
 
@@ -143,57 +141,64 @@
     isHomeManager ? false,
     isStandalone ? false,
   }:
-    if isStandalone then
-      mkStandaloneHomeConfig { inherit name description configType configName; }
-    else if isHomeManager then
-      mkHomeManagerConfig { inherit name description configType configName; }
-    else
-      mkSystemConfig { inherit name description configType configName; };
+    if isStandalone
+    then mkStandaloneHomeConfig {inherit name description configType configName;}
+    else if isHomeManager
+    then mkHomeManagerConfig {inherit name description configType configName;}
+    else mkSystemConfig {inherit name description configType configName;};
 
   # === Configuration Specifications ===
 
-  systemConfigs = lib.pipe {
-    nixos = inputs.self.nixosConfigurations or {};
-    darwin = inputs.self.darwinConfigurations or {};
-    standalone = inputs.self.homeConfigurations or {};
-  } [
-    # NixOS system configs
-    (specs: lib.mapAttrs' (name: _:
-      lib.nameValuePair name (mkConfig {
-        inherit name;
-        description = "NixOS configuration for ${name}";
-        configType = "nixosConfigurations";
-        configName = name;
-      })) specs.nixos)
+  systemConfigs =
+    lib.pipe {
+      nixos = inputs.self.nixosConfigurations or {};
+      darwin = inputs.self.darwinConfigurations or {};
+      standalone = inputs.self.homeConfigurations or {};
+    } [
+      # NixOS system configs
+      (specs:
+        lib.mapAttrs' (name: _:
+          lib.nameValuePair name (mkConfig {
+            inherit name;
+            description = "NixOS configuration for ${name}";
+            configType = "nixosConfigurations";
+            configName = name;
+          }))
+        specs.nixos)
 
-    # Darwin system configs
-    (configs: configs // lib.mapAttrs' (name: _:
-      lib.nameValuePair name (mkConfig {
-        inherit name;
-        description = "nix-darwin configuration for ${name}";
-        configType = "darwinConfigurations";
-        configName = name;
-      })) (inputs.self.darwinConfigurations or {}))
+      # Darwin system configs
+      (configs:
+        configs
+        // lib.mapAttrs' (name: _:
+          lib.nameValuePair name (mkConfig {
+            inherit name;
+            description = "nix-darwin configuration for ${name}";
+            configType = "darwinConfigurations";
+            configName = name;
+          })) (inputs.self.darwinConfigurations or {}))
 
-    # Standalone Home Manager configs
-    (configs: configs // lib.mapAttrs' (name: _:
-      lib.nameValuePair name (mkConfig {
-        inherit name;
-        description = "Standalone Home Manager configuration for ${name}";
-        configType = "homeConfigurations";
-        configName = name;
-        isStandalone = true;
-      })) (inputs.self.homeConfigurations or {}))
-  ];
+      # Standalone Home Manager configs
+      (configs:
+        configs
+        // lib.mapAttrs' (name: _:
+          lib.nameValuePair name (mkConfig {
+            inherit name;
+            description = "Standalone Home Manager configuration for ${name}";
+            configType = "homeConfigurations";
+            configName = name;
+            isStandalone = true;
+          })) (inputs.self.homeConfigurations or {}))
+    ];
 
   # Helper to check if a system actually has Home Manager at build time
   systemHasHomeManager = configType: configs:
-    lib.filterAttrs (name: _:
-      let
+    lib.filterAttrs (
+      name: _: let
         evalResult = builtins.tryEval (configs.${name}.config.home-manager or null);
       in
         evalResult.success && evalResult.value != null
-    ) configs;
+    )
+    configs;
 
   homeManagerConfigs = let
     nixosWithHM = systemHasHomeManager "nixosConfigurations" (inputs.self.nixosConfigurations or {});
@@ -207,8 +212,9 @@
         configType = "nixosConfigurations";
         configName = name;
         isHomeManager = true;
-      })) nixosWithHM) //
-
+      }))
+    nixosWithHM)
+    //
     # Home Manager configs for Darwin systems (only those with HM)
     (lib.mapAttrs' (name: _:
       lib.nameValuePair "hm-${name}" (mkConfig {
@@ -217,7 +223,8 @@
         configType = "darwinConfigurations";
         configName = name;
         isHomeManager = true;
-      })) darwinWithHM);
+      }))
+    darwinWithHM);
 
   # === Final Configuration Assembly ===
 
@@ -234,15 +241,16 @@
     '';
 
     scopeConfigs = lib.concatStringsSep "\n\n" (lib.mapAttrsToList (name: config: ''
-      [scopes.${name}]
-      description = "${config.description}"
-      options-list-cmd = """
-      ${config.options-list-cmd}
-      """
-      evaluator = """
-      ${config.evaluator}
-      """
-    '') allConfigs);
+        [scopes.${name}]
+        description = "${config.description}"
+        options-list-cmd = """
+        ${config.options-list-cmd}
+        """
+        evaluator = """
+        ${config.evaluator}
+        """
+      '')
+      allConfigs);
   in ''
     # ${globalConfig}
     ${scopeConfigs}
@@ -253,8 +261,8 @@
 in
   pkgs.symlinkJoin {
     name = "optnix";
-    paths = [ optnix ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+    paths = [optnix];
+    nativeBuildInputs = [pkgs.makeWrapper];
     passthru = {
       inherit configFile;
     };

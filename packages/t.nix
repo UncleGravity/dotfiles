@@ -98,7 +98,7 @@
 
   completion = pkgs.writeTextFile {
     name = "_t";
-    text = /* zsh */ ''
+    text = ''
       #compdef t
 
       # Completion function for t command
@@ -138,12 +138,12 @@
     destination = "/share/zsh/site-functions/_t";
   };
 in
-pkgs.symlinkJoin {
-  name = "t";
-  paths = [tScript completion];
-  meta = {
-    description = "Tmux session management utility";
-    platforms = lib.platforms.all;
-    mainProgram = "t";
-  };
-}
+  pkgs.symlinkJoin {
+    name = "t";
+    paths = [tScript completion];
+    meta = {
+      description = "Tmux session management utility";
+      platforms = lib.platforms.all;
+      mainProgram = "t";
+    };
+  }

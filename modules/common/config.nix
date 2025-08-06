@@ -4,7 +4,6 @@
   pkgs,
   ...
 }: {
-
   options.my.profile = {
     isVM = lib.mkOption {
       type = lib.types.bool;

@@ -140,7 +140,7 @@
 
   completion = pkgs.writeTextFile {
     name = "_push";
-    text = /* zsh */ ''
+    text = ''
       #compdef push
 
       _push_devices() {
@@ -166,12 +166,12 @@
     destination = "/share/zsh/site-functions/_push";
   };
 in
-pkgs.symlinkJoin {
-  name = "push";
-  paths = [pushScript completion];
-  meta = {
-    description = "Send Pushover notifications from the command line";
-    platforms = lib.platforms.all;
-    mainProgram = "push";
-  };
-}
+  pkgs.symlinkJoin {
+    name = "push";
+    paths = [pushScript completion];
+    meta = {
+      description = "Send Pushover notifications from the command line";
+      platforms = lib.platforms.all;
+      mainProgram = "push";
+    };
+  }

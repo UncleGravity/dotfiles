@@ -149,88 +149,89 @@
 
   completion = pkgs.writeTextFile {
     name = "_vm";
-    text = /* zsh */ ''
-      #compdef vm
+    text =
+      ''
+        #compdef vm
 
-      # VM Configuration for completion
-      typeset -A VM_CONFIG
-      VM_CONFIG=(
-      ${vmConfigBash}
-      )
-
-      # Function to get VM names from utmctl list
-      function _vm_get_utmctl_names() {
-        local vm_names
-        vm_names=(''${(f)"$(utmctl list 2>/dev/null | tail -n +2 | awk '{print $1}')"})
-        _describe -t vm_names 'vm names' vm_names
-      }
-
-      # Function to get VM names from VM_CONFIG (for SSH-based commands)
-      function _vm_get_config_names() {
-        local vm_names
-        vm_names=(''${(k)VM_CONFIG})
-        _describe -t vm_names 'vm names' vm_names
-      }
-
-      # Completion function for vm command
-      function _vm() {
-        local -a actions
-        actions=(
-          'ls:List all VMs'
-          'start:Start a VM'
-          'stop:Stop a VM'
-          'suspend:Suspend a VM'
-          'resume:Resume a suspended VM'
-          'restart:Restart a VM'
-          'shell:Open a shell in a VM'
-          'code:Open VS Code for a VM'
-          'cursor:Open Cursor for a VM'
-          'run:Run a command in a VM'
+        # VM Configuration for completion
+        typeset -A VM_CONFIG
+        VM_CONFIG=(
+        ${vmConfigBash}
         )
 
-        _arguments \
-          '1:action:->actions' \
-          '*::arg:->args'
+        # Function to get VM names from utmctl list
+        function _vm_get_utmctl_names() {
+          local vm_names
+          vm_names=(''${(f)"$(utmctl list 2>/dev/null | tail -n +2 | awk '{print $1}')"})
+          _describe -t vm_names 'vm names' vm_names
+        }
 
-        case $state in
-          actions)
-            _describe -t actions 'vm actions' actions
-            ;;
-          args)
-            case $words[1] in
-              start|stop|suspend|resume|restart)
-                _vm_get_utmctl_names
-                ;;
-              shell|run|code|cursor)
-                _vm_get_config_names
-                ;;
-            esac
+        # Function to get VM names from VM_CONFIG (for SSH-based commands)
+        function _vm_get_config_names() {
+          local vm_names
+          vm_names=(''${(k)VM_CONFIG})
+          _describe -t vm_names 'vm names' vm_names
+        }
 
-            case $words[1] in
-              code|cursor)
-                if (( CURRENT == 3 )); then
-                  _arguments '*:flag:(-d)'
-                fi
-                ;;
-              run)
-                if (( CURRENT > 2 )); then
-                  _normal
-                fi
-                ;;
-            esac
-            ;;
-        esac
-      }
-    '';
+        # Completion function for vm command
+        function _vm() {
+          local -a actions
+          actions=(
+            'ls:List all VMs'
+            'start:Start a VM'
+            'stop:Stop a VM'
+            'suspend:Suspend a VM'
+            'resume:Resume a suspended VM'
+            'restart:Restart a VM'
+            'shell:Open a shell in a VM'
+            'code:Open VS Code for a VM'
+            'cursor:Open Cursor for a VM'
+            'run:Run a command in a VM'
+          )
+
+          _arguments \
+            '1:action:->actions' \
+            '*::arg:->args'
+
+          case $state in
+            actions)
+              _describe -t actions 'vm actions' actions
+              ;;
+            args)
+              case $words[1] in
+                start|stop|suspend|resume|restart)
+                  _vm_get_utmctl_names
+                  ;;
+                shell|run|code|cursor)
+                  _vm_get_config_names
+                  ;;
+              esac
+
+              case $words[1] in
+                code|cursor)
+                  if (( CURRENT == 3 )); then
+                    _arguments '*:flag:(-d)'
+                  fi
+                  ;;
+                run)
+                  if (( CURRENT > 2 )); then
+                    _normal
+                  fi
+                  ;;
+              esac
+              ;;
+          esac
+        }
+      '';
     destination = "/share/zsh/site-functions/_vm";
   };
 in
-pkgs.symlinkJoin {
-  name = "vm";
-  paths = [vmScript completion];
-  meta = {
-    description = "VM management utility for UTM virtual machines";
-    platforms = lib.platforms.darwin;
-    mainProgram = "vm";
-  };
-}
+  pkgs.symlinkJoin {
+    name = "vm";
+    paths = [vmScript completion];
+    meta = {
+      description = "VM management utility for UTM virtual machines";
+      platforms = lib.platforms.darwin;
+      mainProgram = "vm";
+    };
+  }
