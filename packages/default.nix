@@ -18,6 +18,7 @@
     decrypt = pkgs.callPackage ./decrypt.nix {inherit pkgs lib;};
     encrypt = pkgs.callPackage ./encrypt.nix {inherit pkgs lib;};
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
+    nvim-runtime = pkgs.callPackage ./nvim-runtime.nix {inherit pkgs;};
   };
 
   # Halt. Everything below this line is boilerplate.

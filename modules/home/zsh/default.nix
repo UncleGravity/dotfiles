@@ -56,8 +56,8 @@ in {
         '';
         # -------------------------------------------------------------------------------------------
         zshSecrets = lib.mkOrder 500 ''
-          [ -f "${config.xdg.configHome}/zsh/secrets/home.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/home.zsh"
-          [ -f "${config.xdg.configHome}/zsh/secrets/work.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/work.zsh"
+          [ -f "${config.xdg.configHome}/zsh/secrets/home.sh" ] && source "${config.xdg.configHome}/zsh/secrets/home.sh"
+          [ -f "${config.xdg.configHome}/zsh/secrets/work.sh" ] && source "${config.xdg.configHome}/zsh/secrets/work.sh"
         '';
         # -------------------------------------------------------------------------------------------
         zshPlugins = lib.mkOrder 1000 ''

@@ -23,16 +23,16 @@ in {
     secrets = lib.mkMerge [
       # Work secrets, only on macOS machines
       (lib.mkIf pkgs.stdenv.isDarwin {
-        "work.zsh" = {
-          path = "${config.users.users.${username}.home}/.config/zsh/secrets/work.zsh";
+        "work.sh" = {
+          path = "${config.users.users.${username}.home}/.config/zsh/secrets/work.sh";
           owner = username;
           mode = "0600";
         };
       })
       # Home secrets, on all machines / servers
       {
-        "home.zsh" = {
-          path = "${config.users.users.${username}.home}/.config/zsh/secrets/home.zsh";
+        "home.sh" = {
+          path = "${config.users.users.${username}.home}/.config/zsh/secrets/home.sh";
           owner = username;
           mode = "0600";
         };

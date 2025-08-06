@@ -8,8 +8,10 @@
   ...
 }: {
   imports = [
-    ./hardware.nix
+    # ./hardware.nix
     "${inputs.self}/modules/nixos/_core.nix"
+    ./qemu.nix
+    # ./vfkit.nix
   ];
 
   # ---------------------------------------------------------------------------
@@ -19,9 +21,11 @@
   # ---------------------------------------------------------------------------
   # X11
   my.displayManager = {
-    enable = true;
+    enable = false;
     desktop = "gnome";
   };
+
+  users.users.${username}.password = "angel"; # Set a simple password for SSH access
 
   # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.

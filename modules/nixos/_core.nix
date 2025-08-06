@@ -35,8 +35,6 @@ in {
     };
   };
 
-
-
   # ---------------------------------------------------------------------------
   # Bootloader.
   boot.loader = {
@@ -113,10 +111,11 @@ in {
   # services.xserver.libinput.enable = true;
 
   # ---------------------------------------------------------------------------
-  services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
+  # services.flatpak.enable = true; # enable flatpak (required by host-spawn / distrobox-host-exec)
 
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with 'passwd'.
+  services.getty.autologinUser = "${username}";
   users = {
     users.${username} = {
       isNormalUser = true;

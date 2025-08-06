@@ -27,3 +27,5 @@ secrets.sh
 .direnv/
 result/
 result
+*.qcow2
+*.raw
