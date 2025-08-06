@@ -14,6 +14,7 @@
     fzf # nav
     resvg # SVG Preview
     imagemagick # Font, HEIC, and JPEG XL preview
+    clipboard-jh # clipboard manager
   ];
   programs.yazi = {
     enable = true;

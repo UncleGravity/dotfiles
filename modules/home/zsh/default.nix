@@ -8,7 +8,9 @@
 in {
   #TODO: Load secret ENVIRONMENT variables from sops-nix
 
-  imports = [];
+  imports = [
+    ./aliases.nix
+  ];
 
   options.my.zsh.enable = lib.mkEnableOption "Enable Nix-managed zsh configuration";
 
@@ -53,10 +55,6 @@ in {
           bindkey "^[[1;3B" down-line-or-history  # Alt+Down: Move to next line or history entry
         '';
         # -------------------------------------------------------------------------------------------
-        zshAliases = lib.mkOrder 500 ''
-          source ${./aliases.zsh}
-        '';
-        # -------------------------------------------------------------------------------------------
         zshSecrets = lib.mkOrder 500 ''
           [ -f "${config.xdg.configHome}/zsh/secrets/home.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/home.zsh"
           [ -f "${config.xdg.configHome}/zsh/secrets/work.zsh" ] && source "${config.xdg.configHome}/zsh/secrets/work.zsh"
@@ -90,6 +88,8 @@ in {
         zshFzf = lib.mkOrder 1000 ''
           export DOTFILES_DIR="${config.home.homeDirectory}/nix"
           source ${./fzf.zsh}
+          source ${./fzf-tab.zsh}
+          source ${./fzf-dash.zsh}
         '';
         # -------------------------------------------------------------------------------------------
         zshEnd = lib.mkOrder 1500 ''
@@ -102,7 +102,6 @@ in {
         lib.mkMerge ([
             p10kInstantPrompt
             zshKeybindings
-            zshAliases
             zshSecrets
             zshOptions
             zshPlugins

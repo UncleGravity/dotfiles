@@ -10,6 +10,8 @@
   xdg.enable = true; # Follow the XDG Base-Dir spec (XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME)
   programs.home-manager.enable = true; # Let Home Manager install and manage itself.
 
+  # accounts.calendar.basePath = "${config.home.homeDirectory}/.calendar";
+  # accounts.contact.basePath = "${config.home.homeDirectory}/.contacts";
   # --------------------------------------------------------------------------
   #  My custom sub-modules
   # --------------------------------------------------------------------------
@@ -44,6 +46,7 @@
     # NVIM_APPNAME = "nvim-lua";
     # EDITOR = "nvim";
     EDITOR = "hx";
+    DELTA_PAGER = "less -RFX --mouse"; # Fix "delta" issue where mouse scroll doesn't work in tmux
     TEST = "HELLO";
   };
 }
