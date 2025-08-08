@@ -30,13 +30,6 @@ vim.keymap.set({ "n", "x", "o" }, "gw", function() -- just like helix = gw
 end, { desc = "Flash Jump" })
 
 ----------------------------------------------------------------------------------------------------
---- Fidget
-require('fidget').setup({
-    notification = {
-        override_vim_notify = true, -- Automatically override vim.notify() with Fidget
-    },
-})
-----------------------------------------------------------------------------------------------------
 --- TODO: comments
 require('todo-comments').setup({
     signs = false

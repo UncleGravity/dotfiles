@@ -11,7 +11,7 @@ require('scrollview').setup {
         'dapui_console',
     },
     current_only = true,
-    always_show = true,
+    always_show = false,
     base = 'right',
     hover = false,
     -- column = 80,

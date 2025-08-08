@@ -7,7 +7,6 @@
         all.start = [
           # UI
           pkgs.vimPlugins.kanagawa-nvim
-          pkgs.vimPlugins.fidget-nvim
           pkgs.vimPlugins.lualine-nvim
           pkgs.vimPlugins.noice-nvim
           pkgs.vimPlugins.todo-comments-nvim
@@ -25,6 +24,7 @@
           pkgs.vimPlugins.nvim-treesitter.withAllGrammars
           pkgs.vimPlugins.nvim-lspconfig
           pkgs.vimPlugins.blink-cmp
+          pkgs.vimPlugins.inc-rename-nvim
 
           pkgs.vimPlugins.gitsigns-nvim
           pkgs.vimPlugins.which-key-nvim
