@@ -44,7 +44,7 @@
     zig
     uv
     bun
-    nodejs
+    # nodejs
     go
     cargo
     rustc

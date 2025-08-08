@@ -20,7 +20,6 @@ let
       ./hello.nix
       ./helix
       ./nvim
-      ./nvim-clean
       ./git
       ./lazygit
       # add more modules here (./git.nix, ./fzf.nix, …)

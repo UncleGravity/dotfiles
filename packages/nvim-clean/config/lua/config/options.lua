@@ -24,9 +24,7 @@ vim.opt.updatetime = 1000              -- Decrease update time
 vim.opt.backspace = 'indent,eol,start' -- allow backspace on indent, end of line or insert mode start position
 
 -- clipboard
--- only set clipboard if not in ssh, to make sure the OSC 52
--- integration works automatically. Requires Neovim >= 0.10.0
-vim.opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus' -- Sync with system clipboard
+vim.opt.clipboard = 'unnamedplus' -- Sync with system clipboard
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'` and `:help 'listchars'`
@@ -43,6 +41,12 @@ vim.opt.statusline = vim.opt.statusline + '%F'
 -- Default border for all floating windows
 vim.opt.winborder = 'rounded'
 
+-- Make floating windows opaque (fixes LSP hover transparency)
+-- vim.opt.winblend = 0
+
 -- Search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
+
+-- Preview substitutions
+vim.opt.inccommand = 'split'
