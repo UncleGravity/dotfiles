@@ -3,7 +3,9 @@ Most LSPs don't require any configuration. As they are already defined in nvim-l
 
 For custom config:
 If the lsp is called "ABC", make a file called "ABC.lua" and return a config table.
+```lua
 return {
   cmd = { 'lua-language-server' },
   --- etc
 }
+```
