@@ -15,8 +15,8 @@ require('blink.cmp').setup({
             max_height = 20, -- let it expand to 20 items if there’s room
             draw = {
                 columns = {
-                    { "label",     "label_description", gap = 1 },
-                    { "kind_icon", "kind" }
+                    { "kind_icon", "label", "label_description", gap = 1 },
+                    { "kind" }
                 },
             }
         },
@@ -32,8 +32,6 @@ require('blink.cmp').setup({
             menu = {
                 auto_show = function(ctx)
                     return vim.fn.getcmdtype() == ':'
-                    -- enable for inputs as well, with:
-                    -- or vim.fn.getcmdtype() == '@'
                 end,
             },
         },

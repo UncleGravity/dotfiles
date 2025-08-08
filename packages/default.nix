@@ -18,7 +18,7 @@
     decrypt = pkgs.callPackage ./decrypt.nix {inherit pkgs lib;};
     encrypt = pkgs.callPackage ./encrypt.nix {inherit pkgs lib;};
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
-    nvim-clean = pkgs.callPackage ./nvim-clean {inherit pkgs;};
+    nvim = pkgs.callPackage ./nvim {inherit pkgs;};
   };
 
 

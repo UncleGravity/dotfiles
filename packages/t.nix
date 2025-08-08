@@ -14,25 +14,6 @@
     text = ''
       # Tmux Utilities
       # This script provides a unified interface for managing and interacting with tmux sessions.
-
-      # Usage:
-      #   t <action> [args]
-      #
-      # Actions:
-      #   ls                     List all tmux sessions
-      #   edit|e                 Edit the tmux scrollback buffer in nvim
-      #   new [session_name]     Create a new tmux session
-      #   a|attach [session_name] Attach to a tmux session
-      #   kill [session_name]    Kill a specific tmux session
-      #   switch [session_name]  Switch to a specific tmux session
-      #   ks                     Kill the tmux server and all sessions
-      #
-      # Examples:
-      #   t ls
-      #   t new my_session
-      #   t a my_session
-      #   t kill my_session
-
       action="''${1:-}"
       session_name="''${2:-}"
 
