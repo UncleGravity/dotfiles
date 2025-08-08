@@ -35,6 +35,7 @@ vim.keymap.set('n', '<leader>sd', '<cmd>lua Snacks.picker.diagnostics()<CR>', { 
 vim.keymap.set('n', '<leader>sh', '<cmd>lua Snacks.picker.help()<CR>', { desc = 'Help Pages' })
 vim.keymap.set('n', '<leader>sj', '<cmd>lua Snacks.picker.jumps()<CR>', { desc = 'Jumps' })
 vim.keymap.set('n', '<leader>sk', '<cmd>lua Snacks.picker.keymaps()<CR>', { desc = 'Keymaps' })
+vim.keymap.set('n', '<leader>sr', '<cmd> lua Snacks.picker.recent()<CR>', { desc = "Recent" })
 vim.keymap.set('n', '<leader>s<space>', '<cmd>lua Snacks.picker()<CR>', { desc = 'Pickers' })
 
 -- Git -----------------------------------------------------------------

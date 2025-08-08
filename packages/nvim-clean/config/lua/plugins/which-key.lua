@@ -21,6 +21,7 @@ require('which-key').setup({
 
             -- better descriptions
             { '<leader>e', desc = 'Toggle Explorer', icon = { icon = '󰙅', color = 'blue' } },
+            { '<leader>sg', desc = 'Git', icon = { icon = ' ', color = 'orange' } },
             { 'gx', desc = 'Open with system app' },
         },
     },
