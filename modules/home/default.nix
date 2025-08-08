@@ -9,7 +9,6 @@
     ./television
     ./zsh
     ./yazi
-    ./nvim
     ./tmux
   ];
 }
