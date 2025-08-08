@@ -67,7 +67,9 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       └── nixos
 │           ├── configuration.nix
 │           ├── hardware.nix
-│           └── home.nix
+│           ├── home.nix
+│           ├── qemu.nix
+│           └── vfkit.nix
 ├── modules
 │   ├── common
 │   │   ├── config.nix
@@ -102,20 +104,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   │   └── kitty.conf
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
-│   │   ├── nvim
-│   │   │   ├── colorscheme.nix
-│   │   │   ├── default.nix
-│   │   │   ├── formatting.nix
-│   │   │   ├── gitsigns.nix
-│   │   │   ├── lsp.nix
-│   │   │   ├── lua
-│   │   │   │   └── extra
-│   │   │   │       ├── foldtext.lua
-│   │   │   │       └── persist-view.lua
-│   │   │   ├── mini.nix
-│   │   │   ├── snacks.nix
-│   │   │   ├── treesitter.nix
-│   │   │   └── which-key.nix
 │   │   ├── pkgs.nix
 │   │   ├── ssh.nix
 │   │   ├── television
@@ -139,11 +127,11 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   ├── yazi
 │   │   │   └── default.nix
 │   │   └── zsh
-│   │       ├── aliases.zsh
+│   │       ├── aliases.nix
 │   │       ├── default.nix
+│   │       ├── fzf-dash.zsh
+│   │       ├── fzf-tab.zsh
 │   │       ├── fzf.zsh
-│   │       ├── macos
-│   │       │   └── dev.zsh
 │   │       └── p10k.zsh
 │   └── nixos
 │       ├── _core.nix
@@ -167,24 +155,43 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   └── zig.nix
 ├── packages
 │   ├── bootstrap.nix
+│   ├── decrypt.nix
 │   ├── default.nix
+│   ├── encrypt.nix
 │   ├── greet.nix
 │   ├── nix-search-fzf.nix
+│   ├── nvim
+│   │   ├── config
+│   │   │   ├── init.lua
+│   │   │   ├── lsp
+│   │   │   │   ├── README.md
+│   │   │   │   ├── lua_ls.lua
+│   │   │   │   └── nixd.lua
+│   │   │   └── lua
+│   │   │       ├── config
+│   │   │       │   ├── keymaps.lua
+│   │   │       │   ├── lsp.lua
+│   │   │       │   └── options.lua
+│   │   │       ├── extra
+│   │   │       │   └── foldtext.lua
+│   │   │       └── plugins
+│   │   │           ├── blink.lua
+│   │   │           ├── gitsigns.lua
+│   │   │           ├── lualine.lua
+│   │   │           ├── mini.lua
+│   │   │           ├── noice.lua
+│   │   │           ├── scrollview.lua
+│   │   │           ├── snacks.lua
+│   │   │           ├── treesitter.lua
+│   │   │           └── which-key.lua
+│   │   └── default.nix
 │   ├── optnix-fzf.nix
 │   ├── optnix.nix
+│   ├── push.nix
 │   ├── scripts
-│   │   ├── _completions
-│   │   │   ├── _push
-│   │   │   ├── _t
-│   │   │   └── _vm
-│   │   ├── all
-│   │   │   ├── push
-│   │   │   └── t
-│   │   ├── darwin
-│   │   │   ├── decrypt
-│   │   │   ├── encrypt
-│   │   │   └── vm
 │   │   └── default.nix
+│   ├── t.nix
+│   ├── vm.nix
 │   └── wrappers
 │       ├── default.nix
 │       ├── git
@@ -194,53 +201,13 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       │   ├── config.toml
 │       │   └── default.nix
 │       ├── hello.nix
-│       ├── lazygit
-│       │   ├── config.yml
-│       │   └── default.nix
-│       └── nvim
-│           ├── config
-│           │   ├── .stylua.toml
-│           │   ├── init.lua
-│           │   └── lua
-│           │       ├── config
-│           │       │   ├── autocommands.lua
-│           │       │   ├── init.lua
-│           │       │   ├── keymaps.lua
-│           │       │   ├── lazy.lua
-│           │       │   └── options.lua
-│           │       ├── extra
-│           │       │   └── foldtext.lua
-│           │       └── plugins
-│           │           ├── _cmp.lua
-│           │           ├── _debug.lua
-│           │           ├── _lsp.lua
-│           │           ├── _mini.lua
-│           │           ├── ai_avante.lua
-│           │           ├── ai_codecompanion.lua
-│           │           ├── ai_llama.lua
-│           │           ├── ai_supermaven.lua
-│           │           ├── bqf.lua
-│           │           ├── colorscheme.lua
-│           │           ├── dashboard.lua
-│           │           ├── flash.lua
-│           │           ├── formatting.lua
-│           │           ├── gitsigns.lua
-│           │           ├── lualine.lua
-│           │           ├── markdown.lua
-│           │           ├── neo-tree.lua
-│           │           ├── noice.lua
-│           │           ├── scrollbar.lua
-│           │           ├── snacks.lua
-│           │           ├── telescope.lua
-│           │           ├── treesitter.lua
-│           │           ├── which-key.lua
-│           │           ├── yazi.lua
-│           │           └── z_utils.lua
+│       └── lazygit
+│           ├── config.yml
 │           └── default.nix
 └── secrets
     └── secrets.yaml
 
-58 directories, 174 files
+52 directories, 147 files
 ```
 <!-- readme-tree end -->
 
