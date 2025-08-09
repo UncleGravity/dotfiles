@@ -2,7 +2,12 @@
   description = "Nixos config flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # you may also notice that I don't use a `github:` url for nixpkgs this is
+    # beacuse we can save 15mb of data by using the channel tarball this is not
+    # a major saving but it is nice to have
+    # https://deer.social/profile/did:plc:mojgntlezho4qt7uvcfkdndg/post/3loogwsoqok2w
+    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
 
     # nix-darwin
     darwin = {
@@ -25,11 +30,6 @@
     # Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-
-    nixvim = {
-      url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -107,7 +107,6 @@
           inherit inputs username;
         };
         sharedModules = [
-          inputs.nixvim.homeManagerModules.nixvim
           ./modules/home
         ];
         useGlobalPkgs = true; # Share pkgs with darwin/nixos
@@ -202,9 +201,6 @@
           inherit inputs username homeStateVersion;
         };
         modules = [
-          # Input Modules
-          inputs.nixvim.homeManagerModules.nixvim
-
           ./modules/home # My Home Modules
           ./machines/hm/${username}/home.nix # Home Manager Config
           # -- Global Home-Manager Config -----------------------------------
