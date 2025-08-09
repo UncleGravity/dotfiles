@@ -104,6 +104,12 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   │   └── kitty.conf
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
+│   │   ├── git
+│   │   │   ├── config
+│   │   │   └── default.nix
+│   │   ├── lazygit
+│   │   │   ├── config.yml
+│   │   │   └── default.nix
 │   │   ├── pkgs.nix
 │   │   ├── ssh.nix
 │   │   ├── television
@@ -194,16 +200,10 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── vm.nix
 │   └── wrappers
 │       ├── default.nix
-│       ├── git
-│       │   ├── config
-│       │   └── default.nix
 │       ├── helix
 │       │   ├── config.toml
 │       │   └── default.nix
-│       ├── hello.nix
-│       └── lazygit
-│           ├── config.yml
-│           └── default.nix
+│       └── hello.nix
 └── secrets
     └── secrets.yaml
 
