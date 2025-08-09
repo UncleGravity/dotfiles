@@ -71,7 +71,7 @@
     # ookla-speedtest
     # cfspeedtest
 
-    # --- Nix ecosystem helpers -----------------------------------------------------------
+    # --- Nix helpers -----------------------------------------------------------
     cachix
     omnix
     statix
@@ -97,25 +97,14 @@
 
     # --- AI / chat -----------------------------------------------------------------------
     aichat
-    ollama
+    # ollama
     claude-code
 
     # --- Backup / sync -------------------------------------------------------------------
     restic
-    autorestic
     rustic
-    borgbackup
-    borgmatic
     icloudpd
     immich-go
-
-    # --- File management -----------------------------------------------------------------
-    yazi
-    exiftool
-
-    # --- Terminal multiplexing -----------------------------------------------------------
-    tmux
-    sesh
 
     # --- Modern CLI replacements ---------------------------------------------------------
     coreutils
@@ -196,7 +185,7 @@ in {
 
       • `common`      – available on all platforms
       • `darwinOnly`  – added only when `pkgs.stdenv.isDarwin` is true
-      • `linuxOnly`   – added only on Linux (currently empty)
+      • `linuxOnly`   – added only on Linux
 
       Host or user modules may extend or override this option.
     '';
