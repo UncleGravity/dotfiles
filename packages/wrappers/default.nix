@@ -19,8 +19,6 @@ let
     modules = [
       ./hello.nix
       ./helix
-      ./git
-      ./lazygit
       # add more modules here (./git.nix, ./fzf.nix, …)
     ];
   };

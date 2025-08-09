@@ -1,14 +1,16 @@
 {
   imports = [
-    ./pkgs.nix
     ./aichat.nix
     ./bat.nix
     ./direnv.nix
     ./dotfiles
+    ./git
+    ./lazygit
+    ./pkgs.nix
     ./ssh.nix
     ./television
-    ./zsh
-    ./yazi
     ./tmux
+    ./yazi
+    ./zsh
   ];
 }
