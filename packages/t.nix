@@ -7,7 +7,6 @@
     name = "t";
     runtimeInputs = with pkgs; [
       tmux
-      neovim
       coreutils
       gnugrep
     ];
