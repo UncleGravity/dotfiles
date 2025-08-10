@@ -40,10 +40,11 @@
   ];
 in
   pkgs.symlinkJoin {
-    name = "nv";
+    name = "nvim";
+    paths = [];
     nativeBuildInputs = [pkgs.makeWrapper];
     postBuild = ''
-      makeWrapper ${nvimWith}/bin/nvim $out/bin/nv \
+      makeWrapper ${nvimWith}/bin/nvim $out/bin/nvim \
           --set-default NVIM_APPNAME nvim-nix \
           --add-flags "--cmd 'set runtimepath^=${cfg}'" \
           --prefix PATH : ${pkgs.lib.makeBinPath runtimeTools}
@@ -52,5 +53,6 @@ in
       makeWrapper ${pkgs.neovim}/bin/nvim $out/bin/nv-blank \
           --set-default NVIM_APPNAME nv-blank
     '';
-    paths = [];
+
+    meta.mainProgram = "nvim";
   }
