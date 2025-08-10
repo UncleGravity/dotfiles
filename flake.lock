@@ -151,11 +151,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1754613544,
-        "narHash": "sha256-ueR1mGX4I4DWfDRRxxMphbKDNisDeMPMusN72VV1+cc=",
+        "lastModified": 1754756528,
+        "narHash": "sha256-W1jYKMetZSOHP5m2Z5Wokdj/ct17swPHs+MiY2WT1HQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "cc2fa2331aebf9661d22bb507d362b39852ac73f",
+        "rev": "3ec1cd9a0703fbd55d865b7fd2b07d08374f0355",
         "type": "github"
       },
       "original": {
@@ -224,10 +224,10 @@
     "nixpkgs": {
       "locked": {
         "lastModified": 315532800,
-        "narHash": "sha256-B7s+JGA29m/YUe7zks/ec1clAvVIxotG3A0nW6TG36s=",
-        "rev": "b069b7c1e2fe1a3a24221428558bf44128d3d5c8",
+        "narHash": "sha256-7LkE2VyEmJwKVpUkTvtev4QDPyv5j3pmM6i6QTQ9qbg=",
+        "rev": "00b574b1ba8a352f0601c4dde4faff4b534ebb1e",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre841522.b069b7c1e2fe/nixexprs.tar.xz"
+        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre841767.00b574b1ba8a/nixexprs.tar.xz"
       },
       "original": {
         "type": "tarball",
@@ -432,11 +432,11 @@
         "nixpkgs-mozilla": "nixpkgs-mozilla"
       },
       "locked": {
-        "lastModified": 1754650281,
-        "narHash": "sha256-wCPLw27hCDCdk1HcDFmDUzRQY+ZsTVumD8P8ZmQgKyw=",
+        "lastModified": 1754740672,
+        "narHash": "sha256-mGTipefasB6YehQXU8O5K+mt4jlvc+xCqyDmJZmJsm8=",
         "owner": "alexpasmantier",
         "repo": "television",
-        "rev": "4b784f76e4df89263af4ee7b50508db5274b30d3",
+        "rev": "3439e8a1b9b48f487aab25c6e0626ecadb457d47",
         "type": "github"
       },
       "original": {
@@ -525,11 +525,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1754613489,
-        "narHash": "sha256-DaSBW9T27V0VBSQOrSS31hcDr6vur78E/CZ0mrnvprs=",
+        "lastModified": 1754741556,
+        "narHash": "sha256-Oz6tfp+F46PmztcOztfm+iCoxxxo7rZjkvr7ybQfnsQ=",
         "owner": "mitchellh",
         "repo": "zig-overlay",
-        "rev": "70d222403d2ac80490ce43d85e4d7bfda9739f65",
+        "rev": "c679cb6fd22ced1bd303babf4ca9fd499691ebb9",
         "type": "github"
       },
       "original": {
