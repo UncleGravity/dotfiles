@@ -30,8 +30,9 @@ tabpad = "·"
 
 [editor.whitespace.render]
 newline = "none"
-space = "all"
+space = "none"
 tab = "all"
+tabpad = "all"
 
 # Open yazi
 [keys.normal]

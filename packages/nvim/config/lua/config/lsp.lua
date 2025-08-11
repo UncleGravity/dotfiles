@@ -11,9 +11,22 @@ vim.keymap.set("n", "<leader>lr", ":IncRename ", { desc = "Rename symbol" })
 ----------------------------------------------------------------------------------------------------
 --- Enable
 vim.lsp.enable({
-    "nixd",
-    "zls",
-    "lua_ls"
+    "nixd",                  -- Nix | nixpkgs: nixd
+    "lua_ls",                -- Lua | nixpkgs: lua-language-server
+    "html",                  -- HTML | nixpkgs: vscode-langservers-extracted
+    "cssls",                 -- CSS | nixpkgs: vscode-langservers-extracted
+    "emmet_language_server", -- Emmet | nixpkgs: emmet-language-server
+    "ts_ls",                 -- JS/TS | nixpkgs: typescript-language-server <-- choose one
+    -- "tsgo", -- JS/TS | nixpkgs: typescript-go <-- choose one
+    "tailwindcss",           -- Tailwind | nixpkgs: tailwindcss-language-server
+    "pyright",               -- python | nixpkgs: pyright <-- choose one
+    -- "ty", -- python | nixpkgs: ty <-- choose one
+    "clangd",                -- C | nixpkgs: clang-tools
+    "gopls",                 -- Go | nixpkgs: gopls
+    "rust_analyzer",         -- Rust | nixpkgs: rust-analyzer
+    "bashls",                -- Bash | nixpkgs: bash-language-server
+    "taplo",                 -- TOML | -- nixpkgs: taplo
+    "zls",                   -- Zig | nixpkgs: zls
 })
 
 ----------------------------------------------------------------------------------------------------

@@ -3,7 +3,6 @@
 let
   yazi = pkgs.yazi.override {
     # put external tools on PATH for yazi
-    # (the wrapper already has sensible optionalDeps; add extras here)
     extraPackages = with pkgs; [
       _7zz # for archive extraction and preview
       jq # json
@@ -26,7 +25,7 @@ let
         require("git"):setup()
       '';
 
-    # IMPORTANT: use settings.yazi / settings.keymap
+    # IMPORTANT: use settings.yazi / settings.keymap / settings.theme
     settings = {
       yazi = {
         plugin.prepend_fetchers = [
