@@ -8,9 +8,9 @@
   ...
 }: {
   imports = [
-    # ./hardware.nix
+    ./hardware.nix
     "${inputs.self}/modules/nixos/_core.nix"
-    ./qemu.nix
+    # ./qemu.nix
     # ./vfkit.nix
   ];
 
