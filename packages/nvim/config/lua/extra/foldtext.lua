@@ -11,7 +11,7 @@ local function parse_line(linenr)
     end
 
     local ok, parser = pcall(vim.treesitter.get_parser, bufnr)
-    if not ok then
+    if not ok or not parser then
         return nil
     end
 
@@ -20,7 +20,11 @@ local function parse_line(linenr)
         return nil
     end
 
-    local tree = parser:parse({ linenr - 1, linenr })[1]
+    local trees = parser:parse({ linenr - 1, linenr })
+    if not trees or #trees == 0 then
+        return nil
+    end
+    local tree = trees[1]
     local result = {}
     local line_pos = 0
 
