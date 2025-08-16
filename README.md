@@ -21,7 +21,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       └── update-tree.yml
 ├── .gitignore
 ├── .sops.yaml
-├── AGENTS.md
+├── AGENT.md
 ├── README.md
 ├── flake.lock
 ├── flake.nix
