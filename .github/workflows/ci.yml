@@ -10,16 +10,13 @@
 # Triggered on pull requests to ensure changes work across all supported systems.
 # -----------------------------------------------------------------------------
 name: "CI"
-
 on:
   # push:
   # branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   flake-check:
     runs-on: ubuntu-latest
@@ -29,7 +26,6 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - name: Run nix flake check
         run: nix flake check --all-systems --show-trace
-
   build:
     needs: flake-check
     strategy:
@@ -49,13 +45,11 @@ jobs:
       - uses: actions/checkout@v4 # Checkout
       - uses: ./.github/actions/free-up-space # Free disk space
       - uses: DeterminateSystems/nix-installer-action@main # Install Nix
-
       # Configure Cachix binary cache
       - uses: cachix/cachix-action@v15
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-
       # Build all flake outputs for the target system
       - name: Build flake outputs
         run: |
@@ -63,11 +57,9 @@ jobs:
             --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
             --include-all-dependencies \
             --systems ${{ matrix.system }}
-
       # Upload build results to Cachix
       - name: Push result to Cachix
         run: cachix push ${{ secrets.CACHIX_CACHE }} ./result
-
   notify:
     needs: [flake-check, build]
     if: always() && contains(needs.*.result, 'failure')

@@ -1,5 +1,8 @@
-{ inputs, pkgs, ... }:
-let
+{
+  inputs,
+  pkgs,
+  ...
+}: let
   lazygit = inputs.wrapper-manager.lib.wrapWith pkgs {
     basePackage = pkgs.lazygit;
     appendFlags = ["-ucf" ./config.yml];
@@ -8,5 +11,5 @@ let
     ];
   };
 in {
-  home.packages = [ lazygit ];
+  home.packages = [lazygit];
 }

@@ -1,6 +1,9 @@
-{ pkgs, config, lib, ... }:
-
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
   yazi = pkgs.yazi.override {
     # put external tools on PATH for yazi
     extraPackages = with pkgs; [
@@ -18,12 +21,12 @@ let
 
     plugins = {
       toggle-pane = pkgs.yaziPlugins.toggle-pane;
-      git         = pkgs.yaziPlugins.git;
+      git = pkgs.yaziPlugins.git;
     };
 
     initLua = pkgs.writeText "yazi-init.lua" ''
-        require("git"):setup()
-      '';
+      require("git"):setup()
+    '';
 
     # IMPORTANT: use settings.yazi / settings.keymap / settings.theme
     settings = {
@@ -43,7 +46,7 @@ let
       keymap = {
         mgr.prepend_keymap = [
           {
-            on = [ "y" ];
+            on = ["y"];
             run = [
               ''shell 'cb copy "$@"' --confirm''
               "yank"
@@ -65,7 +68,7 @@ let
     };
   };
 in {
-  home.packages = [ yazi ];
+  home.packages = [yazi];
 
   # "cd on exit" wrapper
   programs.zsh.initContent = lib.mkIf config.programs.zsh.enable ''

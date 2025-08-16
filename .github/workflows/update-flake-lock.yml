@@ -9,18 +9,15 @@
 # Heavy multi-platform builds are handled by the regular CI workflow.
 # -----------------------------------------------------------------------------
 name: "Update flake.lock"
-
 on:
   schedule:
     # Every Sunday at 02:00 UTC
     - cron: "0 2 * * 0"
   workflow_dispatch:
-
 permissions:
   contents: write # push branch with new lockfile
   pull-requests: write # open / update PR
   actions: write # allow this workflow to trigger CI
-
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -29,7 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4 # Checkout repo
       - uses: DeterminateSystems/nix-installer-action@main # Install Nix
-
       # Update flake inputs + Open pull request
       - name: Update flake.lock & open PR
         id: update-flake
@@ -45,7 +41,6 @@ jobs:
             multi-platform build matrix will follow as standard PR checks.
           branch: ${{ env.PR_BRANCH }}
           token: ${{ secrets.BOT_PAT }}
-
       # Notify (only when a PR is freshly created)
       - name: Send pull-request notification
         if: steps.update-flake.outputs.pull-request-operation == 'created' || steps.update-flake.outputs.pull-request-operation == 'updated'

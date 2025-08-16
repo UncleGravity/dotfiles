@@ -41,7 +41,7 @@ in {
 
     # --- single file (lives directly in $HOME) -------------------------------
     home.file = {
-      ".sops.yaml" = lib.mkIf cfg.sops.enable { source = ./sops/.sops.yaml; };
+      ".sops.yaml" = lib.mkIf cfg.sops.enable {source = ./sops/.sops.yaml;};
     };
   };
 }

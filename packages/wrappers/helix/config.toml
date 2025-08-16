@@ -4,7 +4,7 @@ theme = "kanagawa"
 scrolloff = 999
 auto-format = false
 bufferline = "multiple"
-color-modes = true # cursorline mode indicator changes color
+color-modes = true       # cursorline mode indicator changes color
 line-number = "relative"
 mouse = true
 rulers = [100]
@@ -40,29 +40,29 @@ tabpad = "all"
 "{" = "goto_prev_paragraph"
 
 A-k = [
-    "yank_main_selection_to_clipboard",
-    "delete_selection",
-    "move_line_up",
-    "paste_clipboard_before",
-    "select_mode",
+  "yank_main_selection_to_clipboard",
+  "delete_selection",
+  "move_line_up",
+  "paste_clipboard_before",
+  "select_mode",
 ]
 
 A-j = [
-    "yank_main_selection_to_clipboard",
-    "delete_selection",
-    "move_line_down",
-    "paste_clipboard_before",
-    "select_mode",
+  "yank_main_selection_to_clipboard",
+  "delete_selection",
+  "move_line_down",
+  "paste_clipboard_before",
+  "select_mode",
 ]
 
 C-y = [
-    ':sh rm -f /tmp/unique-file',
-    ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
-    ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
-    ':open %sh{cat /tmp/unique-file}',
-    ':redraw',
-    ':set mouse false',
-    ':set mouse true',
+  ':sh rm -f /tmp/unique-file',
+  ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
+  ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+  ':open %sh{cat /tmp/unique-file}',
+  ':redraw',
+  ':set mouse false',
+  ':set mouse true',
 ]
 
 # Drag selection
@@ -71,17 +71,17 @@ C-y = [
 "{" = "goto_prev_paragraph"
 
 A-k = [
-    "yank_main_selection_to_clipboard",
-    "delete_selection",
-    "move_line_up",
-    "paste_clipboard_before",
-    "select_mode",
+  "yank_main_selection_to_clipboard",
+  "delete_selection",
+  "move_line_up",
+  "paste_clipboard_before",
+  "select_mode",
 ]
 
 A-j = [
-    "yank_main_selection_to_clipboard",
-    "delete_selection",
-    "move_line_down",
-    "paste_clipboard_before",
-    "select_mode",
+  "yank_main_selection_to_clipboard",
+  "delete_selection",
+  "move_line_down",
+  "paste_clipboard_before",
+  "select_mode",
 ]
