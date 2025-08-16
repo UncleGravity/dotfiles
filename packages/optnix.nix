@@ -256,7 +256,7 @@
     ${scopeConfigs}
   '';
 
-  optnix = inputs.optnix.packages.${pkgs.system}.optnix;
+  inherit (inputs.optnix.packages.${pkgs.system}) optnix;
   configFile = pkgs.writeText "optnix-config.toml" configToml;
 in
   pkgs.symlinkJoin {

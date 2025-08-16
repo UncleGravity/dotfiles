@@ -43,18 +43,29 @@ in {
   #  Nix
   #############################################################
 
-  nix.channel.enable = false; # Flake gang
+  nix = {
+    channel.enable = false; # Flake gang
 
-  nix.settings = {
-    experimental-features = "nix-command flakes";
+    settings = {
+      experimental-features = "nix-command flakes";
 
-    # -------------------------------
-    # Binary caches for faster builds
-    substituters = cfg.binaryCaches.substituters;
-    trusted-public-keys = cfg.binaryCaches.trustedPublicKeys;
-    always-allow-substitutes = true;
-    # -------------------------------
-    trusted-users = [username];
+      # -------------------------------
+      # Binary caches for faster builds
+      substituters = cfg.binaryCaches.substituters;
+      trusted-public-keys = cfg.binaryCaches.trustedPublicKeys;
+      always-allow-substitutes = true;
+      trusted-users = [username];
+
+      # -------------------------------
+      # Bug
+      # Disable auto-optimise-store because of this issue:
+      #   https://github.com/NixOS/nix/issues/7273
+      # "error: cannot link '/nix/store/.tmp-link-xxxxx-xxxxx' to '/nix/store/.links/xxxx': File exists"
+      auto-optimise-store = lib.mkDefault false;
+    };
+
+    # https://github.com/NixOS/nix/issues/7273#issuecomment-2295429401
+    optimise.automatic = lib.mkDefault true;
   };
 
   # ---------------------------------------------------------------------------
@@ -70,15 +81,6 @@ in {
       extraArgs = "--keep 5 --keep-since 30d"; # Remove older than 30d, keep at least 5
     };
   };
-
-  # -------------------------------
-  # Bug
-  # Disable auto-optimise-store because of this issue:
-  #   https://github.com/NixOS/nix/issues/7273
-  # "error: cannot link '/nix/store/.tmp-link-xxxxx-xxxxx' to '/nix/store/.links/xxxx': File exists"
-  nix.settings.auto-optimise-store = lib.mkDefault false;
-  # https://github.com/NixOS/nix/issues/7273#issuecomment-2295429401
-  nix.optimise.automatic = lib.mkDefault true;
   # -------------------------------
 
   # Use the Git hash as nix generation revision

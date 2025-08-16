@@ -23,6 +23,6 @@ let
     ];
   };
 in {
-  packages = wmEval.config.build.packages; # Used by flake "apps" output, to call each script individually from terminal with `nix run .#<name>` or `nix run .#apps.<system>.<name>
-  toplevel = wmEval.config.build.toplevel; # Used by flake "packages" output, passed to systemPackages list for bulk install of all scripts with `inputs.self.packages.${pkgs.system}.wrapped.<name>`
+  inherit (wmEval.config.build) packages;
+  inherit (wmEval.config.build) toplevel;
 }

@@ -25,21 +25,23 @@ in {
 
   config = lib.mkIf cfg.enable {
     # --- directory-style dotfiles (link to $XDG_CONFIG_HOME/<name>) ----------
-    xdg.configFile."ghostty" = lib.mkIf cfg.ghostty.enable {
-      source = ./ghostty;
-    };
+    xdg.configFile = {
+      "ghostty" = lib.mkIf cfg.ghostty.enable {
+        source = ./ghostty;
+      };
 
-    xdg.configFile."karabiner" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.isDarwin) {
-      source = ./karabiner;
-    };
+      "karabiner" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.isDarwin) {
+        source = ./karabiner;
+      };
 
-    xdg.configFile."kitty" = lib.mkIf cfg.kitty.enable {
-      source = ./kitty;
+      "kitty" = lib.mkIf cfg.kitty.enable {
+        source = ./kitty;
+      };
     };
 
     # --- single file (lives directly in $HOME) -------------------------------
-    home.file.".sops.yaml" = lib.mkIf cfg.sops.enable {
-      source = ./sops/.sops.yaml;
+    home.file = {
+      ".sops.yaml" = lib.mkIf cfg.sops.enable { source = ./sops/.sops.yaml; };
     };
   };
 }

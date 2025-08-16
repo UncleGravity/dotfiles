@@ -24,8 +24,10 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    services.xserver.enable = true;
-    services.xserver.autorun = true;
+    services.xserver = {
+      enable = true;
+      autorun = true;
+    };
 
     # ---------------------------------------------------------------------------
     # GNOME settings

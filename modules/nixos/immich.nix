@@ -30,12 +30,15 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # Create the nas group
-    users.groups.nas = {};
+    users = {
+      groups.nas = {}; # Create the nas group
 
-    # Add your user and immich to the nas group
-    users.users.${username}.extraGroups = ["share" "video" "render"];
-    users.users.immich.extraGroups = ["share"];
+      # Add main user and immich to the nas group
+      users = {
+        ${username}.extraGroups = ["share" "video" "render"];
+        immich.extraGroups = ["share"];
+      };
+    };
 
     # Immich Service Configuration
     services.immich = {

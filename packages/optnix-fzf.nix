@@ -5,7 +5,7 @@
   ...
 }: let
   optnix = pkgs.callPackage ./optnix.nix {inherit inputs pkgs lib;};
-  configFile = optnix.configFile;
+  inherit (optnix) configFile;
 in
   pkgs.writeShellApplication {
     name = "optnix-fzf";

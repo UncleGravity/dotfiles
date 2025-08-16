@@ -16,13 +16,17 @@ let
 in {
   # -----------------------------------------------------------------------------------------------
   # Secrets
-  sops.secrets."backup/b2.env" = {}; # For Backblaze B2
-  sops.secrets."backup/b2/restic/repo" = {}; # For Backblaze B2
-  sops.secrets."backup/b2/restic/password" = {}; # For Backblaze B2
-  sops.secrets."backup/t7-password" = {}; # For Backblaze B2
-  sops.secrets."ntfy/topic" = {}; # For NTFY notifications
+  sops.secrets = {
+    "backup/b2.env" = {}; # Backblaze B2
+    "backup/b2/restic/repo" = {}; # Backblaze B2
+    "backup/b2/restic/password" = {}; # Backblaze B2
+    "backup/t7-password" = {}; # Backblaze B2
+    "ntfy/topic" = {}; # NTFY notifications
+  };
 
   # --- B2 ----------------------------------------------------------
+  # This service is automatically created by services.restic.backup.
+  # Here we modify it to add better error handling
   systemd.services."restic-backups-b2" = {
     unitConfig = {
       RequiresMountsFor = ["${mountPoint}"]; # Fail if /nas is not mounted

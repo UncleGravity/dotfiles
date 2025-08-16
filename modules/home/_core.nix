@@ -25,14 +25,12 @@
   #  Home section
   # --------------------------------------------------------------------------
   home = {
-    username = username;
+    inherit username;
+    inherit (config.my.home) packages; # Single source of truth for user-space packages
     homeDirectory =
       if pkgs.stdenv.isDarwin
       then "/Users/${username}"
       else "/home/${username}";
-
-    # Single source of truth for user-space packages
-    packages = config.my.home.packages;
   };
 
   # --------------------------------------------------------------------------

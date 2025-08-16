@@ -143,8 +143,8 @@
           {
             # Nixpkgs Config
             nixpkgs = {
+              inherit overlays;
               hostPlatform = system;
-              overlays = overlays;
               config.allowUnfree = true; # buhaoyisi duibuqi
             };
             system.stateVersion = systemStateVersion; # no change or u will regret
@@ -183,8 +183,8 @@
 
             # Nixpkgs Config
             nixpkgs = {
+              inherit overlays;
               hostPlatform = system;
-              overlays = overlays;
               config.allowUnfree = true; # gomenasai
             };
 
@@ -207,8 +207,8 @@
           {
             # Nixpkgs Config
             nixpkgs = {
+              inherit overlays;
               # hostPlatform = system;
-              overlays = overlays;
               config.allowUnfree = true; # 歹勢 歹勢
             };
             home.stateVersion = homeStateVersion; # no toques wey
@@ -293,7 +293,7 @@
       import ./packages {
         inherit inputs system pkgs;
         inherit (pkgs) lib;
-        wrapper-manager = inputs.wrapper-manager;
+        inherit (inputs) wrapper-manager;
       }
     );
 
