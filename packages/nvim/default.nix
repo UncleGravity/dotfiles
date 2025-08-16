@@ -10,6 +10,7 @@
           pkgs.vimPlugins.lualine-nvim
           pkgs.vimPlugins.noice-nvim
           pkgs.vimPlugins.todo-comments-nvim
+          pkgs.vimPlugins.which-key-nvim
 
           # Navigation
           pkgs.vimPlugins.vim-tmux-navigator
@@ -27,7 +28,6 @@
           pkgs.vimPlugins.inc-rename-nvim
 
           pkgs.vimPlugins.gitsigns-nvim
-          pkgs.vimPlugins.which-key-nvim
           pkgs.vimPlugins.fzf-lua
         ];
       };

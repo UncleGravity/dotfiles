@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------------------------------
 --- Noice.nvim
+--- If nvim-notify is not installed, will use "mini" display backend
 require('noice').setup({
     routes = {
         -- Show undo/redo messages in small notification
@@ -12,6 +13,7 @@ require('noice').setup({
                     { find = '; before #%d+' },
                 },
             },
+            opts = { timeout = 5000 }, -- 5 seconds
             view = 'mini',
         },
         -- Show "recording macro" message

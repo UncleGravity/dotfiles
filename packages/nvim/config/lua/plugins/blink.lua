@@ -12,6 +12,7 @@ require('blink.cmp').setup({
     signature  = { enabled = true },                              -- Experimental
     completion = {
         menu = {
+            border = "rounded",
             max_height = 20, -- let it expand to 20 items if there’s room
             draw = {
                 columns = {
