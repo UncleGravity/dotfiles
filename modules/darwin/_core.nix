@@ -83,9 +83,6 @@ in {
   };
   # -------------------------------
 
-  # Use the Git hash as nix generation revision
-  system.configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
-
   ###################################################################################
   #  macOS's System configuration
   # nix-darwin options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
@@ -187,6 +184,10 @@ in {
       ActivityMonitor.IconType = lib.mkDefault 6; # CPU usage plot
       LaunchServices.LSQuarantine = lib.mkDefault false; # Disable "This app is from the internet" quarantine message
     }; # ----------------- Defaults end
+
+    # Use the Git hash as nix generation revision
+    configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
+
   }; # ----------------- System end
 
   # Enable TouchID for sudo authentication
