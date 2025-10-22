@@ -26,6 +26,8 @@
     zls
     rust-analyzer
     markdown-oxide
+    ghc
+    haskell-language-server
 
     # --- Formatters / Linters ------------------------------------------------------------
     stylua
@@ -64,9 +66,9 @@
     dig
     ngrok
     hcloud
-    flyctl
-    doctl
-    awscli2
+    # flyctl
+    # doctl
+    # awscli2
     speedtest-go
     # ookla-speedtest
     # cfspeedtest
@@ -84,6 +86,7 @@
     # --- TUIs / monitoring ---------------------------------------------------------------
     lazydocker
     ctop
+    zellij
 
     # --- Security & crypto ---------------------------------------------------------------
     _1password-cli
@@ -97,6 +100,7 @@
 
     # --- AI / chat -----------------------------------------------------------------------
     claude-code
+    gemini-cli
 
     # --- Backup / sync -------------------------------------------------------------------
     restic
@@ -130,6 +134,7 @@
     gum
     clipboard-jh
     ntfy-sh
+    d2
 
     # --- Fonts ---------------------------------------------------------------------------
     nerd-fonts.meslo-lg
@@ -145,7 +150,7 @@
     lima
     colima
     docker
-    podman
+    # podman
   ];
 
   linuxOnly = with pkgs; [
