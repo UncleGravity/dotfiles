@@ -25,3 +25,32 @@
 
 [difftool "nvim"]
     cmd = nvim -d $LOCAL $REMOTE
+
+# Submodule settings - automatically handle submodules in operations
+[submodule]
+    recurse = true
+
+# Show submodule changes in status
+[status]
+    submoduleSummary = true
+
+[push]
+    default = simple
+    autoSetupRemote = true # Auto-create upstream branch on push
+    recurseSubmodules = on-demand # Handle submodules on push
+
+[pull]
+    rebase = true
+
+# Rerere - remember how you resolved merge conflicts
+[rerere]
+    enabled = true
+
+# Rebase improvements
+[rebase]
+    autoStash = true # stash changes before rebase
+    autoSquash = true # squash fixup! commits
+
+# Better merge conflict display showing original, yours, and theirs
+[merge]
+    conflictStyle = zdiff3
