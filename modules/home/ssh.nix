@@ -5,7 +5,6 @@
 }: {
   programs.ssh = {
     enable = true;
-    forwardAgent = true;
 
     extraConfig = ''
       Include ${config.home.homeDirectory}/.config/colima/ssh_config
@@ -17,7 +16,11 @@
     '';
 
     matchBlocks = {
+      # "*" = {
+      #   forwardAgent = true; # a bit no no
+      # };
       "kiwi" = {
+        forwardAgent = true;
         user = "angel";
         hostname = "kiwi";
       };
