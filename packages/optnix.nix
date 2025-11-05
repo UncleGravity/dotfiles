@@ -256,12 +256,11 @@
     ${scopeConfigs}
   '';
 
-  inherit (inputs.optnix.packages.${pkgs.system}) optnix;
   configFile = pkgs.writeText "optnix-config.toml" configToml;
 in
   pkgs.symlinkJoin {
     name = "optnix";
-    paths = [optnix];
+    paths = [pkgs.optnix];
     nativeBuildInputs = [pkgs.makeWrapper];
     passthru = {
       inherit configFile;

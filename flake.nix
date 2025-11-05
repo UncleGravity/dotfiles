@@ -51,8 +51,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    optnix.url = "github:water-sucks/optnix";
-
     # ---------------------------------------------------------------------------------------------
     # Overlay Inputs
 
