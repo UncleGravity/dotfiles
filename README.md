@@ -21,7 +21,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       └── update-tree.yml
 ├── .gitignore
 ├── .sops.yaml
-├── AGENT.md
+├── AGENTS.md
 ├── README.md
 ├── flake.lock
 ├── flake.nix
@@ -29,9 +29,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── machines
 │   ├── darwin
 │   │   ├── BASURA
-│   │   │   ├── configuration.nix
-│   │   │   └── home.nix
-│   │   ├── BENGKUI
 │   │   │   ├── configuration.nix
 │   │   │   └── home.nix
 │   │   └── banana
@@ -207,7 +204,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-52 directories, 147 files
+51 directories, 145 files
 ```
 <!-- readme-tree end -->
 
