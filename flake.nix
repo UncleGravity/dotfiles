@@ -176,8 +176,8 @@
           {
             # Nix-Homebrew
             nix-homebrew = {
-              enable = hostname != "BENGKUI"; # false for bengkui
-              user = username; # Assuming username is the same as nix-homebrew user
+              enable = true;
+              user = cfg.username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
             };
 
@@ -229,15 +229,6 @@
         hostname = "banana";
         systemStateVersion = 6;
         homeStateVersion = "25.05";
-      };
-
-      # Darwin - BENGKUI
-      BENGKUI = mkDarwin {
-        system = systems.aarch64-darwin;
-        username = "useradmin";
-        hostname = "BENGKUI";
-        systemStateVersion = 4;
-        homeStateVersion = "24.05";
       };
 
       # Darwin - BASURA
