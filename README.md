@@ -28,9 +28,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── justfile
 ├── machines
 │   ├── darwin
-│   │   ├── BASURA
-│   │   │   ├── configuration.nix
-│   │   │   └── home.nix
 │   │   └── banana
 │   │       ├── configuration.nix
 │   │       ├── home.nix
@@ -109,21 +106,6 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── default.nix
 │   │   ├── pkgs.nix
 │   │   ├── ssh.nix
-│   │   ├── television
-│   │   │   ├── cable
-│   │   │   │   ├── alias.toml
-│   │   │   │   ├── dirs.toml
-│   │   │   │   ├── env.toml
-│   │   │   │   ├── files.toml
-│   │   │   │   ├── git-branch.toml
-│   │   │   │   ├── git-diff.toml
-│   │   │   │   ├── git-log.toml
-│   │   │   │   ├── git-reflog.toml
-│   │   │   │   ├── git-repos.toml
-│   │   │   │   ├── text.toml
-│   │   │   │   └── zsh-history.toml
-│   │   │   ├── config.toml
-│   │   │   └── default.nix
 │   │   ├── tmux
 │   │   │   ├── default.nix
 │   │   │   └── tmux.conf
@@ -204,7 +186,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-51 directories, 145 files
+48 directories, 130 files
 ```
 <!-- readme-tree end -->
 
