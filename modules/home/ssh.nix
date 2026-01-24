@@ -19,7 +19,6 @@
     matchBlocks = {
       "*" = {
         forwardAgent = false;
-        userKnownHostsFile = "/.ssh/known_hosts";
       };
 
       "kiwi" = {

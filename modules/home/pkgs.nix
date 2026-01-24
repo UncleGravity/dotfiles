@@ -144,7 +144,7 @@
   # 2. Platform-specific additions                                         #
   ###########################################################################
   darwinOnly = with pkgs; [
-    mactop
+    # mactop
     mas
     lima
     colima
@@ -160,7 +160,7 @@
   # 3. Custom packages from this flake                                      #
   ###########################################################################
   custom = [
-    # inputs.self.packages.${pkgs.system}.scripts
+    # inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.scripts
     # inputs.self.packages.${pkgs.system}.wrapped.hello
     pkgs.my.scripts
     pkgs.my.wrappers

@@ -2,12 +2,7 @@
   description = "Nixos config flake";
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # you may also notice that I don't use a `github:` url for nixpkgs this is
-    # beacuse we can save 15mb of data by using the channel tarball this is not
-    # a major saving but it is nice to have
-    # https://deer.social/profile/did:plc:mojgntlezho4qt7uvcfkdndg/post/3loogwsoqok2w
-    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # nix-darwin
     darwin = {
@@ -46,11 +41,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    television = {
-      url = "github:alexpasmantier/television";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    tmux-powerkit.url = "github:fabioluciano/tmux-powerkit";
     # ---------------------------------------------------------------------------------------------
     # Overlay Inputs
 
@@ -60,13 +51,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # ---------------------------------------------------------------------------------------------
-    # Non Flake Inputs
-
-    tmux-tokyo-night = {
-      url = "github:fabioluciano/tmux-tokyo-night";
-      flake = false;
-    };
   };
 
   outputs = inputs @ { nixpkgs, ... }:
@@ -83,7 +67,7 @@
       aarch64-linux = "aarch64-linux";
       x86_64-linux = "x86_64-linux";
       aarch64-darwin = "aarch64-darwin";
-      x86_64-darwin = "x86_64-darwin";
+      # x86_64-darwin = "x86_64-darwin";
     };
 
     # Map a function over every supported system, passing it { system, pkgs }
@@ -171,7 +155,15 @@
           (mkHomeManagerConfig {platform = "darwin"; inherit username hostname homeStateVersion;})
 
           # -- Global Darwin Config -----------------------------------------
-          {
+          ({config, ...}: let
+            cfg = config.my.profile;
+            in {
+            # FIXME: Experimenting with modules
+            my.profile.hostname = hostname;
+            my.profile.username = username;
+            my.profile.system = system;
+            my.profile.darwinStateVersion = systemStateVersion;
+            my.profile.homeStateVersion = homeStateVersion;
             # Nix-Homebrew
             nix-homebrew = {
               enable = true;
@@ -182,12 +174,12 @@
             # Nixpkgs Config
             nixpkgs = {
               inherit overlays;
-              hostPlatform = system;
+              hostPlatform = cfg.system;
               config.allowUnfree = true; # gomenasai
             };
 
-            system.stateVersion = systemStateVersion; # no change or u will regret
-          }
+            system.stateVersion = cfg.darwinStateVersion; # no change or u will regret
+          })
           # ---------------------------------------------------------------
         ];
       };
@@ -227,15 +219,6 @@
         hostname = "banana";
         systemStateVersion = 6;
         homeStateVersion = "25.05";
-      };
-
-      # Darwin - BASURA
-      BASURA = mkDarwin {
-        system = systems.x86_64-darwin;
-        username = "angel";
-        hostname = "BASURA";
-        systemStateVersion = 6;
-        homeStateVersion = "24.11";
       };
     };
 
@@ -297,7 +280,7 @@
             just
             nix-tree
             statix
-            vulnix
+            # vulnix
             omnix
             cachix
             # inputs.self.nixosConfigurations.nixos.config.system.build.vm

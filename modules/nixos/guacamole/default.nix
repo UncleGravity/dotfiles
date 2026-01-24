@@ -69,7 +69,6 @@ in {
       enable = true;
       host = cfg.host;
       port = cfg.serverPort;
-      userMappingXml = config.sops.secrets."guacamole/user-mapping.xml".path;
     };
 
     services.guacamole-client = {
@@ -79,6 +78,7 @@ in {
         guacd-port = cfg.serverPort;
         guacd-hostname = cfg.host;
       };
+      userMappingXml = config.sops.secrets."guacamole/user-mapping.xml".path;
     };
 
     # Complain if RDP is not enabled.

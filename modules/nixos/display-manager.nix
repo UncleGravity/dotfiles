@@ -39,8 +39,8 @@ in {
 
     # ---------------------------------------------------------------------------
     # Plasma (KDE) settings
-    services.xserver.displayManager.sddm.enable = lib.mkIf (cfg.desktop == "plasma") true;
-    services.xserver.desktopManager.plasma5.enable = lib.mkIf (cfg.desktop == "plasma") true;
+    services.displayManager.sddm.enable = lib.mkIf (cfg.desktop == "plasma") true;
+    services.desktopManager.plasma6.enable = lib.mkIf (cfg.desktop == "plasma") true;
 
     # ---------------------------------------------------------------------------
     # xrdp configuration

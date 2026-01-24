@@ -88,6 +88,7 @@ in {
   # nix-darwin options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
   # extra options: https://macos-defaults.com/
   # Manually find options with: https://github.com/joshryandavis/defaults2nix
+  # TODO: switch to -> https://github.com/SushyDev/nix-plist-manager
   ###################################################################################
   system = {
     primaryUser = username;

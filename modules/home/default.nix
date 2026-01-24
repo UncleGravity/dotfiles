@@ -8,7 +8,6 @@
     ./lazygit
     ./pkgs.nix
     ./ssh.nix
-    ./television
     ./tmux
     ./yazi
     ./zsh

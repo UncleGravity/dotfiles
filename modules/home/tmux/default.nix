@@ -9,15 +9,6 @@
   cfg = config.my.tmux;
 
   tmuxConf = ./tmux.conf;
-
-  # Plugins built via Nix (no TPM needed)
-  # Using flake inputs instead of manual fetchFromGitHub
-  tokyoNightPlugin = pkgs.tmuxPlugins.mkTmuxPlugin {
-    pluginName = "tmux-tokyo-night";
-    rtpFilePath = "tmux-tokyo-night.tmux";
-    version = "unstable";
-    src = inputs.tmux-tokyo-night;
-  };
 in {
   options.my.tmux.enable = lib.mkEnableOption "Enable Home-Manager tmux setup";
 
@@ -48,14 +39,16 @@ in {
       plugins = [
         pkgs.tmuxPlugins.vim-tmux-navigator
         {
-          plugin = tokyoNightPlugin;
+          plugin = inputs.tmux-powerkit.packages.${pkgs.stdenv.hostPlatform.system}.default;
           extraConfig = ''
-            set -g @theme_session_icon "\uebc8" # 
-            set -g @theme_variation 'night'
-            # set -g @theme_plugins 'datetime'
-            set -g @theme_disable_plugins 1
-            set -g @theme_transparent_status_bar 'true'
-            # set -g @theme_active_pane_border_style '#83a598'
+            set -g @powerkit_theme "tokyo-night"
+            set -g @powerkit_theme_variant "night"
+            set -g @powerkit_session_icon "\uebc8"
+            set -g @powerkit_plugins ""
+            # set -g @powerkit_separator_style "rounded"
+            # set -g @powerkit_edge_separator_style "none"
+            set -g @powerkit_elements_spacing "both"
+            set -g @powerkit_transparent "true"
           '';
         }
       ];

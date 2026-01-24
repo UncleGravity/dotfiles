@@ -16,6 +16,7 @@
       };
       isVM = lib.mkOption {
         type = lib.types.bool;
+        default = false;
         description = "Flag indicating if the system is a virtual machine";
       };
       system = lib.mkOption {
