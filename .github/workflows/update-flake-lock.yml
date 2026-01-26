@@ -25,7 +25,9 @@ jobs:
       PR_BRANCH: update-flake-lock
     steps:
       - uses: actions/checkout@v4 # Checkout repo
-      - uses: DeterminateSystems/nix-installer-action@main # Install Nix
+      - uses: cachix/install-nix-action@v31 # Install Nix
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       # Update flake inputs + Open pull request
       - name: Update flake.lock & open PR
         id: update-flake
