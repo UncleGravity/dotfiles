@@ -38,7 +38,7 @@
   # Enable virby Linux builder
   # Service org.nixos.virbyd
   services.virby = {
-    enable = true;
+    enable = false;
     cores = 12;
     memory = 16384; # 16GB
     # onDemand = {
