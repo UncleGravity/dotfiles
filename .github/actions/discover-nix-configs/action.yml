@@ -1,0 +1,99 @@
+name: "Discover Nix Configurations"
+description: "Dynamically discover nixos, darwin, and home-manager configurations from a flake"
+inputs:
+  flake:
+    description: "Path to the flake (default: current directory)"
+    required: false
+    default: "."
+outputs:
+  matrix:
+    description: "JSON matrix for GitHub Actions strategy"
+    value: ${{ steps.discover.outputs.matrix }}
+  count:
+    description: "Total number of configurations discovered"
+    value: ${{ steps.discover.outputs.count }}
+runs:
+  using: "composite"
+  steps:
+    - name: Discover configurations
+      id: discover
+      shell: bash
+      run: |
+        FLAKE="${{ inputs.flake }}"
+
+        # Map nix systems to GitHub runners
+        get_runner() {
+          case "$1" in
+            x86_64-linux)   echo "ubuntu-latest" ;;
+            aarch64-linux)  echo "ubuntu-24.04-arm" ;;
+            aarch64-darwin) echo "macos-latest" ;;
+            x86_64-darwin)  echo "macos-13" ;;
+            *)              echo "ubuntu-latest" ;;
+          esac
+        }
+
+        matrix='[]'
+
+        # Discover NixOS configurations
+        echo "::group::Discovering NixOS configurations"
+        nixos_configs=$(nix eval "$FLAKE#nixosConfigurations" --apply 'builtins.attrNames' --json 2>/dev/null || echo '[]')
+        echo "Found: $nixos_configs"
+        for name in $(echo "$nixos_configs" | nix run nixpkgs#jq -- -r '.[]'); do
+          system=$(nix eval "$FLAKE#nixosConfigurations.$name.pkgs.system" --raw)
+          runner=$(get_runner "$system")
+          echo "  - $name ($system -> $runner)"
+          matrix=$(echo "$matrix" | nix run nixpkgs#jq -- -c \
+            --arg name "$name" \
+            --arg type "nixos" \
+            --arg system "$system" \
+            --arg runner "$runner" \
+            --arg attr "$FLAKE#nixosConfigurations.$name.config.system.build.toplevel" \
+            '. += [{"name": $name, "type": $type, "system": $system, "runner": $runner, "attr": $attr}]')
+        done
+        echo "::endgroup::"
+
+        # Discover Darwin configurations
+        echo "::group::Discovering Darwin configurations"
+        darwin_configs=$(nix eval "$FLAKE#darwinConfigurations" --apply 'builtins.attrNames' --json 2>/dev/null || echo '[]')
+        echo "Found: $darwin_configs"
+        for name in $(echo "$darwin_configs" | nix run nixpkgs#jq -- -r '.[]'); do
+          system=$(nix eval "$FLAKE#darwinConfigurations.$name.pkgs.system" --raw)
+          runner=$(get_runner "$system")
+          echo "  - $name ($system -> $runner)"
+          matrix=$(echo "$matrix" | nix run nixpkgs#jq -- -c \
+            --arg name "$name" \
+            --arg type "darwin" \
+            --arg system "$system" \
+            --arg runner "$runner" \
+            --arg attr "$FLAKE#darwinConfigurations.$name.system" \
+            '. += [{"name": $name, "type": $type, "system": $system, "runner": $runner, "attr": $attr}]')
+        done
+        echo "::endgroup::"
+
+        # Discover Home Manager configurations
+        echo "::group::Discovering Home Manager configurations"
+        home_configs=$(nix eval "$FLAKE#homeConfigurations" --apply 'builtins.attrNames' --json 2>/dev/null || echo '[]')
+        echo "Found: $home_configs"
+        for name in $(echo "$home_configs" | nix run nixpkgs#jq -- -r '.[]'); do
+          system=$(nix eval "$FLAKE#homeConfigurations.$name.pkgs.system" --raw)
+          runner=$(get_runner "$system")
+          echo "  - $name ($system -> $runner)"
+          matrix=$(echo "$matrix" | nix run nixpkgs#jq -- -c \
+            --arg name "$name" \
+            --arg type "home" \
+            --arg system "$system" \
+            --arg runner "$runner" \
+            --arg attr "$FLAKE#homeConfigurations.$name.activationPackage" \
+            '. += [{"name": $name, "type": $type, "system": $system, "runner": $runner, "attr": $attr}]')
+        done
+        echo "::endgroup::"
+
+        # Output results
+        count=$(echo "$matrix" | nix run nixpkgs#jq -- 'length')
+        echo "::group::Discovery summary"
+        echo "Total configurations: $count"
+        echo "$matrix" | nix run nixpkgs#jq -- .
+        echo "::endgroup::"
+
+        echo "matrix={\"include\":$matrix}" >> "$GITHUB_OUTPUT"
+        echo "count=$count" >> "$GITHUB_OUTPUT"
