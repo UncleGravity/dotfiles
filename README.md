@@ -11,6 +11,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── .envrc
 ├── .github
 │   ├── actions
+│   │   ├── discover-nix-configs
+│   │   │   └── action.yml
 │   │   ├── free-up-space
 │   │   │   └── action.yml
 │   │   └── ntfy
@@ -186,7 +188,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-48 directories, 130 files
+49 directories, 131 files
 ```
 <!-- readme-tree end -->
 
