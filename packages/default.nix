@@ -19,6 +19,7 @@
     encrypt = pkgs.callPackage ./encrypt.nix {inherit pkgs lib;};
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
+    librelane = pkgs.librelane;
   };
 
   # Halt. Everything below this line is boilerplate.
