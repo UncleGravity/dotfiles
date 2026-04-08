@@ -42,8 +42,8 @@
   # --------------------------------------------------------------------------
   home.sessionVariables = {
     # NVIM_APPNAME = "nvim-lua";
-    # EDITOR = "nvim";
-    EDITOR = "hx";
+    EDITOR = "nvim";
+    # EDITOR = "hx";
     DELTA_PAGER = "less -RFX --mouse"; # Fix "delta" issue where mouse scroll doesn't work in tmux
     TEST = "HELLO";
   };
