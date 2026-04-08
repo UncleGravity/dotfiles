@@ -26,6 +26,7 @@
     # Does not manage formulae, just installs homebrew.
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    # Secrets
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -12,6 +12,12 @@ in {
     group = "grafana";
   };
 
+  sops.secrets."grafana/secret-key" = {
+    mode = "0600";
+    owner = "grafana";
+    group = "grafana";
+  };
+
   services.grafana = {
     enable = true;
 
@@ -32,6 +38,7 @@ in {
       security = {
         admin_user = "admin";
         admin_password = "$__file{${config.sops.secrets."grafana/password".path}}";
+        secret_key = "$__file{${config.sops.secrets."grafana/secret-key".path}}";
         disable_gravatar = true;
         cookie_secure = true;
       };
