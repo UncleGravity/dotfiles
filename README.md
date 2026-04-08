@@ -137,6 +137,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 ├── new_tree.txt
 ├── overlays
 │   ├── default.nix
+│   ├── klayout.nix
+│   ├── librelane.nix
 │   ├── my.nix
 │   ├── television.nix
 │   └── zig.nix
@@ -188,7 +190,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-49 directories, 131 files
+49 directories, 133 files
 ```
 <!-- readme-tree end -->
 
