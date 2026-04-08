@@ -83,7 +83,7 @@ in {
           "obsidian"
 
           # VPN
-          # "tailscale"
+          "tailscale-app"
           "private-internet-access"
           "freedom"
 
