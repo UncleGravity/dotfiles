@@ -76,14 +76,12 @@ in {
     hybrid-sleep.enable = false;
   };
 
-  # Same as above, not sure which one is the one that works. So we keep both for now.
-  # TODO: Remove one of them.
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowHybridSleep = "no";
+    AllowSuspendThenHibernate = "no";
+  };
 
   # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
