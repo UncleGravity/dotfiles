@@ -32,11 +32,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pinned to last version before determinateNix support was added
-    # See: https://github.com/quinneden/virby-nix-darwin/compare/be170bd...fa0cc23
     virby = {
-      url = "github:quinneden/virby-nix-darwin/be170bd7ef21ce9773e7daa646d43f5405a1bdb2";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:quinneden/virby-nix-darwin";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     treefmt-nix = {
@@ -44,7 +42,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    tmux-powerkit.url = "github:fabioluciano/tmux-powerkit";
+    tmux-powerkit = {
+      url = "github:fabioluciano/tmux-powerkit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # ---------------------------------------------------------------------------------------------
     # Overlay Inputs
 
