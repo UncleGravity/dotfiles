@@ -35,10 +35,18 @@
     # -----------------
   };
 
+  ## VIRBY
+
+  # Add binary cache
+  nix.settings.extra-substituters = [ "https://virby-nix-darwin.cachix.org" ];
+  nix.settings.extra-trusted-public-keys = [
+    "virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo="
+  ];
+
   # Enable virby Linux builder
   # Service org.nixos.virbyd
   services.virby = {
-    enable = false;
+    enable = true;
     cores = 12;
     memory = 16384; # 16GB
     # onDemand = {
