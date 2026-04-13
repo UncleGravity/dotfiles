@@ -33,63 +33,52 @@ in {
   ##### 2. Implementation ######################################################
   config = mkIf cfg.enable {
     launchd.daemons.apfs-snapshots = {
-      path = [pkgs.ripgrep pkgs.bash pkgs.coreutils];
+      path = [pkgs.ripgrep pkgs.coreutils];
+      script = ''
+        log() { echo "[$(date '+%Y-%m-%dT%H:%M:%S%z')] $1: $2"; }
+
+        # take a new APFS local snapshot
+        log INFO "Creating snapshot"
+        /usr/bin/tmutil snapshot /
+
+        # list just the timestamp strings, sort oldest→newest
+        # Filter out the header line "Snapshot dates for disk /:"
+        snapshots=$(
+          /usr/bin/tmutil listlocalsnapshotdates / \
+          | rg '^\d{4}-\d{2}-\d{2}-\d{6}$' \
+          | sort
+        )
+
+        total_count=$(printf '%s\n' "$snapshots" | rg -c '^\d' || true)
+        total_count=''${total_count:-0}
+
+        # nothing to prune — exit early
+        if [ "$total_count" -le ${toString cfg.keepCount} ]; then
+          log INFO "$total_count snapshots <= ${toString cfg.keepCount}, skipping"
+          exit 0
+        fi
+
+        # delete the oldest snapshots
+        delete_count=$((total_count - ${toString cfg.keepCount}))
+        echo "$snapshots" \
+          | head -n "$delete_count" \
+          | while read ts; do
+              [ -n "$ts" ] || continue
+              log INFO "Deleting snapshot: $ts"
+              /usr/bin/tmutil deletelocalsnapshots "$ts" || log ERROR "Failed to delete: $ts"
+            done
+
+        log INFO "Snapshot operation completed"
+
+        # simple log rotation: keep last 500 lines
+        tail -n 500 "${cfg.logPath}" > "${cfg.logPath}.tmp" && mv "${cfg.logPath}.tmp" "${cfg.logPath}"
+      '';
       serviceConfig = {
-        ProgramArguments = [
-          "${pkgs.bash}/bin/bash"
-          "-c"
-          ''
-            # take a new APFS local snapshot
-            /usr/bin/tmutil snapshot
-
-            # list just the timestamp strings, sort oldest→newest
-            # Filter out the header line "Snapshot dates for disk /:"
-            snapshots=$(
-              /usr/bin/tmutil listlocalsnapshotdates / \
-              | rg '^\d{4}-\d{2}-\d{2}-\d{6}$' \
-              | sort
-            )
-
-            # count total snapshots (only count non-empty lines)
-            total_count=$(echo "$snapshots" | rg -c '^\d' || echo "0")
-
-            # only delete if we have more than the keep count
-            if [ "$total_count" -gt ${toString cfg.keepCount} ]; then
-              # calculate how many to delete
-              delete_count=$((total_count - ${toString cfg.keepCount}))
-
-              # delete the oldest snapshots
-              echo "$snapshots" \
-                | head -n "$delete_count" \
-                | while read ts; do
-                    if [ -n "$ts" ]; then
-                      echo "$(date): Deleting snapshot: $ts"
-                      /usr/bin/tmutil deletelocalsnapshots "$ts"
-                    fi
-                  done
-            else
-              echo "$(date): Total snapshots ($total_count) &lt;= keep count (${toString cfg.keepCount}), no deletion needed"
-            fi
-
-            echo "$(date): Snapshot operation completed"
-          ''
-        ];
         StartInterval = cfg.interval;
         StandardOutPath = cfg.logPath;
         StandardErrorPath = cfg.logPath;
-        # Ensure the service runs even when no user is logged in
-        RunAtLoad = true;
-        # Service should stop when snapshot operation is completed
-        # We be reinvoked when timer interval is reached again
-        KeepAlive = false;
+        RunAtLoad = true; # Ensure service runs even when no user is logged in
       };
     };
-
-    # Ensure log directory exists
-    system.activationScripts.apfs-snapshots-log = ''
-      mkdir -p "$(dirname "${cfg.logPath}")"
-      touch "${cfg.logPath}"
-      chmod 644 "${cfg.logPath}"
-    '';
   };
 }

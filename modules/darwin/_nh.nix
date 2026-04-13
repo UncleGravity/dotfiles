@@ -1,6 +1,7 @@
 # Based off: https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/programs/nh.nix
 # When making changes please try to keep it in sync.
 # Waiting for https://github.com/nix-darwin/nix-darwin/pull/942
+# or https://github.com/nix-darwin/nix-darwin/pull/1744
 {
   config,
   lib,
