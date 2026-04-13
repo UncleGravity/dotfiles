@@ -27,7 +27,7 @@
     rust-analyzer
     markdown-oxide
     ghc
-    haskell-language-server
+    # haskell-language-server
 
     # --- Formatters / Linters ------------------------------------------------------------
     stylua
