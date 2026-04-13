@@ -187,10 +187,12 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       │   ├── config.toml
 │       │   └── default.nix
 │       └── hello.nix
+├── scripts
+│   └── nix-profile.sh
 └── secrets
     └── secrets.yaml
 
-49 directories, 133 files
+50 directories, 134 files
 ```
 <!-- readme-tree end -->
 
