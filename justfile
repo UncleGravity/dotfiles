@@ -186,6 +186,10 @@ nixpkgs-status:
     DAYS_AGO=$(( (CURRENT_TIME - LAST_MODIFIED) / 86400 ))
     echo "📦 nixpkgs last updated: $DAYS_AGO days ago ($(date -d @$LAST_MODIFIED '+%Y-%m-%d %H:%M:%S'))"
 
+# Profile nix evaluation performance (optionally specify a hostname)
+profile host="":
+    @./scripts/nix-profile.sh {{ host }}
+
 # Display available commands
 help:
     @just --list
