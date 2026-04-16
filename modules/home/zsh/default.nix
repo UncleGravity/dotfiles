@@ -92,6 +92,11 @@ in {
           source ${./fzf-dash.zsh}
         '';
         # -------------------------------------------------------------------------------------------
+        zshExtra = lib.mkOrder 1000 ''
+          # use zsh as default nix shell
+          ${lib.getExe pkgs.nix-your-shell} zsh | source /dev/stdin
+        '';
+        # -------------------------------------------------------------------------------------------
         zshEnd = lib.mkOrder 1500 ''
           # Misc
           bindkey '^[' autosuggest-clear          # Esc: Clear autosuggestion
@@ -105,6 +110,7 @@ in {
             zshSecrets
             zshOptions
             zshPlugins
+            zshExtra
             zshEnd
           ]
           ++ lib.optional config.programs.fzf.enable zshFzf);
