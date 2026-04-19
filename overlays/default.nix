@@ -14,6 +14,5 @@
   # Option 2. Declare overlays in separate files
   # (import ./zig.nix         { inherit inputs; })
   (import ./my.nix {inherit inputs;})
-  (import ./librelane.nix {inherit inputs;})
   # (import ./television.nix {inherit inputs;})
 ]
