@@ -165,31 +165,23 @@
           (mkHomeManagerConfig {platform = "darwin"; inherit username hostname homeStateVersion;})
 
           # -- Global Darwin Config -----------------------------------------
-          ({config, ...}: let
-            cfg = config.my.profile;
-            in {
-            # FIXME: Experimenting with modules
-            my.profile.hostname = hostname;
-            my.profile.username = username;
-            my.profile.system = system;
-            my.profile.darwinStateVersion = systemStateVersion;
-            my.profile.homeStateVersion = homeStateVersion;
+          {
             # Nix-Homebrew
             nix-homebrew = {
               enable = true;
-              user = cfg.username; # Assuming username is the same as nix-homebrew user
+              user = username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
             };
 
             # Nixpkgs Config
             nixpkgs = {
               inherit overlays;
-              hostPlatform = cfg.system;
+              hostPlatform = system;
               config.allowUnfree = true; # gomenasai
             };
 
-            system.stateVersion = cfg.darwinStateVersion; # no change or u will regret
-          })
+            system.stateVersion = systemStateVersion; # no change or u will regret
+          }
           # ---------------------------------------------------------------
         ];
       };

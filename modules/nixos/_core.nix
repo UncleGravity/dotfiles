@@ -5,9 +5,7 @@
   username,
   pkgs,
   ...
-}: let
-  cfg = config.my.global;
-in {
+}: {
   # My NixOS modules
   my = {
     docker.enable = true;
@@ -26,11 +24,6 @@ in {
       auto-optimise-store = lib.mkDefault false; # Avoiding some heavy IO
 
       # -------------------------------
-      # Binary caches for faster builds
-      substituters = cfg.binaryCaches.substituters;
-      trusted-public-keys = cfg.binaryCaches.trustedPublicKeys;
-      always-allow-substitutes = true;
-      # -------------------------------
       trusted-users = ["root" username]; # Allow root and ${username} to use nix-command (required by devenv for cachix to work)
     };
   };
@@ -40,7 +33,7 @@ in {
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
-    systemd-boot.configurationLimit = 10; # Limit to 5 latest generations
+    systemd-boot.configurationLimit = 10;
   };
 
   # ---------------------------------------------------------------------------
@@ -59,11 +52,11 @@ in {
   };
 
   # ---------------------------------------------------------------------------
-  # Set your time zone.
-  time.timeZone = cfg.locale.timeZone;
+  # Time Zone
+  time.timeZone = "America/Los_Angeles";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = cfg.locale.defaultLocale;
+  i18n.defaultLocale = "en_US.UTF-8";
 
   # ---------------------------------------------------------------------------
   # Disable sleep, suspend, hibernate, and hybrid-sleep
@@ -122,7 +115,6 @@ in {
         "networkmanager"
         "wheel" # sudo
       ];
-      openssh.authorizedKeys.keys = cfg.ssh.publicKeys;
     };
     defaultUserShell = pkgs.zsh;
   };

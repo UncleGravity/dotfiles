@@ -7,9 +7,7 @@
   username,
   hostname,
   ...
-}: let
-  cfg = config.my.global;
-in {
+}: {
   # --------------------------------------------------------------------------
   # My Darwin Modules
   my = {
@@ -31,7 +29,6 @@ in {
   users.users."${username}" = {
     home = "/Users/${username}";
     description = username;
-    openssh.authorizedKeys.keys = cfg.ssh.publicKeys;
   };
 
   #############################################################
@@ -50,10 +47,6 @@ in {
       experimental-features = "nix-command flakes";
 
       # -------------------------------
-      # Binary caches for faster builds
-      substituters = cfg.binaryCaches.substituters;
-      trusted-public-keys = cfg.binaryCaches.trustedPublicKeys;
-      always-allow-substitutes = true;
       trusted-users = [username];
 
       # -------------------------------

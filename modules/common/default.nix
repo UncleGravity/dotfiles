@@ -2,7 +2,8 @@
   imports = [
     ./sops.nix
     ./pkgs.nix
-    ./config.nix
+    ./caches.nix
+    ./ssh-keys.nix
     ./ntfy.nix
   ];
 }
