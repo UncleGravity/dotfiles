@@ -20,20 +20,20 @@ in {
       default = true;
       description = "Whether to advertise this machine as an exit node";
     };
+
+    authKeyFile = lib.mkOption {
+      type = lib.types.path;
+      description = "Path to a file containing the Tailscale auth key";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [pkgs.tailscale];
     networking.firewall.trustedInterfaces = ["tailscale0"];
 
-    sops.secrets."tailscale/authkey" = {
-      mode = "0600"; # Only root can read the auth key
-      owner = "root";
-    };
-
     services.tailscale = {
       enable = true;
-      authKeyFile = config.sops.secrets."tailscale/authkey".path;
+      authKeyFile = cfg.authKeyFile;
       openFirewall = true; # allow the Tailscale UDP port through the firewall
       useRoutingFeatures = "both"; # enable subnet-router & exit-node roles
       extraUpFlags =

@@ -26,6 +26,11 @@ in {
       default = 4822;
       description = "Port for the Guacamole daemon";
     };
+
+    userMappingFile = lib.mkOption {
+      type = lib.types.path;
+      description = "Path to a decrypted Guacamole user-mapping.xml file (owned by guacamole-server)";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -36,22 +41,6 @@ in {
         message = "Guacamole is only supported on x86_64-linux and i686-linux platforms";
       }
     ];
-
-    # Guacamole user-mapping.xml secret configuration
-    # NOTE: This secret contains authentication configuration for Guacamole users
-    sops.secrets."guacamole/user-mapping.xml" = {
-      sopsFile = ./user-mapping.xml.sops;
-      format = "binary";
-
-      # IMPORTANT: Previously, without explicit user creation, we needed neededForUsers = true
-      # because the guacamole service would create the user, but sops-nix ran before
-      # that happened, causing a chicken-and-egg problem.
-      #
-      # Find with: systemctl show guacamole-server.service property=User --property=Group
-      owner = "guacamole-server";
-      group = "guacamole-server";
-      mode = "0644";
-    };
 
     # Explicitly create the guacamole-server user and group
     # This ensures they exist during sops-nix activation, allowing proper ownership
@@ -78,7 +67,7 @@ in {
         guacd-port = cfg.serverPort;
         guacd-hostname = cfg.host;
       };
-      userMappingXml = config.sops.secrets."guacamole/user-mapping.xml".path;
+      userMappingXml = cfg.userMappingFile;
     };
 
     # Complain if RDP is not enabled.

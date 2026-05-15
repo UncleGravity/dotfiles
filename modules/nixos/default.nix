@@ -10,8 +10,7 @@
     ./display-manager.nix
     ./docker.nix
     ./escape-hatch.nix
-    # ./grafana/grafana.nix
-    ./guacamole
+    ./guacamole.nix
     ./hackrf.nix
     ./immich.nix
     ./gui.nix

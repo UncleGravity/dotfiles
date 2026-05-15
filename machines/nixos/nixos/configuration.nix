@@ -24,6 +24,12 @@
   # Enable additional modules for this VM
   my.hackrf.enable = true;
 
+  sops.secrets."tailscale/authkey" = {
+    mode = "0600";
+    owner = "root";
+  };
+  my.tailscale.authKeyFile = config.sops.secrets."tailscale/authkey".path;
+
   # ---------------------------------------------------------------------------
   # X11
   my.displayManager = {

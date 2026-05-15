@@ -1,4 +1,8 @@
-{inputs, ...}: {
+{
+  config,
+  inputs,
+  ...
+}: {
   imports = [
     ./hardware/disko.nix # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
     ./hardware/hardware.nix
@@ -7,6 +11,7 @@
     ./services/backup
     ./services/samba.nix
     ./services/grafana/grafana.nix
+    ./services/guacamole
     # ./services/wifi.nix
     "${inputs.self}/modules/nixos/_core.nix"
   ];
@@ -27,9 +32,16 @@
   };
 
   # Enable server services (beyond the defaults from _core.nix)
-  my.guacamole.enable = true; # Remote desktop gateway
+  # my.guacamole: enabled + secret wired in ./services/guacamole/default.nix
   # my.grafana.enable = true;      # TODO: Modularize grafana.nix
   # Note: services/samba.nix is imported directly above (machine-specific)
+
+  # Tailscale auth key (my.tailscale.enable comes from _core.nix).
+  sops.secrets."tailscale/authkey" = {
+    mode = "0600";
+    owner = "root";
+  };
+  my.tailscale.authKeyFile = config.sops.secrets."tailscale/authkey".path;
 
   services.iperf3 = {
     enable = true;

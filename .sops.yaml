@@ -16,19 +16,22 @@ creation_rules:
           - *kiwi
 
     # banana
-  - path_regex: machines/banana/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: machines/darwin/banana/.*\.(yaml|json|env|ini|sops)$
     key_groups:
       - age:
+          - *angel
           - *banana
   # nixos-vm
-  - path_regex: machines/nixos/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: machines/nixos/nixos/.*\.(yaml|json|env|ini|sops)$
     key_groups:
       - age:
+          - *angel
           - *nixos-vm
   # kiwi
-  - path_regex: machines/kiwi/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: machines/nixos/kiwi/.*\.(yaml|json|env|ini|sops)$
     key_groups:
       - age:
+          - *angel
           - *kiwi
 
   # Anything else not included above.

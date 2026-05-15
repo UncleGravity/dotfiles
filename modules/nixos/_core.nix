@@ -38,8 +38,6 @@
 
   # ---------------------------------------------------------------------------
   # Networking
-  # NetworkManager is gated by workstation profile (modules/nixos/workstation.nix).
-  # Servers needing NM (e.g. kiwi's WiFi) enable it in their host config.
   networking = {
     hostName = hostname;
   };
