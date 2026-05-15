@@ -2,7 +2,6 @@
 { inputs, ... }:
 {
   imports = [
-    "${inputs.self}/modules/darwin/_core.nix"
     ./linux-builder.nix
   ];
 
