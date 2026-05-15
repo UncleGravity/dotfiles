@@ -38,9 +38,10 @@
 
   # ---------------------------------------------------------------------------
   # Networking
+  # NetworkManager is gated by workstation profile (modules/nixos/workstation.nix).
+  # Servers needing NM (e.g. kiwi's WiFi) enable it in their host config.
   networking = {
     hostName = hostname;
-    networkmanager.enable = true;
   };
 
   services.openssh = {
@@ -59,43 +60,8 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
   # ---------------------------------------------------------------------------
-  # Disable sleep, suspend, hibernate, and hybrid-sleep
-  # This is necessary because the GNOME3/GDM auto-suspend feature cannot be disabled in GUI!
-  # If no user is logged in, the machine will power down after 20 minutes.
-  systemd.targets = {
-    sleep.enable = false;
-    suspend.enable = false;
-    hibernate.enable = false;
-    hybrid-sleep.enable = false;
-  };
-
-  systemd.sleep.settings.Sleep = {
-    AllowSuspend = "no";
-    AllowHibernation = "no";
-    AllowHybridSleep = "no";
-    AllowSuspendThenHibernate = "no";
-  };
-
-  # ---------------------------------------------------------------------------
   # Enable CUPS to print documents.
   services.printing.enable = lib.mkDefault false;
-
-  # ---------------------------------------------------------------------------
-  # Enable sound with pipewire.
-  security.rtkit.enable = true;
-  services.pulseaudio.enable = false;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
 
   # ---------------------------------------------------------------------------
   # Enable touchpad support (enabled default in most desktopManager).
@@ -106,7 +72,7 @@
 
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with 'passwd'.
-  services.getty.autologinUser = "${username}";
+  # TTY autologin is gated by workstation profile (modules/nixos/workstation.nix).
   users = {
     users.${username} = {
       isNormalUser = true;

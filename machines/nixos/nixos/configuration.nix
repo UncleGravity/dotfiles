@@ -14,6 +14,12 @@
     # ./vfkit.nix
   ];
 
+  # --- Role profiles ---
+  my.profiles = {
+    workstation.enable = true;
+    graphical.enable = true;
+  };
+
   # ---------------------------------------------------------------------------
   # Enable additional modules for this VM
   my.hackrf.enable = true;

@@ -1,6 +1,5 @@
 {...}: {
-  # Binary caches shared by every host (NixOS + Darwin).
-  # If a host needs to deviate, override with `lib.mkForce`.
+  # Binary caches shared by every host
   nix.settings = {
     substituters = [
       "https://nix-community.cachix.org?priority=41"

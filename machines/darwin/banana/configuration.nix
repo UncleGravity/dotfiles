@@ -1,16 +1,16 @@
 # Configuration for the 'my-macbook' machine
+{ inputs, ... }:
 {
-  pkgs,
-  lib,
-  inputs,
-  username,
-  hostname,
-  ...
-}: {
   imports = [
     "${inputs.self}/modules/darwin/_core.nix"
     ./linux-builder.nix
   ];
+
+  # --- Role profiles ---
+  my.profiles = {
+    workstation.enable = true;
+    graphical.enable = true;
+  };
 
   # --- Overrides or Machine-Specific Settings ---
   # Any setting here will override the corresponding 'mkDefault' setting in base-configuration.nix

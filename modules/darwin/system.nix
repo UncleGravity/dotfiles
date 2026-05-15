@@ -1,81 +1,10 @@
-# This file defines the common configuration shared across different machines.
 {
   config,
-  pkgs,
   lib,
   inputs,
   username,
-  hostname,
   ...
 }: {
-  # --------------------------------------------------------------------------
-  # My Darwin Modules
-  my = {
-    homebrew.enable = true;
-    apfs-snapshots.enable = true;
-  };
-
-  #############################################################
-  #  Host & User config
-  #############################################################
-  networking = {
-    hostName = hostname;
-    localHostName = hostname;
-    computerName = hostname;
-    # system.defaults.smb.NetBIOSName = lib.mkDefault hostname; # Often derived from hostname
-    wakeOnLan.enable = lib.mkDefault true;
-  };
-
-  users.users."${username}" = {
-    home = "/Users/${username}";
-    description = username;
-  };
-
-  #############################################################
-  #  Packages
-  #############################################################
-  environment.systemPackages = config.my.common.systemPackages;
-
-  #############################################################
-  #  Nix
-  #############################################################
-
-  nix = {
-    channel.enable = false; # Flake gang
-
-    settings = {
-      experimental-features = "nix-command flakes";
-
-      # -------------------------------
-      trusted-users = [username];
-
-      # -------------------------------
-      # Bug
-      # Disable auto-optimise-store because of this issue:
-      #   https://github.com/NixOS/nix/issues/7273
-      # "error: cannot link '/nix/store/.tmp-link-xxxxx-xxxxx' to '/nix/store/.links/xxxx': File exists"
-      auto-optimise-store = lib.mkDefault false;
-    };
-
-    # https://github.com/NixOS/nix/issues/7273#issuecomment-2295429401
-    optimise.automatic = lib.mkDefault true;
-  };
-
-  # ---------------------------------------------------------------------------
-  # Garbage collect EVERYTHING older than 30 days
-  programs.nh = {
-    enable = true;
-    clean = {
-      enable = true;
-      interval = {
-        Weekday = 0;
-        Hour = 0;
-      }; # Every Sunday at midnight
-      extraArgs = "--keep 5 --keep-since 30d"; # Remove older than 30d, keep at least 5
-    };
-  };
-  # -------------------------------
-
   ###################################################################################
   #  macOS's System configuration
   # nix-darwin options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
@@ -181,40 +110,5 @@
 
     # Use the Git hash as nix generation revision
     configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
-
   }; # ----------------- System end
-
-  # Enable TouchID for sudo authentication
-  security.pam.services.sudo_local = {
-    enable = lib.mkDefault true;
-    touchIdAuth = lib.mkDefault true;
-    reattach = lib.mkDefault true; # TMUX fix https://github.com/LnL7/nix-darwin/pull/787
-  };
-
-  # Karabiner-Elements
-  # TODO: Broken for now, install with homebrew instead.
-  # https://github.com/nix-darwin/nix-darwin/issues/1041
-  # services.karabiner-elements.enable = lib.mkDefault true;
-
-  #############################################################
-  #  Zsh
-  #############################################################
-  programs.zsh = {
-    # Create /etc/zshrc that loads the nix-darwin environment.
-    # this is required if you want to use darwin's default shell - zsh (instead of bash)
-    enable = lib.mkDefault true;
-
-    # IMPORTANT - This prevents compinit from running on /etc/zshrc,
-    # which noticeably slows down shell startup. Run compinit from user zshrc instead.
-    # This is (I think) mostly necessary because I am using a custom zshrc file instead of letting nix manage it.
-    enableGlobalCompInit = lib.mkDefault false;
-    # environment.pathsToLink = [ "/share/zsh" ];
-  };
-
-  environment.shells = lib.mkDefault [pkgs.zsh]; # Use nix managed zsh (probably more frequently updated
-
-  #############################################################
-  #  Tailscale
-  #############################################################
-  # services.tailscale.enable = true;
 }

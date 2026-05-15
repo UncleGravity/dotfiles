@@ -11,6 +11,13 @@
     "${inputs.self}/modules/nixos/_core.nix"
   ];
 
+  # --- Role profiles ---
+  # kiwi is a NAS (server) with GNOME for Guacamole/RDP (graphical).
+  my.profiles = {
+    server.enable = true;
+    graphical.enable = true;
+  };
+
   # ---------------------------------------------------------------------------
   # Enable server-specific modules
   my.displayManager = {
@@ -29,6 +36,9 @@
     openFirewall = true; # tcp/udp = [ 5201 ]
   };
 
+  # kiwi is a server profile but uses WiFi, so enable NM explicitly here.
+  # (workstation profile enables NM by default.)
+  networking.networkmanager.enable = true;
   networking.networkmanager.settings = {
     "connection"."wifi.powersave" = 2; # 2 = disabled
   };
