@@ -39,7 +39,7 @@
   # Service org.nixos.virbyd
   # NOTE: Virby adds ~10s to nix evaluation time keep disabled unless needed
   services.virby = {
-    enable = false;
+    enable = true;
     # rosetta = true; # REQUIRES ROSETTA ENABLED MANUALLY: softwareupdate --install-rosetta --agree-to-license
     # cores = 12;
     # memory = 16384; # 16GB

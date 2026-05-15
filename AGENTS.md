@@ -2,7 +2,6 @@
 
 ## Build/Test Commands
 - `just sync` - Rebuild system configuration (auto-detects NixOS/Darwin/Home Manager)
-- `nix fmt .` - Format all Nix
 - `nix flake check` - Validate flake configuration
 - `statix check .` - Lint Nix files for best practices
 

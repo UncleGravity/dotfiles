@@ -19,6 +19,10 @@
     encrypt = pkgs.callPackage ./encrypt.nix {inherit pkgs lib;};
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
+  } // lib.optionalAttrs (system == "aarch64-darwin") {
+    vm-nixos = pkgs.callPackage ./vm-nixos.nix {
+      runner = inputs.self.nixosConfigurations.vm-nixos.config.microvm.declaredRunner;
+    };
   };
 
   # Halt. Everything below this line is boilerplate.

@@ -22,6 +22,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    microvm = {
+      url = "github:microvm-nix/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
@@ -212,6 +217,27 @@
         ];
       };
 
+    mkMicrovm = { system, hostname, systemStateVersion, hostSystem ? systems.aarch64-darwin }:
+      nixpkgs.lib.nixosSystem {
+        specialArgs = {
+          inherit inputs hostname;
+        };
+        modules = [
+          inputs.microvm.nixosModules.microvm
+          ./machines/microvm/${hostname}.nix
+
+          {
+            nixpkgs = {
+              hostPlatform = system;
+              config.allowUnfree = true;
+            };
+
+            microvm.vmHostPackages = nixpkgs.legacyPackages.${hostSystem};
+            system.stateVersion = systemStateVersion;
+          }
+        ];
+      };
+
   in {
     # --------------------------------------------------------------------------
     # Darwin Configurations
@@ -247,6 +273,13 @@
         hostname = "nixos";
         systemStateVersion = "24.05";
         homeStateVersion = "24.05";
+      };
+
+      # Lightweight Linux VM for local development on banana
+      vm-nixos = mkMicrovm {
+        system = systems.aarch64-linux;
+        hostname = "vm-nixos";
+        systemStateVersion = "25.05";
       };
     };
 
