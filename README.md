@@ -38,6 +38,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   └── pi
 │   │       ├── dirty-post-install.sh
 │   │       └── home.nix
+│   ├── microvm
+│   │   └── vm-nixos.nix
 │   └── nixos
 │       ├── kiwi
 │       │   ├── configuration.nix
@@ -101,10 +103,8 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
 │   │   ├── git
-│   │   │   ├── config
 │   │   │   └── default.nix
 │   │   ├── lazygit
-│   │   │   ├── config.yml
 │   │   │   └── default.nix
 │   │   ├── pkgs.nix
 │   │   ├── ssh.nix
@@ -178,6 +178,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── scripts
 │   │   └── default.nix
 │   ├── t.nix
+│   ├── vm-nixos.nix
 │   ├── vm.nix
 │   └── wrappers
 │       ├── default.nix
@@ -190,7 +191,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-50 directories, 132 files
+51 directories, 132 files
 ```
 <!-- readme-tree end -->
 
