@@ -11,6 +11,9 @@
     graphical.enable = true;
   };
 
+  # SECRETS
+  my.env.work.enable = true;
+
   # --- Overrides or Machine-Specific Settings ---
   # Any setting here will override the corresponding 'mkDefault' setting in base-configuration.nix
 

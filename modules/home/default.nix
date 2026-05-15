@@ -2,7 +2,7 @@
   imports = [
     ./aichat.nix
     ./bat.nix
-    # ./direnv.nix
+    ./direnv.nix
     ./dotfiles
     ./git
     ./lazygit
