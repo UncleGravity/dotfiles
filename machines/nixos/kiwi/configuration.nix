@@ -15,34 +15,34 @@
     # ./services/wifi.nix
   ];
 
-  # --- Role profiles ---
-  # kiwi is a NAS (server) with GNOME for Guacamole/RDP (graphical).
-  my.profiles = {
-    server.enable = true;
-    graphical.enable = true;
-  };
-
   # ---------------------------------------------------------------------------
-  # Enable server-specific modules
-  my.displayManager = {
-    enable = true;
-    desktop = "gnome";
-    rdp.enable = true; # For Guacamole
-  };
-
-  # Enable server services (beyond the defaults from modules/nixos)
-  # my.guacamole: enabled + secret wired in ./services/guacamole/default.nix
-  # my.grafana.enable = true;      # TODO: Modularize grafana.nix
-  # Note: services/samba.nix is imported directly above (machine-specific)
-
-  my.docker.enable = true;
-
-  my.tailscale.enable = true;
+  # Secrets
   sops.secrets."tailscale/authkey" = {
     mode = "0600";
     owner = "root";
   };
-  my.tailscale.authKeyFile = config.sops.secrets."tailscale/authkey".path;
+
+  # ---------------------------------------------------------------------------
+  # Custom modules
+  my = {
+    # --- Active profiles ---
+    profiles = {
+      server.enable = true;
+      graphical.enable = true;
+    };
+
+    # ---------------------------------------------------------------------------
+    # Enable server-specific modules
+    displayManager = {
+      enable = true;
+      desktop = "gnome";
+      rdp.enable = true; # For Guacamole
+    };
+
+    docker.enable = true;
+    tailscale.enable = true;
+    tailscale.authKeyFile = config.sops.secrets."tailscale/authkey".path;
+  };
 
   services.iperf3 = {
     enable = true;

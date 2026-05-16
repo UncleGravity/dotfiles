@@ -6,10 +6,12 @@
   ];
 
   # --- Role profiles ---
-  my.profiles = {
-    workstation.enable = true;
-    graphical.enable = true;
-  };
+  # Profiles are NixOS-only for now — every darwin host is a workstation+graphical
+  # laptop. Re-enable here if a darwin module ever gates on these flags.
+  # my.profiles = {
+  #   workstation.enable = true;
+  #   graphical.enable = true;
+  # };
 
   # SECRETS
   my.env.work.enable = true;
@@ -26,8 +28,9 @@
     # logPath = "/var/log/apfs-snapshots.log"; # This is the default
   };
 
-  # Only keep brews and casks managed by nix
-  my.homebrew.cleanup = "zap";
+  # Homebrew
+  my.homebrew.enable = true;
+  my.homebrew.cleanup = "zap"; # Only keep brews and casks managed by nix
 
   # Enable nix-linux-builder for building Linux packages on Darwin
   # nix.linux-builder.enable = true;
