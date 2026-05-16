@@ -17,6 +17,7 @@ secrets.sh
 # Temporary files
 *.log
 *.tmp
+ignore/
 
 # Backup files
 *.bak
