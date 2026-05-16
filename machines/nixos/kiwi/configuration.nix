@@ -13,7 +13,6 @@
     ./services/grafana/grafana.nix
     ./services/guacamole
     # ./services/wifi.nix
-    "${inputs.self}/modules/nixos/_core.nix"
   ];
 
   # --- Role profiles ---
@@ -31,12 +30,14 @@
     rdp.enable = true; # For Guacamole
   };
 
-  # Enable server services (beyond the defaults from _core.nix)
+  # Enable server services (beyond the defaults from modules/nixos)
   # my.guacamole: enabled + secret wired in ./services/guacamole/default.nix
   # my.grafana.enable = true;      # TODO: Modularize grafana.nix
   # Note: services/samba.nix is imported directly above (machine-specific)
 
-  # Tailscale auth key (my.tailscale.enable comes from _core.nix).
+  my.docker.enable = true;
+
+  my.tailscale.enable = true;
   sops.secrets."tailscale/authkey" = {
     mode = "0600";
     owner = "root";

@@ -9,7 +9,6 @@
 }: {
   imports = [
     ./hardware.nix
-    "${inputs.self}/modules/nixos/_core.nix"
     # ./qemu.nix
     # ./vfkit.nix
   ];
@@ -22,8 +21,10 @@
 
   # ---------------------------------------------------------------------------
   # Enable additional modules for this VM
+  my.docker.enable = true;
   my.hackrf.enable = true;
 
+  my.tailscale.enable = true;
   sops.secrets."tailscale/authkey" = {
     mode = "0600";
     owner = "root";
