@@ -2,7 +2,6 @@
   inputs,
   pkgs,
   system,
-  wrapper-manager,
   lib,
   ...
 }: let
@@ -19,6 +18,7 @@
     encrypt = pkgs.callPackage ./encrypt.nix {inherit pkgs lib;};
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
+    helix = pkgs.callPackage ./helix {};
   } // lib.optionalAttrs (system == "aarch64-darwin") {
     vm-nixos = pkgs.callPackage ./vm-nixos.nix {
       runner = inputs.self.nixosConfigurations.vm-nixos.config.microvm.declaredRunner;
@@ -49,14 +49,12 @@
     };
   };
   scriptsModule = pkgs.callPackage ./scripts {inherit system;};
-  wrappersModule = pkgs.callPackage ./wrappers {inherit wrapper-manager inputs;};
 in
   {
     # Return collections
-    # use directly:     inputs.packages.<system>.scripts|wrappers|packages
-    # use with overlay: pkgs.my.scripts|wrappers|packages
+    # use directly:     inputs.packages.<system>.scripts|packages
+    # use with overlay: pkgs.my.scripts|packages
     scripts = scriptsModule.toplevel; # collection
-    wrappers = wrappersModule.toplevel; # collection
     packages = packagesBundle; # collection
     # my_package = pkgs.callPackage ./my_package { inherit inputs system; }; # single package
   } # Return individual packages
@@ -64,4 +62,3 @@ in
   # use in terminal: nix run .#<package_name>
   // individualPackages # all packages
   // scriptsModule.packages # all scripts
-  // wrappersModule.packages # all wrappers

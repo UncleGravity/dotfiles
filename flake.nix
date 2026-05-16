@@ -15,8 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    wrapper-manager.url = "github:viperML/wrapper-manager";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -295,7 +293,6 @@
       import ./packages {
         inherit inputs system pkgs;
         inherit (pkgs) lib;
-        inherit (inputs) wrapper-manager;
       }
     );
 

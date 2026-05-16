@@ -22,6 +22,9 @@ ignore/
 # Backup files
 *.bak
 *.backup
+
+# AI
+.claude/
 .aider*
 
 # Nix
