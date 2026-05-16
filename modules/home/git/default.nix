@@ -1,4 +1,8 @@
 {...}: {
+  imports = [
+    ./delta.nix
+  ];
+
   programs.git = {
     enable = true;
     lfs.enable = true; # Large File Storage support
@@ -43,12 +47,5 @@
       # Better merge conflict display showing original, yours, and theirs
       merge.conflictStyle = "zdiff3";
     };
-  };
-
-  # Better diff viewer
-  # (enableGitIntegration would clobber our custom `core.pager` / `diffFilter` args).
-  programs.delta = {
-    enable = true;
-    enableGitIntegration = false;
   };
 }

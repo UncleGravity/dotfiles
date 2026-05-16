@@ -12,7 +12,7 @@ in {
   # SESH
   programs.sesh = {
     enable = true;
-    enableAlias = true;
+    enableAlias = false;
     enableTmuxIntegration = false; # <prefix>+s
     # tmuxKey = "k";
     settings = {

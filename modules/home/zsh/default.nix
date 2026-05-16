@@ -89,7 +89,7 @@
       # -------------------------------------------------------------------------------------------
       zshExtra = lib.mkOrder 1000 ''
         # use zsh as default nix shell
-        ${lib.getExe pkgs.nix-your-shell} zsh | source /dev/stdin
+        # ${lib.getExe pkgs.nix-your-shell} zsh | source /dev/stdin
       '';
       # -------------------------------------------------------------------------------------------
       zshEnd = lib.mkOrder 1500 ''
@@ -127,4 +127,7 @@
 
   # Prevents the message "Last login: ..." from being printed when logging in
   home.file.".hushlogin".text = "";
+
+  # Enables zsh integration by default for most modules
+  home.shell.enableZshIntegration = true;
 }

@@ -1,5 +1,5 @@
 # Configuration for the 'my-macbook' machine
-{ inputs, ... }:
+{ ... }:
 {
   imports = [
     ./linux-builder.nix

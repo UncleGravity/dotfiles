@@ -9,6 +9,7 @@
     ./dotfiles
     ./git
     ./lazygit
+    ./nushell.nix
     ./pkgs.nix
     ./ssh.nix
     ./tmux

@@ -207,10 +207,10 @@
         ];
       };
 
-    mkMicrovm = { system, hostname, systemStateVersion, hostSystem ? systems.aarch64-darwin }:
+    mkMicrovm = { system, username, hostname, systemStateVersion, hostSystem ? systems.aarch64-darwin }:
       nixpkgs.lib.nixosSystem {
         specialArgs = {
-          inherit inputs hostname;
+          inherit inputs username hostname;
         };
         modules = [
           inputs.microvm.nixosModules.microvm
@@ -268,6 +268,7 @@
       # Lightweight Linux VM for local development on banana
       vm-nixos = mkMicrovm {
         system = systems.aarch64-linux;
+        username = "angel";
         hostname = "vm-nixos";
         systemStateVersion = "25.05";
       };

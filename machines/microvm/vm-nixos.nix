@@ -2,9 +2,17 @@
   pkgs,
   ...
 }: {
-  networking.hostName = "vm-nixos";
+  imports = [
+    ../../modules/common/ssh-keys.nix
+  ];
 
   boot.initrd.systemd.enable = true;
+
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  networking.hostName = "vm-nixos";
+  networking.firewall.allowedTCPPorts = [22];
+  services.openssh.enable = true;
 
   microvm = {
     hypervisor = "vfkit";
@@ -78,5 +86,6 @@
     cowsay
     xilinx-bootgen
     cyme
+    nushell
   ];
 }
