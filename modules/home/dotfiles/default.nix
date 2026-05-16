@@ -13,8 +13,6 @@ in {
   ##### 1.  Options ###########################################################
 
   options.my.dotfiles = {
-    enable = lib.mkEnableOption "Enable all dotfiles management" // {default = true;};
-
     ghostty = {enable = mkEnable "ghostty";};
     karabiner = {enable = mkEnable "karabiner";}; # Darwin-only below
     kitty = {enable = mkEnable "kitty";};
@@ -23,7 +21,7 @@ in {
 
   ##### 2.  Configuration #####################################################
 
-  config = lib.mkIf cfg.enable {
+  config = {
     # --- directory-style dotfiles (link to $XDG_CONFIG_HOME/<name>) ----------
     xdg.configFile = {
       "ghostty" = lib.mkIf cfg.ghostty.enable {

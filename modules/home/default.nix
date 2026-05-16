@@ -1,5 +1,8 @@
 {
   imports = [
+    ./home.nix
+    ./session.nix
+
     ./aichat.nix
     ./bat.nix
     ./direnv.nix

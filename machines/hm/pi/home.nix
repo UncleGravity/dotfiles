@@ -1,12 +1,3 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}: {
-  imports = [
-    "${inputs.self}/modules/home/_core.nix"
-  ];
-
-  # More stuff here...
+{...}: {
+  # pi-specific home overrides go here
 }

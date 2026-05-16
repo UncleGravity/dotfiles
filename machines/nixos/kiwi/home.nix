@@ -1,12 +1,3 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}: {
-  imports = [
-    "${inputs.self}/modules/home/_core.nix"
-  ];
-
-  # More stuff here...
+{...}: {
+  # kiwi-specific home overrides go here
 }
