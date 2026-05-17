@@ -15,6 +15,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Cancel in-progress runs when a PR is updated (force-push, new commit)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   # ---------------------------------------------------------------------------
   # Job 1: Flake check (fast validation)
@@ -27,6 +31,9 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v15
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
       - name: Run nix flake check
         run: nix flake check --all-systems --show-trace
 

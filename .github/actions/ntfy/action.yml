@@ -32,19 +32,32 @@ runs:
   steps:
     - name: Send notification
       shell: bash
+      # Pass inputs via env vars (not ${{ }} interpolation) to prevent shell
+      # injection through attacker-controlled title/message/url fields.
+      env:
+        NTFY_TOPIC: ${{ inputs.topic }}
+        NTFY_URL: ${{ inputs.url }}
+        NTFY_TITLE: ${{ inputs.title }}
+        NTFY_PRIORITY: ${{ inputs.priority }}
+        NTFY_TAGS: ${{ inputs.tags }}
+        NTFY_MESSAGE: ${{ inputs.message }}
+        NTFY_BUTTON_URL: ${{ inputs.button_url }}
+        RUN_SERVER_URL: ${{ github.server_url }}
+        RUN_REPOSITORY: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
       run: |
-        BUTTON_URL="${{ inputs.button_url }}"
+        BUTTON_URL="$NTFY_BUTTON_URL"
         if [ -z "$BUTTON_URL" ]; then
-          BUTTON_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BUTTON_URL="${RUN_SERVER_URL}/${RUN_REPOSITORY}/actions/runs/${RUN_ID}"
         fi
 
-        CURL_ARGS=(-H "Title: ${{ inputs.title }}" -H "Priority: ${{ inputs.priority }}")
+        CURL_ARGS=(-H "Title: $NTFY_TITLE" -H "Priority: $NTFY_PRIORITY")
 
-        if [ -n "${{ inputs.tags }}" ]; then
-          CURL_ARGS+=(-H "Tags: ${{ inputs.tags }}")
+        if [ -n "$NTFY_TAGS" ]; then
+          CURL_ARGS+=(-H "Tags: $NTFY_TAGS")
         fi
 
         CURL_ARGS+=(-H "Actions: view, Open, $BUTTON_URL, clear=true")
-        CURL_ARGS+=(-d "${{ inputs.message }}")
+        CURL_ARGS+=(-d "$NTFY_MESSAGE")
 
-        curl "${CURL_ARGS[@]}" "${{ inputs.url }}/${{ inputs.topic }}"
+        curl "${CURL_ARGS[@]}" "$NTFY_URL/$NTFY_TOPIC"

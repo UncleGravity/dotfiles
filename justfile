@@ -1,4 +1,4 @@
-set shell := ["bash", "-c"]
+set shell := ["bash", "-euo", "pipefail", "-c"]
 
 # Determine the system type
 
@@ -14,73 +14,70 @@ system_type := `
     fi
 `
 
+# Default: list available commands
+default:
+    @just sync
+
 # Rebuild the system configuration
 sync: nixpkgs-status
     #!/usr/bin/env bash
-    echo "🔄 Rebuilding system configuration for host: $(hostname) on platform: {{ system_type }}..."
+    set -euo pipefail
+    echo "Rebuilding system configuration for host: $(hostname) on platform: {{ system_type }}..."
 
     case "{{ system_type }}" in
         "nixos")
             HOSTNAME=$(hostname)
-            if ! nh os switch . -H $HOSTNAME; then
-                echo "❌ Failed to rebuild NixOS configuration."
-                exit 1
-            fi
+            nh os switch . -H $HOSTNAME
             ;;
         "darwin")
             HOSTNAME=$(scutil --get ComputerName)
 
             # Check if Rosetta 2 is available
             if ! arch -x86_64 /bin/bash -c 'exit 0' 2>/dev/null; then
-                echo "⚠️  WARNING: Rosetta 2 not available. Intel packages may fail."
+                echo "WARNING: Rosetta 2 not available. Intel packages may fail."
                 echo ""
             fi
 
-            if ! nh darwin switch . -H $HOSTNAME; then
-                echo "❌ Failed to rebuild Darwin configuration."
-                exit 1
-            fi
+            nh darwin switch . -H $HOSTNAME
             ;;
         "home-manager")
             USERNAME=$(whoami)
-            if ! home-manager switch --flake .#$USERNAME; then
-                echo "❌ Failed to rebuild Home Manager configuration."
-                exit 1
-            fi
+            home-manager switch --flake .#$USERNAME
             ;;
         *)
             echo "❌ Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
             exit 1
             ;;
     esac
-    echo "✅ System configuration rebuilt successfully!"
+    echo "System configuration rebuilt successfully!"
 
 # Update flake inputs
 update:
-    @echo "🔄 Updating flake inputs..."
+    @echo "Updating flake inputs..."
     nix flake update
-    @echo "✅ Flake inputs updated successfully!"
+    @echo "Flake inputs updated successfully!"
 
 # Update flake inputs and rebuild system configuration
 update-sync: update sync
-    @echo "🎉 System upgrade completed!"
+    @echo "System upgrade completed!"
 
 # Garbage collect old generations (default: 30 days)
 gc days="30d":
     @echo "🧹 Performing garbage collection..."
     nh clean all --keep-since {{ days }} --ask
-    @echo "✅ Garbage collection completed!"
+    @echo "Garbage collection completed!"
 
 # Remove unused nix store paths
 trim:
-    @echo "✂️  Pruning unused nix store paths..."
+    @echo "Pruning unused nix store paths..."
     nix-store --gc
     @echo "✅ Pruning completed!"
 
 # List system generations
 list-generations:
     #!/usr/bin/env bash
-    echo "📋 Listing system generations for {{ system_type }}..."
+    set -euo pipefail
+    echo "Listing system generations for {{ system_type }}..."
     case "{{ system_type }}" in
         "nixos")
             sudo nix-env -p /nix/var/nix/profiles/system --list-generations
@@ -99,7 +96,6 @@ list-generations:
 
 # Check system status
 status:
-    @echo "📊 System Status:"
     @echo "System Type: {{ system_type }}"
     @echo "Hostname: $(hostname)"
     @echo "Current User: $(whoami)"
@@ -111,7 +107,8 @@ status:
 [confirm("DANGER: This will destroy, format, and mount the disk according to the Disko configuration for the specified host. THIS IS A DESTRUCTIVE OPERATION. Are you sure you want to continue?")]
 disko hostname:
     #!/usr/bin/env bash
-    echo "💾 Preparing to format and mount disk using Disko for hostname: {{ hostname }}"
+    set -euo pipefail
+    echo "Preparing to format and mount disk using Disko for hostname: {{ hostname }}"
     if [ "{{ system_type }}" != "nixos" ]; then
         echo "❌ Disko command is only supported on NixOS systems."
         exit 1
@@ -124,67 +121,44 @@ disko hostname:
         exit 1
     fi
 
-    echo "🚀 Running Disko with config: $DISKO_CONFIG"
-    if ! sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"; then
-        echo "❌ Failed to execute Disko command."
-        exit 1
-    fi
-    echo "✅ Disko command completed successfully!"
+    echo "Running Disko with config: $DISKO_CONFIG"
+    sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
+    echo "Disko command completed successfully!"
 
-# Synchronize remote NixOS machine
-# Usage: just remote-sync <user> <hostname>
-# Example: just remote-sync myuser myremoteserver
-# remote-sync user host:
-#     #!/usr/bin/env bash
-#     set -euo pipefail
-#     echo "🔄 Synchronizing remote NixOS machine: {{host}} as user {{user}}..."
-#     # Note: The flake '.#{{host}}' assumes your flake has a NixOS configuration
-#     # named after the target host (e.g., nixosConfigurations.myremoteserver).
-#     echo "🚀 Executing nixos-rebuild for remote host '{{host}}'..."
-#     if ! nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
-#         --flake ".#{{host}}" \
-#         --build-host "{{user}}@{{host}}" \
-#         --target-host "{{user}}@{{host}}" \
-#         --use-remote-sudo \
-#         --fast; then
-#         echo "❌ Failed to synchronize remote NixOS machine '{{host}}'."
-#         exit 1
-#     fi
-#     echo "✅ Remote synchronization for '{{host}}' completed successfully!"
 # [EXPERIMENTAL] Rsync entire flake directory and switch using nh
 # Usage: just deploy <hostname>
-
 # Example: just deploy myremoteserver
 deploy host:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    echo "🧪 [EXPERIMENTAL] Synchronizing flake directory to remote host: {{ host }}..."
+    echo "[EXPERIMENTAL] Synchronizing flake directory to remote host: {{ host }}..."
 
     REMOTE_PATH="/tmp/nix-flake-$(basename $(pwd))"
 
-    echo "📁 Rsyncing flake directory to {{ host }}:$REMOTE_PATH..."
-    if ! rsync -avz --delete --exclude='.git' --exclude='result*' . "{{ host }}:$REMOTE_PATH/"; then
-        echo "❌ Failed to rsync flake directory to remote host."
-        exit 1
-    fi
+    echo "Rsyncing flake directory to {{ host }}:$REMOTE_PATH..."
+    rsync -avz --delete --exclude='.git' --exclude='result*' . "{{ host }}:$REMOTE_PATH/"
 
-    echo "🚀 Running 'nh os switch .' on remote host..."
-    if ! ssh -t "{{ host }}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"; then
-        echo "❌ Failed to run 'nh os switch .' on remote host."
-        exit 1
-    fi
+    echo "Running 'nh os switch .' on remote host..."
+    ssh -t "{{ host }}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"
 
-    echo "✅ Experimental deployment for '{{ host }}' completed successfully!"
-    echo "ℹ️  Remote flake directory is located at: {{ host }}:$REMOTE_PATH"
+    echo "Experimental deployment for '{{ host }}' completed successfully!"
+    echo "Remote flake directory is located at: {{ host }}:$REMOTE_PATH"
 
 # Check nixpkgs version status
 nixpkgs-status:
     #!/usr/bin/env bash
+    set -euo pipefail
     LAST_MODIFIED=$(jq -r '.nodes.nixpkgs.locked.lastModified' flake.lock 2>/dev/null || echo "unknown")
     CURRENT_TIME=$(date +%s)
     DAYS_AGO=$(( (CURRENT_TIME - LAST_MODIFIED) / 86400 ))
-    echo "📦 nixpkgs last updated: $DAYS_AGO days ago ($(date -d @$LAST_MODIFIED '+%Y-%m-%d %H:%M:%S'))"
+    # BSD date (macOS) uses -r; GNU date uses -d @
+    if date -r 0 +%s >/dev/null 2>&1; then
+        HUMAN=$(date -r "$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S')
+    else
+        HUMAN=$(date -d "@$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S')
+    fi
+    echo "📦 nixpkgs last updated: $DAYS_AGO days ago ($HUMAN)"
 
 # Profile nix evaluation performance (optionally specify a hostname)
 profile host="":
