@@ -91,6 +91,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   ├── networking.nix
 │   │   ├── nh.nix
 │   │   ├── nix.nix
+│   │   ├── pkgs.nix
 │   │   ├── security.nix
 │   │   ├── shells.nix
 │   │   ├── system.nix
@@ -153,6 +154,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       ├── locale.nix
 │       ├── nh.nix
 │       ├── nix.nix
+│       ├── pkgs.nix
 │       ├── print.nix
 │       ├── profiles
 │       │   ├── graphical.nix
@@ -215,7 +217,7 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 └── secrets
     └── secrets.yaml
 
-56 directories, 151 files
+56 directories, 153 files
 ```
 <!-- readme-tree end -->
 
