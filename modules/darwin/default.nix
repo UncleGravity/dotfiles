@@ -6,6 +6,7 @@
     ./networking.nix
     ./nh.nix
     ./nix.nix
+    ./pkgs.nix
     ./security.nix
     ./shells.nix
     ./system.nix

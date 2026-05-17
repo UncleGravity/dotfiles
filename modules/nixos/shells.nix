@@ -7,12 +7,6 @@
   environment = {
     shells = with pkgs; [bash zsh];
     pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
-    systemPackages = with pkgs; [
-      curl
-      wget
-      vim
-      git
-    ];
   };
 
   programs.zsh = {

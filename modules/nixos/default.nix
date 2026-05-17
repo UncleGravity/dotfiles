@@ -7,6 +7,7 @@
     ./locale.nix
     ./nh.nix
     ./nix.nix
+    ./pkgs.nix
     ./print.nix
     ./shells.nix
     ./ssh.nix

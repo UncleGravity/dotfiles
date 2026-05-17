@@ -24,11 +24,5 @@
   #############################################################
   environment = {
     shells = lib.mkDefault [pkgs.zsh]; # Use nix managed zsh (probably more frequently updated
-    systemPackages = with pkgs; [
-      curl
-      wget
-      vim
-      git
-    ];
   };
 }
