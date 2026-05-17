@@ -39,7 +39,9 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │       ├── dirty-post-install.sh
 │   │       └── home.nix
 │   ├── microvm
-│   │   └── vm-nixos.nix
+│   │   ├── base.nix
+│   │   ├── dev.nix
+│   │   └── small.nix
 │   └── nixos
 │       ├── kiwi
 │       │   ├── configuration.nix
@@ -60,6 +62,9 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │       │       │   │   ├── restic-backups.json
 │       │       │   │   └── system-overview.json
 │       │       │   └── grafana.nix
+│       │       ├── guacamole
+│       │       │   ├── default.nix
+│       │       │   └── user-mapping.xml.sops
 │       │       ├── samba.nix
 │       │       └── wifi.nix
 │       └── nixos
@@ -70,19 +75,29 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │           └── vfkit.nix
 ├── modules
 │   ├── common
-│   │   ├── config.nix
+│   │   ├── caches.nix
 │   │   ├── default.nix
-│   │   ├── ntfy.nix
-│   │   ├── pkgs.nix
-│   │   └── sops.nix
+│   │   ├── features
+│   │   │   ├── env.nix
+│   │   │   └── ntfy.nix
+│   │   ├── profiles.nix
+│   │   ├── sops.nix
+│   │   └── ssh-keys.nix
 │   ├── darwin
-│   │   ├── _core.nix
-│   │   ├── _nh.nix
-│   │   ├── apfs-snapshots.nix
 │   │   ├── default.nix
-│   │   └── homebrew.nix
+│   │   ├── features
+│   │   │   ├── apfs-snapshots.nix
+│   │   │   └── homebrew.nix
+│   │   ├── networking.nix
+│   │   ├── nh.nix
+│   │   ├── nix.nix
+│   │   ├── security.nix
+│   │   ├── shells.nix
+│   │   ├── system.nix
+│   │   ├── users.nix
+│   │   └── vendor
+│   │       └── nh.nix
 │   ├── home
-│   │   ├── _core.nix
 │   │   ├── aichat.nix
 │   │   ├── bat.nix
 │   │   ├── default.nix
@@ -103,10 +118,14 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │   │   └── sops
 │   │   │       └── .sops.yaml
 │   │   ├── git
-│   │   │   └── default.nix
+│   │   │   ├── default.nix
+│   │   │   └── delta.nix
+│   │   ├── home.nix
 │   │   ├── lazygit
 │   │   │   └── default.nix
+│   │   ├── nushell.nix
 │   │   ├── pkgs.nix
+│   │   ├── session.nix
 │   │   ├── ssh.nix
 │   │   ├── tmux
 │   │   │   ├── default.nix
@@ -121,24 +140,31 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   │       ├── fzf.zsh
 │   │       └── p10k.zsh
 │   └── nixos
-│       ├── _core.nix
+│       ├── boot.nix
 │       ├── default.nix
-│       ├── display-manager.nix
-│       ├── docker.nix
-│       ├── escape-hatch.nix
-│       ├── guacamole
-│       │   ├── default.nix
-│       │   └── user-mapping.xml.sops
-│       ├── gui.nix
-│       ├── hackrf.nix
-│       ├── immich.nix
+│       ├── features
+│       │   ├── display-manager.nix
+│       │   ├── docker.nix
+│       │   ├── escape-hatch.nix
+│       │   ├── guacamole.nix
+│       │   ├── hackrf.nix
+│       │   ├── immich.nix
+│       │   └── tailscale.nix
+│       ├── locale.nix
 │       ├── nh.nix
-│       └── tailscale.nix
+│       ├── nix.nix
+│       ├── print.nix
+│       ├── profiles
+│       │   ├── graphical.nix
+│       │   ├── server.nix
+│       │   └── workstation.nix
+│       ├── shells.nix
+│       ├── ssh.nix
+│       └── users.nix
 ├── new_tree.txt
 ├── overlays
 │   ├── default.nix
 │   ├── my.nix
-│   ├── television.nix
 │   └── zig.nix
 ├── packages
 │   ├── bootstrap.nix
@@ -146,6 +172,9 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── default.nix
 │   ├── encrypt.nix
 │   ├── greet.nix
+│   ├── helix
+│   │   ├── config.toml
+│   │   └── default.nix
 │   ├── nix-search-fzf.nix
 │   ├── nvim
 │   │   ├── config
@@ -176,22 +205,17 @@ NOTE: Incomplete readme, please refer to the flake.nix for now to understand how
 │   ├── optnix.nix
 │   ├── push.nix
 │   ├── scripts
+│   │   ├── all
+│   │   │   └── hello
 │   │   └── default.nix
 │   ├── t.nix
-│   ├── vm-nixos.nix
-│   ├── vm.nix
-│   └── wrappers
-│       ├── default.nix
-│       ├── helix
-│       │   ├── config.toml
-│       │   └── default.nix
-│       └── hello.nix
+│   └── vm.nix
 ├── scripts
 │   └── nix-profile.sh
 └── secrets
     └── secrets.yaml
 
-51 directories, 132 files
+56 directories, 151 files
 ```
 <!-- readme-tree end -->
 
