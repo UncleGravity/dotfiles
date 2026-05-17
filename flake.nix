@@ -265,11 +265,18 @@
         homeStateVersion = "24.05";
       };
 
-      # Lightweight Linux VM for local development on banana
-      vm-nixos = mkMicrovm {
+      # MicroVMs
+      dev = mkMicrovm {
         system = systems.aarch64-linux;
         username = "angel";
-        hostname = "vm-nixos";
+        hostname = "dev";
+        systemStateVersion = "25.05";
+      };
+
+      small = mkMicrovm {
+        system = systems.aarch64-linux;
+        username = "angel";
+        hostname = "small";
         systemStateVersion = "25.05";
       };
     };

@@ -1,9 +1,19 @@
 {
   pkgs,
   username,
+  hostname,
   ...
 }: let
   hostHomeDir = "/Users/${username}";
+
+  # Derive a stable locally-administered MAC (02: prefix) from the VM name so
+  # multiple VMs on the same vmnet subnet don't collide.
+  macFromName = name: let
+    h = builtins.hashString "md5" name;
+    seg = i: builtins.substring (i * 2) 2 h;
+  in "02:${seg 0}:${seg 1}:${seg 2}:${seg 3}:${seg 4}";
+
+  mac = macFromName hostname;
 in {
   imports = [
     ../../modules/common/ssh-keys.nix
@@ -13,22 +23,20 @@ in {
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
-  networking.hostName = "vm-nixos";
+  networking.hostName = hostname;
   networking.firewall.allowedTCPPorts = [22];
   services.openssh.enable = true;
 
   microvm = {
     hypervisor = "vfkit";
-    vcpu = 2;
-    mem = 1024;
-    socket = "/tmp/vm-nixos.sock";
+    socket = "/tmp/vm-${hostname}.sock";
 
     # Enable Internet Access
     interfaces = [
       {
         type = "user";
         id = "net0";
-        mac = "02:00:00:00:00:01";
+        inherit mac;
       }
     ];
     # ---------------------------------------
@@ -53,12 +61,12 @@ in {
     # Without this, microvm.nix masks nix-daemon (system.nix:48-52),
     # which forces `nix` into single-user mode and breaks for non-root.
     # Absolute path keeps the image in a fixed location regardless of the
-    # host cwd from which `vm-nixos` is launched; the parent dir is created
-    # by packages/vm-nixos.nix's `mkdir -p "$HOME/.cache/vm-nixos"`.
+    # host cwd from which `vm` is launched; the parent dir is created by
+    # packages/vm.nix's `mkdir -p "$HOME/.cache/vm/<name>"`.
     writableStoreOverlay = "/nix/.rw-store";
     volumes = [
       {
-        image = "${hostHomeDir}/.cache/vm-nixos/store-overlay.img";
+        image = "${hostHomeDir}/.cache/vm/${hostname}/store-overlay.img";
         mountPoint = "/nix/.rw-store";
         size = 4096;
       }
@@ -67,11 +75,11 @@ in {
   # ---------------------------------------
 
   # User Config
-  services.getty.autologinUser = "angel";
+  services.getty.autologinUser = username;
 
-  users.users.angel = {
+  users.users.${username} = {
     isNormalUser = true;
-    initialPassword = "angel";
+    initialPassword = username;
     extraGroups = ["wheel"];
     shell = pkgs.bashInteractive;
   };
@@ -79,31 +87,23 @@ in {
   security.sudo.wheelNeedsPassword = false;
   # ---------------------------------------
 
+  # Sync host cwd → guest path so the login shell lands in the matching
+  # directory under /host/home (cwd file written by packages/vm.nix).
   programs.bash.loginShellInit = ''
-    if [ "$(id -un)" = "angel" ]; then
-      vm_nixos_pwd_file="/host/home/.cache/vm-nixos/pwd"
-      if [ -r "$vm_nixos_pwd_file" ]; then
-        vm_nixos_pwd="$(head -n 1 "$vm_nixos_pwd_file")"
-        if [ -d "$vm_nixos_pwd" ]; then
-          cd "$vm_nixos_pwd"
+    if [ "$(id -un)" = "${username}" ]; then
+      vm_pwd_file="/host/home/.cache/vm/${hostname}/pwd"
+      if [ -r "$vm_pwd_file" ]; then
+        vm_pwd="$(head -n 1 "$vm_pwd_file")"
+        if [ -d "$vm_pwd" ]; then
+          cd "$vm_pwd"
         else
           cd /host/home
         fi
-        unset vm_nixos_pwd
+        unset vm_pwd
       elif [ -d /host/home ]; then
         cd /host/home
       fi
-      unset vm_nixos_pwd_file
+      unset vm_pwd_file
     fi
   '';
-
-  environment.systemPackages = with pkgs; [
-    # clang
-    # gcc
-    yazi
-    cowsay
-    xilinx-bootgen
-    cyme
-    nushell
-  ];
 }

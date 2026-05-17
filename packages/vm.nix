@@ -1,147 +1,355 @@
 {
-  pkgs,
   lib,
+  pkgs,
+  vms ? {}, # attrset: { <name> = { runner = <derivation>; }; ... }
+  username ? "angel",
   ...
 }: let
-  # VM Configuration - can be overridden
-  vmConfig = {
-    ubuntu = "parallels@uvm.local:/media/psf/Home/";
-    nixos = "angel@nixos:/media/psf/Home/";
-  };
+  vmNames = builtins.attrNames vms;
 
-  # Convert VM config to bash associative array format
-  vmConfigBash = lib.concatStringsSep "\n" (lib.mapAttrsToList (name: value: "  [${name}]=\"${value}\"") vmConfig);
+  # bash assoc array literal: [name]="runner-store-path"
+  vmRunnersBash = lib.concatStringsSep "\n" (lib.mapAttrsToList (
+      name: vm: ''  [${name}]="${vm.runner}"''
+    )
+    vms);
+
+  # zsh completion list: name name name
+  vmNamesZsh = lib.concatStringsSep " " vmNames;
 
   vmScript = pkgs.writeShellApplication {
     name = "vm";
     runtimeInputs = with pkgs; [
-      openssh
       coreutils
-      gnused
-      gnugrep
+      openssh
+      gawk
+      curl
+      util-linux # setsid (for `start -d`)
     ];
     text = ''
-      # VM Utilities (UTM Edition)
-      # This script provides a unified interface for managing and interacting with UTM virtual machines.
-
+      # VM dispatcher for microvm.nix-based VMs running under vfkit on darwin.
+      #
       # Usage:
-      #   vm <action> [args]
-      #
-      # Actions:
-      #   ls                     List all VMs
-      #   start <vm_name>        Start a VM
-      #   stop <vm_name>         Stop a VM
-      #   suspend <vm_name>      Suspend a VM
-      #   resume <vm_name>       Resume a suspended VM
-      #   restart <vm_name>      Restart a VM
-      #   shell <vm_name>        Open a shell in a VM
-      #   code <vm_name> [-d]    Open VS Code for a VM (use -d for dotfiles)
-      #   cursor <vm_name> [-d]  Open Cursor for a VM (use -d for dotfiles)
-      #   run <vm_name> <cmd>    Run a command in a VM
-      #
-      # Examples:
-      #   vm ls
-      #   vm start ubuntu
-      #   vm shell nixos
-      #   vm code ubuntu -d
-      #   vm run ubuntu ls -l /home
+      #   vm ls                  List all VMs with status
+      #   vm start <name> [-d]   Start a VM (foreground; -d to detach)
+      #   vm stop <name>         Stop a VM
+      #   vm ssh <name> [args]   SSH into a running VM
 
-      # VM Configuration
-      # Format: [vm_name]="username@hostname:/remote/base/path"
-      typeset -A VM_CONFIG
-      VM_CONFIG=(
-      ${vmConfigBash}
+      declare -A VM_RUNNERS=(
+      ${vmRunnersBash}
       )
 
-      # Helper function to get the remote path for a VM
-      # Args:
-      #   $1: VM name
-      function _vm_get_remote_path() {
-        local vm_name="$1"
-        local current_local_path
-        current_local_path="$(pwd)"
-        local vm_info="''${VM_CONFIG[$vm_name]}"
-        local remote_base_path="''${vm_info#*:}"
+      USERNAME="${username}"
+      CACHE_BASE="$HOME/.cache/vm"
 
-        if [[ $current_local_path == "$HOME" ]]; then
-          echo "''${remote_base_path%/}"
-        elif [[ $current_local_path == "/Users/"* ]]; then
-          echo "''${remote_base_path}''${current_local_path#/Users/*/}"
-        else
-          echo "''${remote_base_path}''${current_local_path#"$HOME"}"
+      usage() {
+        cat <<EOF
+      Usage: vm <command> [args]
+
+      Commands:
+        ls                     List all VMs with status
+        start <name> [-d]      Start a VM (-d to detach)
+        stop <name> [-f]       Stop a VM (-f / --force = HardStop)
+        ssh <name> [..]        SSH into a running VM
+
+      Known VMs: ${vmNamesZsh}
+      EOF
+        exit 1
+      }
+
+      vm_known() {
+        [[ -n "''${VM_RUNNERS[$1]+x}" ]]
+      }
+
+      vm_socket() {
+        printf '/tmp/vm-%s.sock' "$1"
+      }
+
+      # `vm_alive` distinguishes a live vfkit from a stale socket file (left
+      # behind by an unclean exit). The socket-file check alone lies: it stays
+      # on disk and `[[ -S ]]` returns true with nobody listening.
+      vm_alive() {
+        local sock
+        sock="$(vm_socket "$1")"
+        [[ -S "$sock" ]] || return 1
+        curl -fsS --max-time 1 --unix-socket "$sock" \
+          http://localhost/vm/state >/dev/null 2>&1
+      }
+
+      # Remove a stale socket file (vfkit dead, file lingering). Safe no-op
+      # if vfkit is actually alive — we guard with vm_alive at every call site.
+      # (Uses `if` rather than `&&`-chain so a missing socket doesn't return
+      # non-zero from the function and trip `set -e` at the call site.)
+      reap_stale_socket() {
+        local sock
+        sock="$(vm_socket "$1")"
+        if [[ -S "$sock" ]]; then
+          rm -f "$sock"
         fi
       }
 
-      # Helper function to run a command on a remote VM
-      # Args:
-      #   $1: VM name
-      #   $@: Command to run
-      function _vm_run_command() {
-        local vm_name="$1"
-        shift
-        local vm_info="''${VM_CONFIG[$vm_name]}"
-        local remote_user="''${vm_info%%@*}"
-        local remote_host="''${vm_info#*@}"
-        remote_host="''${remote_host%%:*}"
+      # Map current host cwd → guest path under /host/home so the VM's login
+      # shell can `cd` into the matching directory (see base.nix
+      # programs.bash.loginShellInit). Writes to <cache>/<name>/pwd.
+      sync_pwd() {
+        local name="$1"
+        local host_pwd
+        host_pwd="$(pwd -P)"
+        local vm_pwd
+        case "$host_pwd" in
+          "$HOME"|"$HOME"/*)
+            vm_pwd="/host/home''${host_pwd#"$HOME"}"
+            ;;
+          "/Users/$USERNAME"|"/Users/$USERNAME"/*)
+            vm_pwd="/host/home''${host_pwd#"/Users/$USERNAME"}"
+            ;;
+          *)
+            vm_pwd="/host/home"
+            ;;
+        esac
+        mkdir -p "$CACHE_BASE/$name"
+        printf '%s\n' "$vm_pwd" > "$CACHE_BASE/$name/pwd"
+      }
 
-        ssh -t "$remote_user@$remote_host" "$@"
+      # Resolve guest IP via macOS' dhcpd lease file. vfkit's "nat" mode is
+      # backed by Apple's vmnet (shared), so the host sits on the same private
+      # subnet as the guest and bootpd records its lease here.
+      #
+      # We match on the DHCP "name" field (= networking.hostName) rather than
+      # hw_address: systemd-networkd sends a DUID-based client identifier
+      # (DHCP option 61), so bootpd records that instead of the Ethernet MAC.
+      # Pick the entry with the freshest "lease=" timestamp to avoid stale
+      # leases from previous boots.
+      resolve_ip() {
+        local name="$1"
+        local timeout="''${2:-30}"
+        local leases=/var/db/dhcpd_leases
+        local ip=""
+        local deadline=$(( $(date +%s) + timeout ))
+        while [[ "$(date +%s)" -le "$deadline" ]]; do
+          if [[ -r "$leases" ]]; then
+            ip=$(awk -v name="$name" '
+              function clean(s) { sub(/^[^=]*=/,"",s); gsub(/[[:space:]]/,"",s); return s }
+              /^{/  { ip_v=""; name_v=""; lease_v="" }
+              /^[[:space:]]*name=/        { name_v  = clean($0) }
+              /^[[:space:]]*ip_address=/  { ip_v    = clean($0) }
+              /^[[:space:]]*lease=/       { lease_v = clean($0) }
+              /^}/  {
+                if (name_v == name && ip_v != "") {
+                  l = strtonum(lease_v)
+                  if (l >= best_lease) { best_lease = l; best_ip = ip_v }
+                }
+              }
+              END { if (best_ip != "") print best_ip }
+            ' "$leases")
+          fi
+          [[ -n "$ip" ]] && break
+          [[ "$timeout" -eq 0 ]] && break
+          sleep 1
+        done
+        if [[ -z "$ip" ]]; then
+          return 1
+        fi
+        printf '%s\n' "$ip"
+      }
+
+      cmd_ls() {
+        if [[ $# -gt 0 ]]; then
+          echo "vm ls: unexpected argument '$1'" >&2
+          exit 1
+        fi
+        printf '%-12s %-10s %s\n' "NAME" "STATUS" "IP"
+        for name in "''${!VM_RUNNERS[@]}"; do
+          local status="stopped"
+          local ip="-"
+          if vm_alive "$name"; then
+            status="running"
+            ip="$(resolve_ip "$name" 0 || true)"
+            [[ -z "$ip" ]] && ip="-"
+          else
+            # Socket file present but no vfkit answering: reap so subsequent
+            # `start` doesn't think the VM is up.
+            reap_stale_socket "$name"
+          fi
+          printf '%-12s %-10s %s\n' "$name" "$status" "$ip"
+        done
+      }
+
+      cmd_start() {
+        local name=""
+        local detach=0
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            -d|--detach)
+              detach=1
+              shift
+              ;;
+            --)
+              shift
+              break
+              ;;
+            -*)
+              echo "vm start: unknown flag '$1'" >&2
+              exit 1
+              ;;
+            *)
+              if [[ -z "$name" ]]; then
+                name="$1"
+              else
+                echo "vm start: unexpected extra argument '$1'" >&2
+                exit 1
+              fi
+              shift
+              ;;
+          esac
+        done
+        if [[ $# -gt 0 ]]; then
+          echo "vm start: unexpected extra argument '$1'" >&2
+          exit 1
+        fi
+        if [[ -z "$name" ]]; then
+          echo "vm start: missing VM name" >&2
+          exit 1
+        fi
+
+        vm_known "$name" || { echo "vm: unknown VM '$name' (known: ${vmNamesZsh})" >&2; exit 1; }
+        if vm_alive "$name"; then
+          echo "vm: '$name' already running" >&2
+          exit 0
+        fi
+        # Stale socket from a previous crash would otherwise make vfkit fail
+        # on bind; reap it now that we know nothing's listening.
+        reap_stale_socket "$name"
+
+        mkdir -p "$CACHE_BASE/$name"
+        sync_pwd "$name"
+        local runner="''${VM_RUNNERS[$name]}"
+
+        if (( detach )); then
+          local log="$CACHE_BASE/$name/log"
+          # vfkit's stdio console requires a TTY on stdin; bare nohup/setsid
+          # drops the controlling terminal and vfkit fails with
+          # "Adding stdio console: operation not supported by device".
+          # Wrap the runner in macOS `script` to allocate a pty (typescript
+          # is discarded; we only keep our own log redirect).
+          setsid -f /usr/bin/script -q /dev/null "$runner/bin/microvm-run" \
+            >"$log" 2>&1 < /dev/null
+          echo "vm: started '$name' (log: $log)"
+        else
+          exec "$runner/bin/microvm-run"
+        fi
+      }
+
+      cmd_stop() {
+        local name=""
+        local force=0
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            -f|--force)
+              force=1
+              shift
+              ;;
+            --)
+              shift
+              break
+              ;;
+            -*)
+              echo "vm stop: unknown flag '$1'" >&2
+              exit 1
+              ;;
+            *)
+              if [[ -z "$name" ]]; then
+                name="$1"
+              else
+                echo "vm stop: unexpected extra argument '$1'" >&2
+                exit 1
+              fi
+              shift
+              ;;
+          esac
+        done
+        if [[ $# -gt 0 ]]; then
+          echo "vm stop: unexpected extra argument '$1'" >&2
+          exit 1
+        fi
+        if [[ -z "$name" ]]; then
+          echo "vm stop: missing VM name" >&2
+          exit 1
+        fi
+
+        vm_known "$name" || { echo "vm: unknown VM '$name' (known: ${vmNamesZsh})" >&2; exit 1; }
+        local sock
+        sock="$(vm_socket "$name")"
+        if ! vm_alive "$name"; then
+          if [[ -S "$sock" ]]; then
+            reap_stale_socket "$name"
+            echo "vm: '$name' was stale (cleaned socket $sock)" >&2
+          else
+            echo "vm: '$name' not running (no socket at $sock)" >&2
+          fi
+          exit 0
+        fi
+        # Upstream microvm-shutdown for vfkit sends raw JSON over a Unix socket
+        # that expects HTTP, so it silently does nothing. vfkit's actual REST
+        # surface is POST /vm/state with {"state":"Stop"}.
+        # TODO: Upstream fix?
+        #
+        # "Stop" is graceful — guest must cooperate (e.g. systemd shutdown).
+        # A guest stuck mid-boot or unresponsive will ignore it. --force
+        # uses "HardStop" which terminates vfkit immediately.
+        local target_state="Stop"
+        (( force )) && target_state="HardStop"
+        curl -fsS --unix-socket "$sock" \
+          -X POST -H 'Content-Type: application/json' \
+          -d "{\"state\":\"$target_state\"}" \
+          http://localhost/vm/state
+      }
+
+      cmd_ssh() {
+        if [[ $# -lt 1 ]]; then
+          echo "vm ssh: missing VM name" >&2
+          exit 1
+        fi
+        local name="$1"
+        shift
+        vm_known "$name" || { echo "vm: unknown VM '$name' (known: ${vmNamesZsh})" >&2; exit 1; }
+
+        if ! vm_alive "$name"; then
+          reap_stale_socket "$name"
+          echo "vm: '$name' is not running (start it with: vm start $name -d)" >&2
+          exit 1
+        fi
+
+        sync_pwd "$name"
+
+        local ip
+        if ! ip="$(resolve_ip "$name" 30)"; then
+          echo "vm: timed out waiting for DHCP lease (name=$name)" >&2
+          exit 1
+        fi
+
+        exec ssh \
+          -A \
+          -o UserKnownHostsFile=/dev/null \
+          -o StrictHostKeyChecking=no \
+          -o LogLevel=ERROR \
+          "$USERNAME@$ip" \
+          "$@"
       }
 
       action="''${1:-}"
-      vm_name="''${2:-}"
-      shift 2 || true
+      shift || true
 
       case "$action" in
-        ls)
-          utmctl list
-          ;;
-        start)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm start <vm_name>"; exit 1; }
-          utmctl start "$vm_name"
-          ;;
-        stop)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm stop <vm_name>"; exit 1; }
-          utmctl stop "$vm_name"
-          ;;
-        suspend)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm suspend <vm_name>"; exit 1; }
-          utmctl suspend "$vm_name"
-          ;;
-        resume)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm resume <vm_name>"; exit 1; }
-          utmctl start "$vm_name"
-          ;;
-        restart)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm restart <vm_name>"; exit 1; }
-          utmctl stop "$vm_name"
-          utmctl start "$vm_name"
-          ;;
-        shell)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm shell <vm_name>"; exit 1; }
-          remote_path=$(_vm_get_remote_path "$vm_name")
-          _vm_run_command "$vm_name" "cd \"$remote_path\" && exec \$SHELL -l"
-          ;;
-        code|cursor)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm $action <vm_name> [-d]"; exit 1; }
-          remote_path=$(_vm_get_remote_path "$vm_name")
-          vm_info="''${VM_CONFIG[$vm_name]}"
-          remote_user="''${vm_info%%@*}"
-          remote_host="''${vm_info#*@}"
-          remote_host="''${remote_host%%:*}"
-          dotfiles_path="/home/$remote_user/.dotfiles"
-          target_path="$remote_path"
-          [[ "''${1:-}" == "-d" ]] && target_path="$dotfiles_path"
-          $action --folder-uri "vscode-remote://ssh-remote+$remote_user@$remote_host\"$target_path\"" --new-window
-          ;;
-        run)
-          [[ -z "$vm_name" ]] && { echo "Usage: vm run <vm_name> <command>"; exit 1; }
-          [[ -z "''${1:-}" ]] && { echo "Please specify a command to run"; exit 1; }
-          _vm_run_command "$vm_name" "$@"
+        ls)    cmd_ls "$@" ;;
+        start) cmd_start "$@" ;;
+        stop)  cmd_stop "$@" ;;
+        ssh)   cmd_ssh "$@" ;;
+        ""|-h|--help|help)
+          usage
           ;;
         *)
-          echo "Usage: vm <action> [args]"
-          echo "Actions: ls, start, stop, suspend, resume, restart, shell, code, cursor, run"
-          exit 1
+          echo "vm: unknown command '$action'" >&2
+          usage
           ;;
       esac
     '';
@@ -152,75 +360,55 @@
     text = ''
       #compdef vm
 
-      # VM Configuration for completion
-      typeset -A VM_CONFIG
-      VM_CONFIG=(
-      ${vmConfigBash}
-      )
-
-      # Function to get VM names from utmctl list
-      function _vm_get_utmctl_names() {
-        local vm_names
-        vm_names=(''${(f)"$(utmctl list 2>/dev/null | tail -n +2 | awk '{print $1}')"})
-        _describe -t vm_names 'vm names' vm_names
-      }
-
-      # Function to get VM names from VM_CONFIG (for SSH-based commands)
-      function _vm_get_config_names() {
-        local vm_names
-        vm_names=(''${(k)VM_CONFIG})
-        _describe -t vm_names 'vm names' vm_names
-      }
-
-      # Completion function for vm command
-      function _vm() {
+      # Mirrors the _git/_docker pattern: top-level _arguments matches the
+      # subcommand, then `*::arg:->args` re-enters with $words/$CURRENT
+      # adjusted so each per-subcommand _arguments call sees positional 1 as
+      # the FIRST arg AFTER the subcommand. This gives us flag-anywhere
+      # semantics (`-d dev` and `dev -d` both work) and exclusion groups
+      # (no double-suggesting -d/--detach) without manual CURRENT math.
+      _vm() {
+        local curcontext="$curcontext" state line
         local -a actions
         actions=(
-          'ls:List all VMs'
+          'ls:List all VMs with status'
           'start:Start a VM'
           'stop:Stop a VM'
-          'suspend:Suspend a VM'
-          'resume:Resume a suspended VM'
-          'restart:Restart a VM'
-          'shell:Open a shell in a VM'
-          'code:Open VS Code for a VM'
-          'cursor:Open Cursor for a VM'
-          'run:Run a command in a VM'
+          'ssh:SSH into a running VM'
         )
 
-        _arguments \
-          '1:action:->actions' \
+        _arguments -C \
+          '1: :->command' \
           '*::arg:->args'
 
         case $state in
-          actions)
+          command)
             _describe -t actions 'vm actions' actions
             ;;
           args)
-            case $words[1] in
-              start|stop|suspend|resume|restart)
-                _vm_get_utmctl_names
+            case $line[1] in
+              start)
+                _arguments \
+                  '(-d --detach)'{-d,--detach}'[detach into background]' \
+                  '1:vm name:(${vmNamesZsh})'
                 ;;
-              shell|run|code|cursor)
-                _vm_get_config_names
+              stop)
+                _arguments \
+                  '(-f --force)'{-f,--force}'[force (HardStop)]' \
+                  '1:vm name:(${vmNamesZsh})'
                 ;;
-            esac
-
-            case $words[1] in
-              code|cursor)
-                if (( CURRENT == 3 )); then
-                  _arguments '*:flag:(-d)'
-                fi
+              ssh)
+                _arguments \
+                  '1:vm name:(${vmNamesZsh})' \
+                  '*::ssh args: '
                 ;;
-              run)
-                if (( CURRENT > 2 )); then
-                  _normal
-                fi
+              ls)
                 ;;
             esac
             ;;
         esac
       }
+
+      _vm "$@"
     '';
     destination = "/share/zsh/site-functions/_vm";
   };
@@ -229,7 +417,7 @@ in
     name = "vm";
     paths = [vmScript completion];
     meta = {
-      description = "VM management utility for UTM virtual machines";
+      description = "Dispatcher for local microvm.nix VMs (start/stop/ls/ssh)";
       platforms = lib.platforms.darwin;
       mainProgram = "vm";
     };

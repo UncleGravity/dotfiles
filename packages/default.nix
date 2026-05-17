@@ -7,7 +7,6 @@
 }: let
   # Define all packages
   allPackages = {
-    vm = pkgs.callPackage ./vm.nix {inherit pkgs;};
     greet = pkgs.callPackage ./greet.nix {inherit pkgs;};
     bootstrap = pkgs.callPackage ./bootstrap.nix {inherit pkgs;};
     optnix = pkgs.callPackage ./optnix.nix {inherit inputs pkgs lib;};
@@ -20,8 +19,12 @@
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
     helix = pkgs.callPackage ./helix {};
   } // lib.optionalAttrs (system == "aarch64-darwin") {
-    vm-nixos = pkgs.callPackage ./vm-nixos.nix {
-      runner = inputs.self.nixosConfigurations.vm-nixos.config.microvm.declaredRunner;
+    vm = pkgs.callPackage ./vm.nix {
+      inherit lib pkgs;
+      vms = {
+        dev = {runner = inputs.self.nixosConfigurations.dev.config.microvm.declaredRunner;};
+        small = {runner = inputs.self.nixosConfigurations.small.config.microvm.declaredRunner;};
+      };
     };
   };
 
