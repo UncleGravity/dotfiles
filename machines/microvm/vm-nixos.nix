@@ -1,7 +1,10 @@
 {
   pkgs,
+  username,
   ...
-}: {
+}: let
+  hostHomeDir = "/Users/${username}";
+in {
   imports = [
     ../../modules/common/ssh-keys.nix
   ];
@@ -41,8 +44,23 @@
       {
         proto = "virtiofs";
         tag = "host-home";
-        source = "/Users/angel";
+        source = hostHomeDir;
         mountPoint = "/host/home";
+      }
+    ];
+
+    # Writable overlay on top of the host's read-only /nix/store.
+    # Without this, microvm.nix masks nix-daemon (system.nix:48-52),
+    # which forces `nix` into single-user mode and breaks for non-root.
+    # Absolute path keeps the image in a fixed location regardless of the
+    # host cwd from which `vm-nixos` is launched; the parent dir is created
+    # by packages/vm-nixos.nix's `mkdir -p "$HOME/.cache/vm-nixos"`.
+    writableStoreOverlay = "/nix/.rw-store";
+    volumes = [
+      {
+        image = "${hostHomeDir}/.cache/vm-nixos/store-overlay.img";
+        mountPoint = "/nix/.rw-store";
+        size = 4096;
       }
     ];
   };

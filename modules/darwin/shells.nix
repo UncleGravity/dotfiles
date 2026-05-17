@@ -1,13 +1,8 @@
 {
-  config,
   lib,
   pkgs,
   ...
 }: {
-  #############################################################
-  #  System packages
-  #############################################################
-  environment.systemPackages = config.my.common.systemPackages;
 
   #############################################################
   #  Zsh
@@ -24,5 +19,16 @@
     # environment.pathsToLink = [ "/share/zsh" ];
   };
 
-  environment.shells = lib.mkDefault [pkgs.zsh]; # Use nix managed zsh (probably more frequently updated
+  #############################################################
+  # Environment
+  #############################################################
+  environment = {
+    shells = lib.mkDefault [pkgs.zsh]; # Use nix managed zsh (probably more frequently updated
+    systemPackages = with pkgs; [
+      curl
+      wget
+      vim
+      git
+    ];
+  };
 }

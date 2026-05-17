@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   ...
 }: {
@@ -8,7 +7,12 @@
   environment = {
     shells = with pkgs; [bash zsh];
     pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
-    systemPackages = config.my.common.systemPackages;
+    systemPackages = with pkgs; [
+      curl
+      wget
+      vim
+      git
+    ];
   };
 
   programs.zsh = {

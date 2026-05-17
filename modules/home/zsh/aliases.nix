@@ -2,7 +2,7 @@
   # Shell aliases configuration
   home.shellAliases = {
     # ------------ ls -> eza ------------
-    ls = "eza";
+    # ls = "eza";
     l = "eza --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference";
     la = "eza --all --color=always --long --icons=always --git --no-time --no-user --no-permissions --no-filesize --dereference";
     ll = "eza --long --header --git --icons=always";

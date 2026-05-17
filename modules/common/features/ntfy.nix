@@ -12,7 +12,7 @@
 
   environment = {
     # --------------------------------------------
-    # BUGFIX: ntfy-sh does not work on Darwin
+    # BUGFIX: ntfy-sh breaks on Darwin
     systemPackages = [
       (pkgs.ntfy-sh.overrideAttrs (oldAttrs: {
         buildInputs = (oldAttrs.buildInputs or []) ++ [pkgs.git];
