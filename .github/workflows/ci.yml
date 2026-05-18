@@ -27,11 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     name: "Flake Check"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
       - name: Run nix flake check
@@ -47,7 +47,7 @@ jobs:
       matrix: ${{ steps.discover.outputs.matrix }}
       count: ${{ steps.discover.outputs.count }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,12 +66,12 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: "Build ${{ matrix.type }}/${{ matrix.name }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/free-up-space
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Notify CI Failures"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
