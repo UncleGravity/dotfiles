@@ -66,23 +66,20 @@ jobs:
       - uses: ./.github/actions/free-up-space
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          # Virby's cache stays configured as a fallback in case the native
-          # Linux builder isn't enabled on this account or runner.
           extra-conf: |
             extra-substituters = https://virby-nix-darwin.cachix.org
             extra-trusted-public-keys = virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo=
       - name: Check Determinate Nix features
-        # If output includes "The feature native-linux-builder is enabled",
-        # darwin builds with Linux deps (e.g. virby) will Just Work on the macOS runner.
         run: determinate-nixd version || true
       - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
+        # --impure lets modules read $CI to gate cross-platform-only outputs
         run: |
           echo "Building ${{ matrix.attr }} on ${{ matrix.system }}"
-          nix build ${{ matrix.attr }} --show-trace
+          nix build ${{ matrix.attr }} --impure --show-trace
       - name: Push to Cachix
         run: |
           if [ -L result ]; then

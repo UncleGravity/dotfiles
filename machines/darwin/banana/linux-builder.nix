@@ -3,10 +3,7 @@
 # Nix module to configure a Linux VM builder on nix-darwin
 {username, ...}:
 let
-  # Virby embeds a NixOS guest image into the darwin closure, which forces
-  # the build to realise aarch64-linux derivations. CI macOS runners can't
-  # do that (no Linux builder), and virby's binary cache only matches when
-  # nixpkgs hashes line up — which isn't reliable. Disable virby in CI.
+  # Fails in CI
   inCI = (builtins.getEnv "CI") == "true";
 in
 {
@@ -47,8 +44,7 @@ in
   # Service org.nixos.virbyd
   # NOTE: Virby adds ~10s to nix evaluation time keep disabled unless needed
   services.virby = {
-    # enable = !inCI;
-    enable = true;
+    enable = !inCI;
     # rosetta = true; # REQUIRES ROSETTA ENABLED MANUALLY: softwareupdate --install-rosetta --agree-to-license
     # cores = 12;
     # memory = 16384; # 16GB
