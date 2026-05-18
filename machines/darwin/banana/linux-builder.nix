@@ -8,7 +8,7 @@
   nix = {
     # -----------------
     linux-builder = {
-      enable = false;
+      enable = true;
       ephemeral = true;
       config = {
         virtualisation = {
