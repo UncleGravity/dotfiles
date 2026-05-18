@@ -81,9 +81,14 @@ jobs:
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
         # --impure lets modules read $CI to gate cross-platform-only outputs
         # (e.g. virby's Linux guest VM when running on a macOS runner).
+        # Substituters are also passed as --option to guarantee the daemon picks
+        # them up (extra_nix_config on install-nix-action isn't always honored).
         run: |
           echo "Building ${{ matrix.attr }} on ${{ matrix.system }}"
-          nix build ${{ matrix.attr }} --impure --show-trace
+          nix build ${{ matrix.attr }} \
+            --impure --show-trace \
+            --option extra-substituters "https://virby-nix-darwin.cachix.org" \
+            --option extra-trusted-public-keys "virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo="
       - name: Push to Cachix
         run: |
           if [ -L result ]; then
