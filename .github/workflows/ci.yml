@@ -71,6 +71,9 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            extra-substituters = https://virby-nix-darwin.cachix.org
+            extra-trusted-public-keys = virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo=
       - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
