@@ -79,9 +79,11 @@ jobs:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
+        # --impure lets modules read $CI to gate cross-platform-only outputs
+        # (e.g. virby's Linux guest VM when running on a macOS runner).
         run: |
           echo "Building ${{ matrix.attr }} on ${{ matrix.system }}"
-          nix build ${{ matrix.attr }} --show-trace
+          nix build ${{ matrix.attr }} --impure --show-trace
       - name: Push to Cachix
         run: |
           if [ -L result ]; then
