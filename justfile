@@ -125,25 +125,16 @@ disko hostname:
     sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
     echo "Disko command completed successfully!"
 
-# [EXPERIMENTAL] Rsync entire flake directory and switch using nh
+# Deploy a NixOS host over SSH using nh remote build/deploy.
 # Usage: just deploy <hostname>
-# Example: just deploy myremoteserver
+# Example: just deploy kiwi
 deploy host:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    echo "[EXPERIMENTAL] Synchronizing flake directory to remote host: {{ host }}..."
-
-    REMOTE_PATH="/tmp/nix-flake-$(basename $(pwd))"
-
-    echo "Rsyncing flake directory to {{ host }}:$REMOTE_PATH..."
-    rsync -avz --delete --exclude='.git' --exclude='result*' . "{{ host }}:$REMOTE_PATH/"
-
-    echo "Running 'nh os switch .' on remote host..."
-    ssh -t "{{ host }}" "cd $REMOTE_PATH && nix shell nixpkgs#nh --command nh os switch . --ask"
-
-    echo "Experimental deployment for '{{ host }}' completed successfully!"
-    echo "Remote flake directory is located at: {{ host }}:$REMOTE_PATH"
+    echo "Deploying NixOS configuration to {{ host }}..."
+    nh os switch . -H "{{ host }}" --build-host "{{ host }}" --target-host "{{ host }}" --ask
+    echo "Deployment for '{{ host }}' completed successfully!"
 
 # Check nixpkgs version status
 nixpkgs-status:
