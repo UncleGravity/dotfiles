@@ -7,5 +7,6 @@
     wget
     vim
     git
+    ghostty.terminfo
   ];
 }
