@@ -3,7 +3,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 # Determine the system type
 
 system_type := `
-    if [ -d /etc/nixos ]; then
+    if [ -e /etc/NIXOS ] || [ -d /etc/nixos ]; then
         echo "nixos"
     elif command -v darwin-rebuild >/dev/null 2>&1; then
         echo "darwin"
@@ -16,7 +16,7 @@ system_type := `
 
 # Default: list available commands
 default:
-    @just sync
+    @just --list
 
 # Rebuild the system configuration
 sync: nixpkgs-status
@@ -26,11 +26,11 @@ sync: nixpkgs-status
 
     case "{{ system_type }}" in
         "nixos")
-            HOSTNAME=$(hostname)
-            nh os switch . -H $HOSTNAME
+            HOSTNAME=$(hostname -s)
+            nh os switch . -H "$HOSTNAME"
             ;;
         "darwin")
-            HOSTNAME=$(scutil --get ComputerName)
+            HOSTNAME=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
 
             # Check if Rosetta 2 is available
             if ! arch -x86_64 /bin/bash -c 'exit 0' 2>/dev/null; then
@@ -38,11 +38,11 @@ sync: nixpkgs-status
                 echo ""
             fi
 
-            nh darwin switch . -H $HOSTNAME
+            nh darwin switch . -H "$HOSTNAME"
             ;;
         "home-manager")
             USERNAME=$(whoami)
-            home-manager switch --flake .#$USERNAME
+            nh home switch . -c "$USERNAME"
             ;;
         *)
             echo "❌ Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
@@ -61,17 +61,29 @@ update:
 update-sync: update sync
     @echo "System upgrade completed!"
 
+# Format repository files
+fmt:
+    nix fmt .
+
+# Validate the flake
+check:
+    nix flake check
+
+# Lint Nix files
+lint:
+    statix check .
+
 # Garbage collect old generations (default: 30 days)
 gc days="30d":
-    @echo "🧹 Performing garbage collection..."
-    nh clean all --keep-since {{ days }} --ask
+    @echo "Performing garbage collection..."
+    nh clean all --keep-since "{{ days }}" --ask
     @echo "Garbage collection completed!"
 
 # Remove unused nix store paths
 trim:
     @echo "Pruning unused nix store paths..."
     nix-store --gc
-    @echo "✅ Pruning completed!"
+    @echo "Pruning completed!"
 
 # List system generations
 list-generations:
@@ -86,7 +98,7 @@ list-generations:
             sudo darwin-rebuild --list-generations
             ;;
         "home-manager")
-            nix-store --gc --print-roots | grep home-manager-generation
+            nix-store --gc --print-roots | grep home-manager-generation || true
             ;;
         *)
             echo "❌ Error: Unsupported system type for listing generations."
@@ -114,7 +126,7 @@ disko hostname:
         exit 1
     fi
 
-    DISKO_CONFIG="./machines/{{ hostname }}/disko.nix"
+    DISKO_CONFIG="./machines/nixos/{{ hostname }}/hardware/disko.nix"
 
     if [ ! -f "$DISKO_CONFIG" ]; then
         echo "❌ Disko configuration file not found: $DISKO_CONFIG"
@@ -140,20 +152,26 @@ deploy host:
 nixpkgs-status:
     #!/usr/bin/env bash
     set -euo pipefail
-    LAST_MODIFIED=$(jq -r '.nodes.nixpkgs.locked.lastModified' flake.lock 2>/dev/null || echo "unknown")
+    LAST_MODIFIED=$(jq -r '.nodes.nixpkgs.locked.lastModified // empty' flake.lock 2>/dev/null || true)
+    if ! [[ "$LAST_MODIFIED" =~ ^[0-9]+$ ]]; then
+        echo "nixpkgs last updated: unknown (flake.lock is missing nixpkgs.locked.lastModified or jq is unavailable)"
+        exit 0
+    fi
+
     CURRENT_TIME=$(date +%s)
     DAYS_AGO=$(( (CURRENT_TIME - LAST_MODIFIED) / 86400 ))
-    # BSD date (macOS) uses -r; GNU date uses -d @
-    if date -r 0 +%s >/dev/null 2>&1; then
-        HUMAN=$(date -r "$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S')
+    if HUMAN=$(date -r "$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S' 2>/dev/null); then
+        :
+    elif HUMAN=$(date -d "@$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S' 2>/dev/null); then
+        :
     else
-        HUMAN=$(date -d "@$LAST_MODIFIED" '+%Y-%m-%d %H:%M:%S')
+        HUMAN="$LAST_MODIFIED"
     fi
-    echo "📦 nixpkgs last updated: $DAYS_AGO days ago ($HUMAN)"
+    echo "nixpkgs last updated: $DAYS_AGO days ago ($HUMAN)"
 
 # Profile nix evaluation performance (optionally specify a hostname)
 profile host="":
-    @./scripts/nix-profile.sh {{ host }}
+    @./scripts/nix-profile.sh "{{ host }}"
 
 # Display available commands
 help:
