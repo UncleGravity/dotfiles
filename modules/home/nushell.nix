@@ -24,6 +24,8 @@
 
   programs.carapace = {
     enable = true;
+    # Carapace's late compdef replaces Nix's native flake-aware Zsh completer.
+    enableZshIntegration = false;
   };
 
   programs.nix-your-shell = {
