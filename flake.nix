@@ -247,6 +247,15 @@
     # NixOS Configurations
     # --------------------------------------------------------------------------
     nixosConfigurations = {
+      # AI workstation
+      sisyphus = mkNixos {
+        system = systems.x86_64-linux;
+        username = "angel";
+        hostname = "sisyphus";
+        systemStateVersion = "26.05";
+        homeStateVersion = "26.05";
+      };
+
       # kiwi (NAS)
       kiwi = mkNixos {
         system = systems.x86_64-linux;

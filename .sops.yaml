@@ -5,6 +5,7 @@ keys:
     - &banana age1gfgas2vwf4emddhqquqk8uzr306d3mdpv3hap3sk32rglxf50egscyd0xd
     - &nixos-vm age16ssscp6dgnpg8ev7enfqejkp2y0c00493rvgrh0vccwgdllk0y2swjawjq
     - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
+    - &sisyphus age1qhtwcahzlraukzjc5ylmnjucfk9xu5f5zw6v0u4kklxt88hawumsc2pvf0
 creation_rules:
   # Secrets for all machines.
   - path_regex: (secrets|modules)/.+\.(yaml|json|env|ini|sops)$
@@ -14,6 +15,7 @@ creation_rules:
           - *banana
           - *nixos-vm
           - *kiwi
+          - *sisyphus
 
     # banana
   - path_regex: machines/darwin/banana/.*\.(yaml|json|env|ini|sops)$
@@ -33,6 +35,13 @@ creation_rules:
       - age:
           - *angel
           - *kiwi
+
+  # sisyphus
+  - path_regex: machines/nixos/sisyphus/.*\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+          - *angel
+          - *sisyphus
 
   # Anything else not included above.
   - age: *angel
