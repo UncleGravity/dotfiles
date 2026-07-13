@@ -23,7 +23,8 @@
     # Enable the ZFS service at boot and tell it where to find disks
     zfs = {
       devNodes = "/dev/disk/by-id/";
-      forceImportAll = true;
+      forceImportAll = false;
+      forceImportRoot = false;
       requestEncryptionCredentials = true;
     };
   };
