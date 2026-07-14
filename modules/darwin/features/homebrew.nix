@@ -46,6 +46,7 @@ in {
 
       # `brew install`
       brews = [
+        "mactop"
         # "hackrf"
         # fuse-t
       ];
