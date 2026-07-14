@@ -103,7 +103,7 @@
     # --- Backup / sync -------------------------------------------------------------------
     restic
     rustic
-    icloudpd
+    # icloudpd
     immich-go
 
     # --- Modern CLI replacements ---------------------------------------------------------
@@ -141,10 +141,10 @@
   # 2. Platform-specific additions                                         #
   ###########################################################################
   darwinOnly = with pkgs; [
-    # mactop
+    # mactop # broken
     mas
-    lima
-    colima
+    # lima
+    # colima # use docker normally after `colima start`
     docker
     # podman
   ];

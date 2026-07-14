@@ -1,4 +1,9 @@
-{username, ...}: {
+{
+  config,
+  pkgs,
+  username,
+  ...
+}: {
   imports = [
     ./hardware/disko.nix
     ./hardware/hardware.nix
@@ -18,9 +23,24 @@
     docker.enable = true;
     escape-hatch.enable = true;
     nvidiaAi.enable = true;
+    tailscale = {
+      enable = true;
+      authKeyFile = config.sops.secrets."tailscale/authkey".path;
+      advertiseRoutes = [];
+      enableExitNode = false;
+    };
+  };
+
+  sops.secrets."tailscale/authkey" = {
+    mode = "0600";
+    owner = "root";
   };
 
   networking.networkmanager.enable = true;
+
+  environment.systemPackages = [
+    (pkgs.llama-cpp.override {cudaSupport = true;})
+  ];
 
   services.fstrim.enable = true;
 

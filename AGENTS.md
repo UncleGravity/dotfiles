@@ -10,7 +10,7 @@ When exploring or modifying configurations, use these tools to understand availa
 
 **optnix** - Search and explore this repository's configuration options
 - `optnix -l` - List all evaluated configurations for the local flake (banana, nixos, kiwi, pi, BASURA and their Home Manager modules)
-- `optnix -s <config-name> <option>` - Search for specific options (e.g., `optnix -s banana programs.zsh.enable`)
+- `optnix -n -s <config-name> <option>` - Search for specific options (e.g., `optnix -n -s banana programs.zsh.enable`)
 
 **nh search** / **gh search** - Search nixpkgs and nixos options
 - `nh search <package> --limit <number>` - Search nixpkgs for packages (e.g., `nh search cargo --limit 5`)
