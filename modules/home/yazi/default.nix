@@ -31,9 +31,8 @@
 
     settings = {
       plugin.prepend_fetchers = [
-        # NOTE: `id` was renamed to `group` in yazi v26.5.x — swap when nixpkgs bumps
-        { id = "git"; url = "*";  run = "git"; }
-        { id = "git"; url = "*/"; run = "git"; }
+        { group = "git"; url = "*";  run = "git"; }
+        { group = "git"; url = "*/"; run = "git"; }
       ];
       mgr = {
         sort_by = "mtime";
