@@ -1,12 +1,15 @@
 {
   config,
+  lib,
   pkgs,
   username,
   ...
 }: {
   imports = [
+    ./gaming.nix
     ./hardware/disko.nix
     ./hardware/hardware.nix
+    ./windows-vm.nix
   ];
 
   my = {
@@ -38,9 +41,7 @@
 
   networking.networkmanager.enable = true;
 
-  environment.systemPackages = [
-    (pkgs.llama-cpp.override {cudaSupport = true;})
-  ];
+  environment.systemPackages = lib.optional config.my.nvidiaAi.enable (pkgs.llama-cpp.override {cudaSupport = true;});
 
   services.fstrim.enable = true;
 
