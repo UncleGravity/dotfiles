@@ -1,22 +1,16 @@
 {
   config,
   lib,
-  username,
   pkgs,
   ...
 }: {
-  config = lib.mkIf config.my.profiles.workstation.enable {
-    # ---------------------------------------------------------------------------
-    # NetworkManager — interactive hosts. Servers that happen to need it
-    networking.networkmanager.enable = true;
+  config = lib.mkIf (config.my.profile == "workstation") {
+    networking.networkmanager.enable = lib.mkDefault true;
+    my.audio.enable = lib.mkDefault true;
 
-    # ---------------------------------------------------------------------------
-    # Autologin (TTY) — convenient on workstations / dev VMs; never on servers.
-    services.getty.autologinUser = "${username}";
-
-    environment.systemPackages = with pkgs; [
-      chromium # Web browser
-      ghostty # arigatogosaimasu hashimoto san
-    ];
+    environment.systemPackages = lib.optionals config.my.desktop.enable (with pkgs; [
+      chromium
+      ghostty
+    ]);
   };
 }

@@ -24,17 +24,14 @@
   # ---------------------------------------------------------------------------
   # Custom modules
   my = {
-    # --- Active profiles ---
-    profiles = {
-      server.enable = true;
-      graphical.enable = true;
-    };
+    profile = "server";
+    audio.enable = true;
 
     # ---------------------------------------------------------------------------
     # Enable server-specific modules
-    displayManager = {
+    desktop = {
       enable = true;
-      desktop = "gnome";
+      environment = "gnome";
       rdp.enable = true; # For Guacamole
     };
 

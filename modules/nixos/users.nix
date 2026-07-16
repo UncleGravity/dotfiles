@@ -9,7 +9,7 @@
 in {
   # ---------------------------------------------------------------------------
   # Define a user account. Don't forget to set a password with 'passwd'.
-  # TTY autologin is gated by workstation profile (modules/nixos/workstation.nix).
+  # TTY autologin is configured explicitly by hosts that need it.
   users = {
     users.${username} = {
       isNormalUser = true;

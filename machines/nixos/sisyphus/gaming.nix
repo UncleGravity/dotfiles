@@ -7,6 +7,8 @@
   specialisation.gaming.configuration = {
     system.nixos.tags = ["gaming"];
 
+    services.pipewire.alsa.support32Bit = true;
+
     # LATEST NVIDIA DRIVER
     hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.latest;
 

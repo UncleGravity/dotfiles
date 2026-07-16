@@ -5,14 +5,6 @@
     ./linux-builder.nix
   ];
 
-  # --- Role profiles ---
-  # Profiles are NixOS-only for now — every darwin host is a workstation+graphical
-  # laptop. Re-enable here if a darwin module ever gates on these flags.
-  # my.profiles = {
-  #   workstation.enable = true;
-  #   graphical.enable = true;
-  # };
-
   # SECRETS
   my.env.work.enable = true;
 

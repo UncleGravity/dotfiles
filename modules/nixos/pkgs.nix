@@ -8,5 +8,6 @@
     vim
     git
     ghostty.terminfo
+    pciutils
   ];
 }

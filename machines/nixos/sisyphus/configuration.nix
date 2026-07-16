@@ -13,14 +13,12 @@
   ];
 
   my = {
-    profiles = {
-      server.enable = true;
-      graphical.enable = true;
-    };
+    profile = "workstation";
+    power.alwaysOn = true;
 
-    displayManager = {
+    desktop = {
       enable = true;
-      desktop = "gnome";
+      environment = "gnome";
     };
 
     docker.enable = true;
@@ -38,8 +36,6 @@
     mode = "0600";
     owner = "root";
   };
-
-  networking.networkmanager.enable = true;
 
   environment.systemPackages = lib.optional config.my.nvidiaAi.enable (pkgs.llama-cpp.override {cudaSupport = true;});
 

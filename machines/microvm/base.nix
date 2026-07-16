@@ -16,6 +16,7 @@
   mac = macFromName hostname;
 in {
   imports = [
+    ../../modules/common/caches.nix
     ../../modules/common/ssh-keys.nix
   ];
 

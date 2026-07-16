@@ -7,6 +7,8 @@
   ###########################################################################
   # 1. Platform-agnostic user packages                                      #
   ###########################################################################
+  # GUI applications stay out of Home Manager:
+  # nix-darwin uses Homebrew. NixOS installs them from its workstation role.
   common = with pkgs; [
     # --- Language servers ----------------------------------------------------------------
     tree-sitter
