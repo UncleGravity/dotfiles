@@ -7,13 +7,14 @@
 }: let
   home = config.users.users.${username}.home;
   llamaCpp = pkgs.llama-cpp.override {cudaSupport = true;};
-  model = "${home}/models/unsloth/Qwen3.5-27B-MTP-GGUF/Qwen3.5-27B-UD-Q4_K_XL.gguf";
+  # model = "${home}/models/unsloth/Qwen3.5-27B-MTP-GGUF/Qwen3.5-27B-UD-Q4_K_XL.gguf";
+  model = "${home}/models/abliterated/llmfan46/Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf";
 in {
   config = lib.mkIf config.my.nvidiaAi.enable {
     environment.systemPackages = [llamaCpp];
 
     systemd.services.llama-server = {
-      description = "Qwen3.5 27B llama.cpp server";
+      description = "llama.cpp server";
       wantedBy = ["multi-user.target"];
       after = ["nvidia-persistenced.service"];
       wants = ["nvidia-persistenced.service"];
