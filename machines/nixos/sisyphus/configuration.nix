@@ -1,7 +1,5 @@
 {
   config,
-  lib,
-  pkgs,
   username,
   ...
 }: {
@@ -9,6 +7,7 @@
     ./gaming.nix
     ./hardware/disko.nix
     ./hardware/hardware.nix
+    ./inference
     ./windows-vm.nix
   ];
 
@@ -36,8 +35,6 @@
     mode = "0600";
     owner = "root";
   };
-
-  environment.systemPackages = lib.optional config.my.nvidiaAi.enable (pkgs.llama-cpp.override {cudaSupport = true;});
 
   services.fstrim.enable = true;
 
