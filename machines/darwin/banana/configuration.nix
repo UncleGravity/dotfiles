@@ -13,7 +13,7 @@
 
   # Enable APFS snapshots service
   my.apfs-snapshots = {
-    enable = true;
+    enable = false;
     interval = 3600; # Take snapshots every hour (3600 seconds)
     keepCount = 24; # Keep 24 snapshots
     # Log to a custom location if desired
