@@ -148,6 +148,45 @@ deploy host:
     nh os switch . -H "{{ host }}" --build-host "{{ host }}" --target-host "{{ host }}" --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
+# Partition the NVMe, install NixOS, preserve host keys, and reboot.
+# The node must be booted into the NixOS USB installer first (see spark README).
+spark-install node:
+    nix develop -c ./machines/nixos/spark/install.sh "{{ node }}"
+
+# Deploy one Spark (builds on the node itself).
+spark-deploy node:
+    nh os switch . -H "{{ node }}" --build-host "{{ node }}.local" --target-host "{{ node }}.local"
+
+# Deploy all four Sparks in canary order (stops on first failure).
+spark-deploy-all:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for node in spark-01 spark-02 spark-03 spark-04; do
+        just spark-deploy "$node"
+    done
+
+# Push the expensive Spark build outputs (NVIDIA kernel + drivers, open-webui
+# with its overridden torch stack) from a built node to cachix so installs and
+# deploys elsewhere just download them. Extend the attr list as new
+# built-from-source packages appear.
+spark-cache node="spark-01":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    attrs=(
+        boot.kernelPackages.kernel
+        boot.kernelPackages.kernel.dev
+        hardware.nvidia.package.open
+        hardware.nvidia.package.firmware
+        services.open-webui.package
+    )
+    paths=()
+    for attr in "${attrs[@]}"; do
+        paths+=("$(nix eval --raw ".#nixosConfigurations.{{ node }}.config.$attr.outPath")")
+    done
+    echo "Pushing: ${paths[*]}"
+    nix copy --from "ssh://angel@{{ node }}.local" --no-check-sigs "${paths[@]}"
+    nix develop -c cachix push unclegravity-nix "${paths[@]}"
+
 # Check nixpkgs version status
 nixpkgs-status:
     #!/usr/bin/env bash

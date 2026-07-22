@@ -6,7 +6,15 @@ keys:
     - &nixos-vm age16ssscp6dgnpg8ev7enfqejkp2y0c00493rvgrh0vccwgdllk0y2swjawjq
     - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
     - &sisyphus age1qhtwcahzlraukzjc5ylmnjucfk9xu5f5zw6v0u4kklxt88hawumsc2pvf0
+    - &spark-01 age12x743m4fkgqazl0638sjsc7eet05gsrr0x05y5mapd65hsjg0yasqd2w22
 creation_rules:
+  # Secrets only needed by the Spark controller.
+  - path_regex: machines/nixos/spark/secrets/controller\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+          - *angel
+          - *spark-01
+
   # Secrets for all machines.
   - path_regex: (secrets|modules)/.+\.(yaml|json|env|ini|sops)$
     key_groups:

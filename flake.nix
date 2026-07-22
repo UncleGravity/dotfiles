@@ -20,6 +20,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    dgx-spark = {
+      url = "github:graham33/nixos-dgx-spark";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     microvm = {
       url = "github:microvm-nix/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -58,15 +63,18 @@
       url = "github:mitchellh/zig-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
-  outputs = inputs @ { nixpkgs, ... }:
-  let
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    ...
+  }: let
     # --------------------------------------------------------------------------
     # Overlays
     # --------------------------------------------------------------------------
-    overlays = import ./overlays { inherit inputs; };
+    overlays = import ./overlays {inherit inputs;};
+    sparkNodes = import ./machines/nixos/spark/nodes.nix;
 
     # --------------------------------------------------------------------------
     # Platform Helpers
@@ -80,18 +88,24 @@
 
     # Map a function over every supported system, passing it { system, pkgs }
     forAllSystems = f:
-      nixpkgs.lib.genAttrs (builtins.attrNames systems) (system:
-        let
-          pkgs = import nixpkgs {
-            inherit system overlays;
-            config.allowUnfree = true;
-          };
-        in f { inherit system pkgs; });
+      nixpkgs.lib.genAttrs (builtins.attrNames systems) (system: let
+        pkgs = import nixpkgs {
+          inherit system overlays;
+          config.allowUnfree = true;
+        };
+      in
+        f {inherit system pkgs;});
 
     # --------------------------------------------------------------------------
     # System config helpers
     # --------------------------------------------------------------------------
-    mkHomeManagerConfig = { platform, username, hostname, homeStateVersion,}:{
+    mkHomeManagerConfig = {
+      platform,
+      username,
+      hostname,
+      homeStateVersion,
+      homeModule ? ./machines/${platform}/${hostname}/home.nix,
+    }: {
       home-manager = {
         extraSpecialArgs = {
           inherit inputs username;
@@ -104,46 +118,88 @@
         # This assumes that the home.nix file is in the machines/${platform}/${hostname} directory.
         # ie. This only works for a single user.
         users.${username} = {
-          imports = [ ./machines/${platform}/${hostname}/home.nix ];
+          imports = [homeModule];
           home.stateVersion = homeStateVersion;
         };
       };
     };
 
-    mkNixos = { system, username, hostname, systemStateVersion, homeStateVersion }:
+    mkNixos = {
+      system,
+      username,
+      hostname,
+      systemStateVersion,
+      homeStateVersion,
+      machineModule ? ./machines/nixos/${hostname}/configuration.nix,
+      homeModule ? ./machines/nixos/${hostname}/home.nix,
+      extraModules ? [],
+      extraSpecialArgs ? {},
+      withHomeManager ? true,
+    }:
       nixpkgs.lib.nixosSystem {
         # inherit system;
-        specialArgs = {
-          inherit inputs;
-          inherit username hostname homeStateVersion;
-        };
-        modules = [
-          # Input modules
-          inputs.home-manager.nixosModules.home-manager
-          inputs.disko.nixosModules.disko
-          inputs.sops-nix.nixosModules.sops
-
-          ./modules/nixos # My modules
-          ./machines/nixos/${hostname}/configuration.nix # System config
-
-          # Home Manager Config
-          (mkHomeManagerConfig {platform = "nixos"; inherit username hostname homeStateVersion;})
-
-          # -- Global NixOS Config ------------------------------------------
+        specialArgs =
           {
-            # Nixpkgs Config
-            nixpkgs = {
-              inherit overlays;
-              hostPlatform = system;
-              config.allowUnfree = true; # buhaoyisi duibuqi
-            };
-            system.stateVersion = systemStateVersion; # no change or u will regret
+            inherit inputs;
+            inherit username hostname homeStateVersion;
           }
-          # -----------------------------------------------------------------
-        ];
+          // extraSpecialArgs;
+        modules =
+          [
+            # Input modules
+            inputs.disko.nixosModules.disko
+            inputs.sops-nix.nixosModules.sops
+
+            ./modules/nixos # My modules
+          ]
+          ++ extraModules
+          ++ [machineModule]
+          ++ nixpkgs.lib.optional withHomeManager inputs.home-manager.nixosModules.home-manager
+          ++ nixpkgs.lib.optional withHomeManager (mkHomeManagerConfig {
+            platform = "nixos";
+            inherit username hostname homeStateVersion homeModule;
+          })
+          ++ [
+            # -- Global NixOS Config ------------------------------------------
+            {
+              # Nixpkgs Config
+              nixpkgs = {
+                inherit overlays;
+                hostPlatform = system;
+                config.allowUnfree = true; # buhaoyisi duibuqi
+              };
+              system.stateVersion = systemStateVersion; # no change or u will regret
+              # Every host can report the git commit it runs: nixos-version --configuration-revision
+              system.configurationRevision = self.rev or self.dirtyRev or "unknown";
+            }
+            # -----------------------------------------------------------------
+          ];
       };
 
-    mkDarwin = { system, username, hostname, systemStateVersion, homeStateVersion }:
+    sparkConfigurations =
+      nixpkgs.lib.mapAttrs (
+        hostname: node:
+          mkNixos {
+            system = systems.aarch64-linux;
+            username = "angel";
+            inherit hostname;
+            systemStateVersion = "26.05";
+            homeStateVersion = "26.05";
+            machineModule = ./machines/nixos/spark/configuration.nix;
+            homeModule = ./machines/nixos/spark/home.nix;
+            extraModules = [inputs.dgx-spark.nixosModules.dgx-spark];
+            extraSpecialArgs = {inherit node sparkNodes;};
+          }
+      )
+      sparkNodes;
+
+    mkDarwin = {
+      system,
+      username,
+      hostname,
+      systemStateVersion,
+      homeStateVersion,
+    }:
       inputs.darwin.lib.darwinSystem {
         # inherit system;
         specialArgs = {
@@ -160,7 +216,10 @@
           ./machines/darwin/${hostname}/configuration.nix # System Config
 
           # Home Manager Config
-          (mkHomeManagerConfig {platform = "darwin"; inherit username hostname homeStateVersion;})
+          (mkHomeManagerConfig {
+            platform = "darwin";
+            inherit username hostname homeStateVersion;
+          })
 
           # -- Global Darwin Config -----------------------------------------
           {
@@ -184,7 +243,12 @@
         ];
       };
 
-    mkHomeManagerSystem = { system, pkgs, username, homeStateVersion }:
+    mkHomeManagerSystem = {
+      system,
+      pkgs,
+      username,
+      homeStateVersion,
+    }:
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
@@ -207,7 +271,13 @@
         ];
       };
 
-    mkMicrovm = { system, username, hostname, systemStateVersion, hostSystem ? systems.aarch64-darwin }:
+    mkMicrovm = {
+      system,
+      username,
+      hostname,
+      systemStateVersion,
+      hostSystem ? systems.aarch64-darwin,
+    }:
       nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit inputs username hostname;
@@ -227,7 +297,6 @@
           }
         ];
       };
-
   in {
     # --------------------------------------------------------------------------
     # Darwin Configurations
@@ -246,49 +315,51 @@
     # --------------------------------------------------------------------------
     # NixOS Configurations
     # --------------------------------------------------------------------------
-    nixosConfigurations = {
-      # AI workstation
-      sisyphus = mkNixos {
-        system = systems.x86_64-linux;
-        username = "angel";
-        hostname = "sisyphus";
-        systemStateVersion = "26.05";
-        homeStateVersion = "26.05";
-      };
+    nixosConfigurations =
+      {
+        # AI workstation
+        sisyphus = mkNixos {
+          system = systems.x86_64-linux;
+          username = "angel";
+          hostname = "sisyphus";
+          systemStateVersion = "26.05";
+          homeStateVersion = "26.05";
+        };
 
-      # kiwi (NAS)
-      kiwi = mkNixos {
-        system = systems.x86_64-linux;
-        username = "angel";
-        hostname = "kiwi";
-        systemStateVersion = "24.11";
-        homeStateVersion = "25.05";
-      };
+        # kiwi (NAS)
+        kiwi = mkNixos {
+          system = systems.x86_64-linux;
+          username = "angel";
+          hostname = "kiwi";
+          systemStateVersion = "24.11";
+          homeStateVersion = "25.05";
+        };
 
-      # Development VM
-      nixos = mkNixos {
-        system = systems.aarch64-linux;
-        username = "angel";
-        hostname = "nixos";
-        systemStateVersion = "24.05";
-        homeStateVersion = "24.05";
-      };
+        # Development VM
+        nixos = mkNixos {
+          system = systems.aarch64-linux;
+          username = "angel";
+          hostname = "nixos";
+          systemStateVersion = "24.05";
+          homeStateVersion = "24.05";
+        };
 
-      # MicroVMs
-      dev = mkMicrovm {
-        system = systems.aarch64-linux;
-        username = "angel";
-        hostname = "dev";
-        systemStateVersion = "25.05";
-      };
+        # MicroVMs
+        dev = mkMicrovm {
+          system = systems.aarch64-linux;
+          username = "angel";
+          hostname = "dev";
+          systemStateVersion = "25.05";
+        };
 
-      small = mkMicrovm {
-        system = systems.aarch64-linux;
-        username = "angel";
-        hostname = "small";
-        systemStateVersion = "25.05";
-      };
-    };
+        small = mkMicrovm {
+          system = systems.aarch64-linux;
+          username = "angel";
+          hostname = "small";
+          systemStateVersion = "25.05";
+        };
+      }
+      // sparkConfigurations;
 
     # --------------------------------------------------------------------------
     # Home Manager ONLY Configurations
@@ -306,21 +377,30 @@
     # --------------------------------------------------------------------------
     # Packages
     # --------------------------------------------------------------------------
-    packages = forAllSystems ({ system, pkgs, ... }:
+    packages = forAllSystems ({
+      system,
+      pkgs,
+      ...
+    }:
       import ./packages {
         inherit inputs system pkgs;
         inherit (pkgs) lib;
-      }
-    );
+      });
 
     # --------------------------------------------------------------------------
     # Development shells
     # --------------------------------------------------------------------------
-    devShells = forAllSystems ({ pkgs, system, ... }: {
+    devShells = forAllSystems (
+      {
+        pkgs,
+        system,
+        ...
+      }: {
         default = pkgs.mkShell {
           packages = with pkgs; [
             nh
             nix-output-monitor
+            nixos-anywhere
             just
             nix-tree
             statix
@@ -340,32 +420,35 @@
 
     # --------------------------------------------------------------------------
     # Default formatter - Run with `nix fmt .`
-    formatter = forAllSystems ({ pkgs, ... }:
-      inputs.treefmt-nix.lib.mkWrapper pkgs {
-        projectRootFile = "flake.nix";
-        programs = {
-          alejandra = {
-            enable = true;
-            excludes = ["flake.nix"];
+    formatter = forAllSystems (
+      {pkgs, ...}:
+        inputs.treefmt-nix.lib.mkWrapper pkgs {
+          projectRootFile = "flake.nix";
+          programs = {
+            alejandra = {
+              enable = true;
+              excludes = ["flake.nix"];
+            };
+            taplo.enable = true;
+            yamlfmt = {
+              enable = true;
+              excludes = ["**/secrets.yaml" ".sops.yaml" "**/.sops.yaml" "**/secrets/*.yaml"];
+            };
+            prettier = {
+              enable = true;
+              includes = ["*.json"];
+            };
+            just.enable = true;
+            shfmt = {
+              enable = true;
+              includes = ["*.sh" "*.zsh" "*.bash" ".env" ".envrc"];
+              excludes = ["**/p10k.zsh" "**/powerlevel10k.zsh"];
+            };
           };
-          taplo.enable = true;
-          yamlfmt = {
-            enable = true;
-            excludes = ["**/secrets.yaml" ".sops.yaml" "**/.sops.yaml" "**/secrets/*.yaml"];
-          };
-          prettier = {
-            enable = true;
-            includes = ["*.json"];
-          };
-          just.enable = true;
-          shfmt = {
-            enable = true;
-            includes = ["*.sh" "*.zsh" "*.bash" ".env" ".envrc"];
-            excludes = ["**/p10k.zsh" "**/powerlevel10k.zsh"];
-          };
-        };
-      }
+        }
     );
+
+    inherit sparkNodes;
 
     # checks."<system>"."<name>" = derivation; # nix flake check
     # packages."<system>"."<name>" = derivation; # nix build .#<name>
