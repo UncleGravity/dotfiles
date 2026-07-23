@@ -2,7 +2,8 @@
 
 Four DGX Sparks on a MikroTik CRS804 fabric, managed from Banana. `spark-01`
 is the controller (DGX dashboard, staging point); the others are workers.
-Based on [nixos-dgx-spark](https://github.com/graham33/nixos-dgx-spark).
+Based on the [ktrinh-anduril nixos-dgx-spark fork](https://github.com/ktrinh-anduril/nixos-dgx-spark),
+with local kernel compatibility fixes in `kernel.nix`.
 
 ## Inventory
 

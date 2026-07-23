@@ -8,6 +8,7 @@
   imports = [
     ./disko.nix
     ./huggingface.nix
+    ./kernel.nix
     ./networking.nix
     ./open-webui.nix
     ./vllm-laguna.nix

@@ -21,7 +21,7 @@
     };
 
     dgx-spark = {
-      url = "github:graham33/nixos-dgx-spark";
+      url = "github:ktrinh-anduril/nixos-dgx-spark/553ae12a9c162e9c6bff1b2172335fe35b3b2765";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
