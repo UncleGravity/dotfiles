@@ -7,7 +7,7 @@
     wget
     vim
     git
-    ghostty.terminfo
+    ghostty.terminfo # fix ghostty TERM errors
     pciutils
   ];
 }

@@ -4,137 +4,178 @@
   lib,
   ...
 }: let
-  flakePath = "$\{OPTNIX_FLAKE_PATH:-$HOME/nix}";
+  nixExe = lib.getExe pkgs.nix;
+  formatter = lib.getExe pkgs.alejandra;
+  tomlFormat = pkgs.formats.toml {};
 
-  sanitizeExpr = ''let
-    sanitize = v: if builtins.isAttrs v then
-      (if (v ? type && v.type == "derivation") then (v.name or "<derivation>")
-       else builtins.mapAttrs (_: sanitize) v)
-    else if builtins.isList v then builtins.map sanitize v
-    else if builtins.isPath v then toString v
-    else if builtins.isFunction v then "<function>"
-    else v;
-  in sanitize'';
+  flakeRef = attrPath: ''"''${OPTNIX_FLAKE_PATH:-$HOME/nix}#${attrPath}"'';
 
-  # Direct scope — works for system configs (nixos/darwin) and standalone HM
-  mkDirectScope = { name, description, configType, configName }: {
-    inherit name description;
-    options-list-cmd = ''
-      nix eval ${flakePath}#${configType}.${configName} --json --apply 'input:
-        builtins.filter (v: v.visible && !v.internal)
-          (input.pkgs.lib.optionAttrSetToDocList input.options)' || {
-            echo '[]'
-            echo "Warning: Failed to load options for ${name}" >&2
-          }
-    '';
-    evaluator = ''
-      nix eval ${flakePath}#${configType}.${configName}.config.{{ .Option }} --json \
-        --apply '${sanitizeExpr}' | jq . || echo '{"error": "Failed to evaluate option"}'
-    '';
-  };
-
-  # Nested HM scope — for home-manager embedded inside a system config
-  mkNestedHMScope = { name, description, configType, configName }: {
-    inherit name description;
-    options-list-cmd = ''
-      HAS_HM=$(nix eval ${flakePath}#${configType}.${configName}.config --json \
-        --apply 'config: config ? home-manager' 2>/dev/null || echo "false")
-      if [ "$HAS_HM" = "true" ]; then
-        OPTNIX_FLAKE_PATH=${flakePath} nix eval --impure github:nix-community/home-manager#lib.homeManagerConfiguration --json --apply 'hmConfig: let
-          flakeInputs = builtins.getFlake (builtins.getEnv "OPTNIX_FLAKE_PATH");
-          systemConfig = flakeInputs.${configType}.${configName};
-          username = builtins.head (builtins.attrNames systemConfig.config.home-manager.users);
-          actualHomeConfig = (builtins.getAttr username systemConfig.config.home-manager.users).home;
-          config = hmConfig {
-            pkgs = systemConfig.pkgs;
-            modules = [
-              { home = { username = actualHomeConfig.username; homeDirectory = actualHomeConfig.homeDirectory; stateVersion = actualHomeConfig.stateVersion; }; }
-            ] ++ systemConfig.config.home-manager.sharedModules;
-          };
-        in builtins.filter (v: v.visible && !v.internal)
-             (systemConfig.pkgs.lib.optionAttrSetToDocList config.options)' || {
-              echo '[]'; echo "Warning: Failed to evaluate Home Manager for ${name}" >&2
-            }
-      else
-        echo '[]'; echo "Info: ${name} has no Home Manager configuration" >&2
-      fi
-    '';
-    evaluator = ''
-      HAS_HM=$(nix eval ${flakePath}#${configType}.${configName}.config --json \
-        --apply 'config: config ? home-manager' 2>/dev/null || echo "false")
-      USERNAME=$(nix eval ${flakePath}#${configType}.${configName}.config.home-manager.users --json \
-        --apply 'users: builtins.head (builtins.attrNames users)' 2>/dev/null | jq -r . 2>/dev/null || echo "nouser")
-      if [ "$HAS_HM" = "true" ] && [ "$USERNAME" != "nouser" ]; then
-        nix eval ${flakePath}#${configType}.${configName}.config.home-manager.users."$USERNAME".{{ .Option }} --json \
-          --apply '${sanitizeExpr}' | jq . || echo '{"error": "Failed to evaluate Home Manager option"}'
-      else
-        echo '{"error": "Home Manager not configured for this system"}'
-      fi
-    '';
-  };
-
-  # === Discovery (attrNames only — no config evaluation) ===
-  nixosNames = builtins.attrNames (inputs.self.nixosConfigurations or {});
-  darwinNames = builtins.attrNames (inputs.self.darwinConfigurations or {});
-  standaloneNames = builtins.attrNames (inputs.self.homeConfigurations or {});
-
-  # === Assemble all scopes ===
-  allConfigs =
-    # System scopes
-    (lib.genAttrs nixosNames (n: mkDirectScope {
-      name = n; description = "NixOS configuration for ${n}";
-      configType = "nixosConfigurations"; configName = n;
-    }))
-    // (lib.genAttrs darwinNames (n: mkDirectScope {
-      name = n; description = "nix-darwin configuration for ${n}";
-      configType = "darwinConfigurations"; configName = n;
-    }))
-    // (lib.genAttrs standaloneNames (n: mkDirectScope {
-      name = n; description = "Standalone Home Manager configuration for ${n}";
-      configType = "homeConfigurations"; configName = n;
-    }))
-    # Nested HM scopes
-    // (lib.listToAttrs (map (n: lib.nameValuePair "hm-${n}" (mkNestedHMScope {
-      name = "hm-${n}"; description = "Home Manager module for ${n}";
-      configType = "nixosConfigurations"; configName = n;
-    })) nixosNames))
-    // (lib.listToAttrs (map (n: lib.nameValuePair "hm-${n}" (mkNestedHMScope {
-      name = "hm-${n}"; description = "Home Manager module for ${n}";
-      configType = "darwinConfigurations"; configName = n;
-    })) darwinNames));
-
-  # === TOML Generation ===
-  configToml = let
-    globalConfig = ''
-      min_score = 1
-      debounce_time = 25
-      default_scope = "nixos"
-      formatter_cmd = "alejandra"
-    '';
-    scopeConfigs = lib.concatStringsSep "\n\n" (lib.mapAttrsToList (name: config: ''
-      [scopes.${name}]
-      description = "${config.description}"
-      options-list-cmd = """
-      ${config.options-list-cmd}
-      """
-      evaluator = """
-      ${config.evaluator}
-      """
-    '') allConfigs);
-  in ''
-    # ${globalConfig}
-    ${scopeConfigs}
+  sanitizeExpr = ''
+    let
+      sanitize = value:
+        if builtins.isAttrs value
+        then
+          if value ? type && value.type == "derivation"
+          then value.name or "<derivation>"
+          else builtins.mapAttrs (_: sanitize) value
+        else if builtins.isList value
+        then builtins.map sanitize value
+        else if builtins.isPath value
+        then toString value
+        else if builtins.isFunction value
+        then "<function>"
+        else value;
+    in
+      sanitize
   '';
 
-  configFile = pkgs.writeText "optnix-config.toml" configToml;
-in
-  pkgs.symlinkJoin {
-    name = "optnix";
-    paths = [pkgs.optnix];
-    nativeBuildInputs = [pkgs.makeWrapper];
-    passthru = { inherit configFile; };
-    postBuild = ''
-      wrapProgram $out/bin/optnix \
-        --add-flags '--config "${configFile}"'
+  mkDirectScope = {
+    description,
+    configType,
+    configName,
+  }: {
+    inherit description;
+    options-list-cmd = ''
+      ${nixExe} eval ${flakeRef "${configType}.${configName}"} --json --apply 'input:
+        builtins.filter (option: option.visible && !option.internal)
+          (input.pkgs.lib.optionAttrSetToDocList input.options)'
     '';
-  }
+    evaluator = ''
+      ${nixExe} eval ${flakeRef "${configType}.${configName}.config.{{ .Option }}"} \
+        --apply '${sanitizeExpr}'
+    '';
+  };
+
+  mkNestedHMScope = {
+    description,
+    configType,
+    configName,
+  }: {
+    inherit description;
+    options-list-cmd = ''
+      ${nixExe} eval ${flakeRef "${configType}.${configName}"} --json --apply 'input:
+        if input.options ? home-manager
+        then
+          builtins.filter (option: option.visible && !option.internal)
+            (input.pkgs.lib.optionAttrSetToDocList
+              (input.options.home-manager.users.type.nestedTypes.elemType.getSubOptions []))
+        else []'
+    '';
+    evaluator = ''
+      ${nixExe} eval ${flakeRef "${configType}.${configName}"} --apply 'input: let
+        users = input.config.home-manager.users or {};
+        usernames = builtins.attrNames users;
+      in
+        if usernames == []
+        then "Home Manager is not configured for this system"
+        else
+          (${sanitizeExpr})
+            ((builtins.getAttr (builtins.head usernames) users).{{ .Option }})'
+    '';
+  };
+
+  nixosConfigurations = inputs.self.nixosConfigurations or {};
+  darwinConfigurations = inputs.self.darwinConfigurations or {};
+  standaloneConfigurations = inputs.self.homeConfigurations or {};
+
+  nixosNames = builtins.attrNames nixosConfigurations;
+  darwinNames = builtins.attrNames darwinConfigurations;
+  standaloneNames = builtins.attrNames standaloneConfigurations;
+
+  mkDirectScopes = {
+    configurations,
+    configType,
+    describe,
+  }:
+    lib.mapAttrs (
+      configName: _:
+        mkDirectScope {
+          inherit configName configType;
+          description = describe configName;
+        }
+    )
+    configurations;
+
+  mkNestedHMScopes = configType: configurations:
+    lib.mapAttrs' (
+      configName: _:
+        lib.nameValuePair "hm-${configName}" (mkNestedHMScope {
+          inherit configName configType;
+          description = "Home Manager module for ${configName}";
+        })
+    )
+    configurations;
+
+  directScopes =
+    mkDirectScopes {
+      configurations = nixosConfigurations;
+      configType = "nixosConfigurations";
+      describe = configName: "NixOS configuration for ${configName}";
+    }
+    // mkDirectScopes {
+      configurations = darwinConfigurations;
+      configType = "darwinConfigurations";
+      describe = configName: "nix-darwin configuration for ${configName}";
+    }
+    // mkDirectScopes {
+      configurations = standaloneConfigurations;
+      configType = "homeConfigurations";
+      describe = configName: "Standalone Home Manager configuration for ${configName}";
+    };
+
+  nestedHMScopes =
+    mkNestedHMScopes "nixosConfigurations" nixosConfigurations
+    // mkNestedHMScopes "darwinConfigurations" darwinConfigurations;
+
+  scopes = directScopes // nestedHMScopes;
+  expectedScopeNames =
+    nixosNames
+    ++ darwinNames
+    ++ standaloneNames
+    ++ map (name: "hm-${name}") (nixosNames ++ darwinNames);
+  scopesAreUnique =
+    builtins.length expectedScopeNames
+    == builtins.length (lib.unique expectedScopeNames);
+
+  defaultScope =
+    if pkgs.stdenv.hostPlatform.isDarwin && darwinNames != []
+    then builtins.head darwinNames
+    else if nixosNames != []
+    then builtins.head nixosNames
+    else if standaloneNames != []
+    then builtins.head standaloneNames
+    else null;
+
+  settings =
+    {
+      min_score = 1;
+      debounce_time = 25;
+      formatter_cmd = formatter;
+      inherit scopes;
+    }
+    // lib.optionalAttrs (defaultScope != null) {
+      default_scope = defaultScope;
+    };
+
+  configFile = tomlFormat.generate "optnix-config.toml" settings;
+  scopeList = pkgs.writeText "optnix-scopes.tsv" ''
+    ${lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        name: scope: "${name}\t${scope.description}"
+      )
+      scopes
+    )}
+  '';
+in
+  assert lib.assertMsg scopesAreUnique
+  "optnix scope names must be unique across NixOS, nix-darwin, Home Manager, and nested Home Manager scopes";
+    pkgs.symlinkJoin {
+      name = "optnix";
+      paths = [pkgs.optnix];
+      nativeBuildInputs = [pkgs.makeWrapper];
+      passthru = {inherit configFile scopeList;};
+      postBuild = ''
+        wrapProgram $out/bin/optnix \
+          --add-flags '--config "${configFile}"'
+      '';
+    }

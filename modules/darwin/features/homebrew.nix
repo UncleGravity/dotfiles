@@ -64,7 +64,6 @@ in {
         [
           "anki"
           "google-chrome"
-          "digikam"
 
           # Protect  battery
           "aldente"
@@ -78,7 +77,7 @@ in {
           "kitty"
 
           # VM
-          "utm"
+          # "utm"
 
           # Note
           "obsidian"
@@ -90,7 +89,7 @@ in {
 
           # Chat
           "discord"
-          "microsoft-teams"
+          # "microsoft-teams"
           # "slack"
 
           # EE

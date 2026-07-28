@@ -1,25 +1,10 @@
-{
-  config,
-  ...
-}: {
+{...}: {
   imports = [
-    ./hardware/disko.nix # Disko auto-generates fileSystems entries (originally managed in hardware.nix)
-    ./hardware/hardware.nix
-    ./hardware/mounts.nix
-    ./hardware/zfs.nix
-    ./services/backup
-    ./services/samba.nix
-    ./services/grafana/grafana.nix
-    ./services/guacamole
-    # ./services/wifi.nix
+    ./hardware
+    ./networking
+    ./services
+    ./users.nix
   ];
-
-  # ---------------------------------------------------------------------------
-  # Secrets
-  sops.secrets."tailscale/authkey" = {
-    mode = "0600";
-    owner = "root";
-  };
 
   # ---------------------------------------------------------------------------
   # Custom modules
@@ -27,7 +12,6 @@
     profile = "server";
     audio.enable = true;
 
-    # ---------------------------------------------------------------------------
     # Enable server-specific modules
     desktop = {
       enable = true;
@@ -36,23 +20,7 @@
     };
 
     docker.enable = true;
-    tailscale.enable = true;
-    tailscale.authKeyFile = config.sops.secrets."tailscale/authkey".path;
   };
-
-  services.iperf3 = {
-    enable = true;
-    openFirewall = true; # tcp/udp = [ 5201 ]
-  };
-
-  # kiwi is a server profile but uses WiFi, so enable NM explicitly here.
-  # (workstation profile enables NM by default.)
-  networking.networkmanager.enable = true;
-  networking.networkmanager.settings = {
-    "connection"."wifi.powersave" = 2; # 2 = disabled
-  };
-
-  networking.firewall.allowedTCPPorts = [19999]; # netdata #TODO: Remove this
 
   # services.udisks2.enable = true; # Auto-mount external drives
   # services.udiskie.enable = true;

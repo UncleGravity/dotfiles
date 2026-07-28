@@ -25,7 +25,6 @@ ignore/
 
 # AI
 .claude/
-.aider*
 
 # Nix
 .direnv/
@@ -33,3 +32,7 @@ result/
 result
 *.qcow2
 *.raw
+
+# OpenTofu (state itself IS committed - encrypted via the encryption block)
+infra/.terraform/
+*.tfstate.backup

@@ -4,6 +4,7 @@
     settings = {
       PermitRootLogin = "no"; # No root login
       PasswordAuthentication = false; # No password login
+      KbdInteractiveAuthentication = false; # No PAM challenge-response either
     };
   };
 }

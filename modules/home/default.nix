@@ -9,7 +9,8 @@
     ./dotfiles
     ./git
     ./lazygit
-    ./nushell.nix
+    ./nushell
+    ./opencode.nix
     ./pkgs.nix
     ./ssh.nix
     ./tmux

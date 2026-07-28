@@ -5,15 +5,20 @@
 - `nix flake check` - Validate flake configuration
 - `statix check .` - Lint Nix files for best practices
 
-## Configuration Discovery Tools
-When exploring or modifying configurations, use these tools to understand available options:
+## Tools
 
 **optnix** - Search and explore this repository's configuration options
-- `optnix -l` - List all evaluated configurations for the local flake (banana, nixos, kiwi, pi, BASURA and their Home Manager modules)
+- Always run `optnix` with escalated permissions; it requires Nix daemon access.
+- `optnix -l` - List all evaluated configurations for the local flake (banana, kiwi, etc, and their Home Manager modules)
 - `optnix -n -s <config-name> <option>` - Search for specific options (e.g., `optnix -n -s banana programs.zsh.enable`)
 
 **nh search** / **gh search** - Search nixpkgs and nixos options
 - `nh search <package> --limit <number>` - Search nixpkgs for packages (e.g., `nh search cargo --limit 5`)
+
+**searching**
+- Use `fd` isntead of `find` when possible.
+- Use `rg` and `ast-grep` instead of `grep` when possible.
+- Use `nu` for handling complex structured data instead of sed/awk/jq/etc
 
 ## Code Style Guidelines
 - **Formatting**: Use `alejandra` formatter via `nix fmt .` (configured in flake.nix)

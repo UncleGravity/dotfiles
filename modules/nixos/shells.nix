@@ -5,7 +5,7 @@
   # ---------------------------------------------------------------------------
   # SHELLS
   environment = {
-    shells = with pkgs; [bash zsh];
+    shells = with pkgs; [bash nushell zsh];
     pathsToLink = ["/share/zsh"]; # (apparently) get zsh completions for system packages (eg. systemd)
   };
 

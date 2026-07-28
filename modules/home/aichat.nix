@@ -7,7 +7,7 @@
         {type = "claude";}
         {type = "gemini";}
       ];
-      model = "openai";
+      model = "openai:gpt-5.6-sol";
       editor = null;
       keybindings = "emacs";
       save = true;

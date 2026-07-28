@@ -22,17 +22,14 @@
     "..4" = "cd ../../../..";
     "..5" = "cd ../../../../..";
 
-    # git
-    lg = "lazygit";
-
     ff = "fastfetch";
 
     du = "dua";
-    df = "duf --hide-mp '/dev, *ystem*, /private*, /nix*'";
+    df = "duf";
+    # df = "duf --hide-mp '/dev, *ystem*, /private*, /nix*'";
 
     ts = "tailscale";
     j = "just";
-    oc = "bunx opencode-ai@latest";
 
     no = "optnix-fzf";
     ns = "nix-search-fzf";

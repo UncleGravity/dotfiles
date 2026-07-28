@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
@@ -16,9 +12,16 @@
           else "~/.1password/agent.sock";
       };
 
+      # Local
       "kiwi" = {
         ForwardAgent = true;
         HostName = "kiwi";
+        User = "angel";
+      };
+
+      # Cloud
+      "portal" = {
+        HostName = "angel.pizza";
         User = "angel";
       };
     };

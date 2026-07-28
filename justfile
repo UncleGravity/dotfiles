@@ -51,13 +51,13 @@ sync: nixpkgs-status
     esac
     echo "System configuration rebuilt successfully!"
 
-# Update flake inputs
+# Update all flake inputs
 update:
     @echo "Updating flake inputs..."
     nix flake update
     @echo "Flake inputs updated successfully!"
 
-# Update flake inputs and rebuild system configuration
+# Update all flake inputs and rebuild system configuration
 update-sync: update sync
     @echo "System upgrade completed!"
 
@@ -145,8 +145,36 @@ deploy host:
     set -euo pipefail
 
     echo "Deploying NixOS configuration to {{ host }}..."
-    nh os switch . -H "{{ host }}" --build-host "{{ host }}" --target-host "{{ host }}" --ask
+    nh os switch . -H "{{ host }}" --build-host "{{ host }}" --target-host "{{ host }}" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
+
+# Manage cloud resources (infra/) with OpenTofu.
+# Usage: just infra init | plan | apply | output
+infra *args="plan":
+    sops exec-env infra/secrets.env "nix develop -c tofu -chdir=infra {{ args }}"
+
+# Synchronize every tracked SOPS file with the recipient policy in .sops.yaml.
+sops-update-keys:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    git ls-files -z -- '*.yaml' '*.yml' '*.json' '*.env' '*.ini' '*.sops' |
+        while IFS= read -r -d '' file; do
+            [[ -f "$file" ]] || continue
+            if [[ "$(sops filestatus "$file")" == '{"encrypted":true}' ]]; then
+                sops --config .sops.yaml updatekeys --yes "$file"
+            fi
+        done
+
+# Generate a host's SSH host key pair once and sops-encrypt it into the repo
+# (secrets/host-keys/). This is the host's permanent identity across respins.
+host-key host:
+    ./scripts/host-key.sh "{{ host }}"
+
+# Wipe a machine and install NixOS on it, injecting its stored host key.
+# Usage: just provision portal root@<ip>   (IP: just infra "output portal_ipv4")
+provision host target:
+    ./scripts/provision.sh "{{ host }}" "{{ target }}"
 
 # Partition the NVMe, install NixOS, preserve host keys, and reboot.
 # The node must be booted into the NixOS USB installer first (see spark README).

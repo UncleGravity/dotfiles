@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -9,7 +10,7 @@
   ###########################################################################
   # GUI applications stay out of Home Manager:
   # nix-darwin uses Homebrew. NixOS installs them from its workstation role.
-  common = with pkgs; [
+  development = with pkgs; [
     # --- Language servers ----------------------------------------------------------------
     tree-sitter
     nixd
@@ -28,7 +29,7 @@
     zls
     rust-analyzer
     markdown-oxide
-    ghc
+    # ghc
     # haskell-language-server
 
     # --- Formatters / Linters ------------------------------------------------------------
@@ -58,15 +59,17 @@
     gnumake
     gh
     just
-    android-tools
+    # android-tools
+  ];
 
+  common = with pkgs; [
     # --- USB / hardware ------------------------------------------------------------------
     usbutils
     cyme
 
     # --- Cloud / networking CLI ----------------------------------------------------------
     dig
-    ngrok
+    # ngrok
     hcloud
     # flyctl
     # doctl
@@ -77,16 +80,14 @@
 
     # --- Nix helpers -----------------------------------------------------------
     cachix
-    omnix
-    statix
-    nh
-    nix-output-monitor
+    # omnix
+    # statix
+    # nix-output-monitor
     devenv
-    nix-tree
+    # nix-tree
 
     # --- TUIs / monitoring ---------------------------------------------------------------
     lazydocker
-    ctop
     zellij
 
     # --- Security & crypto ---------------------------------------------------------------
@@ -98,15 +99,14 @@
     binwalk
 
     # --- AI / chat -----------------------------------------------------------------------
+    codex
     claude-code
-    gemini-cli
-    opencode
 
     # --- Backup / sync -------------------------------------------------------------------
-    restic
-    rustic
+    # restic
+    # rustic
     # icloudpd
-    immich-go
+    # immich-go
 
     # --- Modern CLI replacements ---------------------------------------------------------
     coreutils
@@ -116,22 +116,16 @@
     ripgrep
     ripgrep-all
     ast-grep
-    bat
-    zoxide
-    delta
     fd
-    gping
     duf
     dua
     tlrc
 
     # --- JSON / data helpers -------------------------------------------------------------
     jq
-    fq
     fx
 
     # --- Misc ---------------------------------------------------------------------------
-    gum
     clipboard-jh
 
     # --- Fonts ---------------------------------------------------------------------------
@@ -170,6 +164,7 @@
   ###########################################################################
   fullList =
     common
+    ++ lib.optionals config.my.home.development.enable development
     ++ (
       if pkgs.stdenv.isDarwin
       then darwinOnly
@@ -177,17 +172,23 @@
     )
     ++ custom;
 in {
-  options.my.home.packages = lib.mkOption {
-    type = with lib.types; listOf package;
-    default = fullList;
-    description = ''
-      Packages installed in the user profile by Home Manager.
+  options.my.home = {
+    development.enable =
+      lib.mkEnableOption "language servers, toolchains, and development utilities";
 
-      • `common`      – available on all platforms
-      • `darwinOnly`  – added only when `pkgs.stdenv.isDarwin` is true
-      • `linuxOnly`   – added only on Linux
+    packages = lib.mkOption {
+      type = with lib.types; listOf package;
+      default = fullList;
+      description = ''
+        Packages installed in the user profile by Home Manager.
 
-      Host or user modules may extend or override this option.
-    '';
+        • `development` – added when `my.home.development.enable` is true
+        • `common`      – available on all platforms
+        • `darwinOnly`  – added only when `pkgs.stdenv.isDarwin` is true
+        • `linuxOnly`   – added only on Linux
+
+        Host or user modules may extend or override this option.
+      '';
+    };
   };
 }

@@ -29,5 +29,20 @@ in {
         RestartSec = 5;
       };
     };
+
+    services.newt.blueprint.proxy-resources.ai = {
+      name = "ai";
+      protocol = "http";
+      full-domain = "ai.angel.pizza";
+      targets = [
+        {
+          hostname = "localhost";
+          method = "http";
+          port = 8080;
+        }
+      ];
+      # We can handle auth imperatively per resource
+      # auth.sso-enabled = false;
+    };
   };
 }

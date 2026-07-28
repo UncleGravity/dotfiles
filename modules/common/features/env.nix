@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  options,
   username,
   ...
 }: let
@@ -14,7 +15,7 @@
   };
 in {
   # ---------------------------------------------------------------------------
-  # Shell env secrets (sourced from modules/home/zsh).
+  # Shell env secrets (explicitly sourced in zshrc).
   #
   # Each shell file is opt-in per machine so policy is explicit. `home` is on
   # by default (every machine wants personal env); `work` is off by default
@@ -27,8 +28,21 @@ in {
     work.enable = lib.mkEnableOption "work shell env secrets (~/.config/zsh/secrets/work.sh)";
   };
 
-  config.sops.secrets = lib.mkMerge [
-    (lib.mkIf cfg.home.enable {"home.sh" = mkShellSecret "home";})
-    (lib.mkIf cfg.work.enable {"work.sh" = mkShellSecret "work";})
+  config = lib.mkMerge [
+    {
+      sops.secrets = lib.mkMerge [
+        (lib.mkIf cfg.home.enable {"home.sh" = mkShellSecret "home";})
+        (lib.mkIf cfg.work.enable {"work.sh" = mkShellSecret "work";})
+      ];
+    }
+
+    (lib.optionalAttrs (options ? systemd.tmpfiles.rules) {
+      # sops-nix creates the missing parent directories as root (bad).
+      systemd.tmpfiles.rules = lib.mkIf (cfg.home.enable || cfg.work.enable) [
+        "d ${home}/.config 0700 ${username} users -"
+        "d ${home}/.config/zsh 0700 ${username} users -"
+        "d ${home}/.config/zsh/secrets 0700 ${username} users -"
+      ];
+    })
   ];
 }

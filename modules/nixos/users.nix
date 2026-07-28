@@ -1,16 +1,17 @@
 {
   config,
+  lib,
   username,
   hostname,
   pkgs,
   ...
-}: let
-  home = config.users.users.${username}.home;
-in {
+}: {
   # ---------------------------------------------------------------------------
-  # Define a user account. Don't forget to set a password with 'passwd'.
+  # Define a user account. Don't forget to set a password.
   # TTY autologin is configured explicitly by hosts that need it.
   users = {
+    mutableUsers = lib.mkDefault false;
+
     users.${username} = {
       isNormalUser = true;
       description = "me";
@@ -19,14 +20,24 @@ in {
         "wheel" # sudo
       ];
     };
-    defaultUserShell = pkgs.zsh;
+    # defaultUserShell = pkgs.zsh;
+    defaultUserShell = pkgs.nushell;
   };
 
-  # sops-nix creates parents for home-directory secret paths as root.
-  systemd.tmpfiles.rules = [
-    "d ${home}/.config 0700 ${username} users -"
-    "d ${home}/.config/zsh 0700 ${username} users -"
-    "d ${home}/.config/zsh/secrets 0700 ${username} users -"
+  # SSH is key-only. No password.
+  security.sudo.wheelNeedsPassword = lib.mkDefault false;
+
+  # Complain if I forgor to set a password.
+  assertions = [
+    {
+      assertion =
+        config.users.mutableUsers
+        || config.users.users.${username}.hashedPasswordFile != null;
+      message = ''
+        users.mutableUsers is false, but users.users.${username}.hashedPasswordFile is not set.
+        Declare a password hash file for ${username}, or set users.mutableUsers = true.
+      '';
+    }
   ];
 
   # Networking

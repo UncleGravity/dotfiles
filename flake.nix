@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # nix-darwin
     darwin = {
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -335,13 +334,13 @@
           homeStateVersion = "25.05";
         };
 
-        # Development VM
-        nixos = mkNixos {
-          system = systems.aarch64-linux;
+        # portal (hcloud VPS: Pangolin tunnel server, see infra/)
+        portal = mkNixos {
+          system = systems.x86_64-linux;
           username = "angel";
-          hostname = "nixos";
-          systemStateVersion = "24.05";
-          homeStateVersion = "24.05";
+          hostname = "portal";
+          systemStateVersion = "26.05";
+          homeStateVersion = "26.05";
         };
 
         # MicroVMs
@@ -397,23 +396,21 @@
         ...
       }: {
         default = pkgs.mkShell {
+          name = "dotfiles";
+
           packages = with pkgs; [
             nh
             nix-output-monitor
             nixos-anywhere
+            opentofu
             just
             nix-tree
             statix
             # vulnix
             omnix
             cachix
-            # inputs.self.nixosConfigurations.nixos.config.system.build.vm
             # inputs.self.packages.${system}.scripts  # Your scripts available in dev shell
           ];
-
-          # shellHook = ''
-          #   exec zsh
-          # '';
         };
       }
     );
