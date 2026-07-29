@@ -10,7 +10,7 @@
     ./huggingface.nix
     ./kernel.nix
     ./networking.nix
-    ./open-webui.nix
+    # ./open-webui.nix
     ./users.nix
     ./vllm-laguna.nix
   ];
@@ -27,6 +27,7 @@
     dgx-dashboard.enable = lib.mkForce node.controller;
 
     vllm-laguna = {
+      # enable = node.controller;
       enable = node.controller;
       autoStart = false;
       listenAddress = node.managementAddress;

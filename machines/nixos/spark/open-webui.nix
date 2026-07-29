@@ -5,11 +5,16 @@
 }: let
   openWebuiPython = pkgs.python3Packages.overrideScope (
     _final: prev: {
+      onnxruntime = prev.onnxruntime.override {
+        onnxruntime = pkgs.onnxruntime.override {
+          cudaSupport = false;
+        };
+      };
+
       torchaudio = prev.torchaudio.overridePythonAttrs (old: {
         disabledTests =
           (old.disabledTests or [])
           ++ [
-            # AArch64 FFT batching can exceed the upstream float tolerance.
             "test_batch_melspectrogram"
           ];
       });

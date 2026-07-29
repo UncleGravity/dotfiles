@@ -177,7 +177,7 @@ host-key *args:
 provision host target:
     ./scripts/provision.sh "{{ host }}" "{{ target }}"
 
-# Partition the NVMe, install NixOS, preserve host keys, and reboot.
+# Partition the NVMe, install NixOS with its escrowed identity, and reboot.
 # The node must be booted into the NixOS USB installer first (see spark README).
 spark-install node:
     nix develop -c ./machines/nixos/spark/install.sh "{{ node }}"
