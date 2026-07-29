@@ -14,7 +14,7 @@
       experimental-features = "nix-command flakes";
 
       # -------------------------------
-      trusted-users = [username];
+      trusted-users = ["@admin" username];
 
       # -------------------------------
       # Bug

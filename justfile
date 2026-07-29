@@ -137,7 +137,7 @@ disko hostname:
     sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
     echo "Disko command completed successfully!"
 
-# Deploy a NixOS host over SSH using nh remote build/deploy.
+# Build a NixOS host through the configured builders and deploy over SSH.
 # Usage: just deploy <hostname>
 # Example: just deploy kiwi
 deploy host:
@@ -145,7 +145,7 @@ deploy host:
     set -euo pipefail
 
     echo "Deploying NixOS configuration to {{ host }}..."
-    nh os switch . -H "{{ host }}" --build-host "{{ host }}" --target-host "{{ host }}" --elevation-strategy passwordless --ask
+    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
 # Manage cloud resources (infra/) with OpenTofu.
@@ -182,39 +182,13 @@ provision host target:
 spark-install node:
     nix develop -c ./machines/nixos/spark/install.sh "{{ node }}"
 
-# Deploy one Spark (builds on the node itself).
-spark-deploy node:
-    nh os switch . -H "{{ node }}" --build-host "{{ node }}.local" --target-host "{{ node }}.local"
-
 # Deploy all four Sparks in canary order (stops on first failure).
 spark-deploy-all:
     #!/usr/bin/env bash
     set -euo pipefail
     for node in spark-01 spark-02 spark-03 spark-04; do
-        just spark-deploy "$node"
+        just deploy "$node"
     done
-
-# Push the expensive Spark build outputs (NVIDIA kernel + drivers, open-webui
-# with its overridden torch stack) from a built node to cachix so installs and
-# deploys elsewhere just download them. Extend the attr list as new
-# built-from-source packages appear.
-spark-cache node="spark-01":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    attrs=(
-        boot.kernelPackages.kernel
-        boot.kernelPackages.kernel.dev
-        hardware.nvidia.package.open
-        hardware.nvidia.package.firmware
-        services.open-webui.package
-    )
-    paths=()
-    for attr in "${attrs[@]}"; do
-        paths+=("$(nix eval --raw ".#nixosConfigurations.{{ node }}.config.$attr.outPath")")
-    done
-    echo "Pushing: ${paths[*]}"
-    nix copy --from "ssh://angel@{{ node }}.local" --no-check-sigs "${paths[@]}"
-    nix develop -c cachix push unclegravity-nix "${paths[@]}"
 
 # Check nixpkgs version status
 nixpkgs-status:

@@ -1,8 +1,7 @@
 # Configuration for the 'my-macbook' machine
-{ ... }:
-{
+{...}: {
   imports = [
-    ./linux-builder.nix
+    ./builders
   ];
 
   # SECRETS
@@ -23,9 +22,6 @@
   # Homebrew
   my.homebrew.enable = true;
   my.homebrew.cleanup = "zap"; # Only keep brews and casks managed by nix
-
-  # Enable nix-linux-builder for building Linux packages on Darwin
-  # nix.linux-builder.enable = true;
 
   # Example: Override system packages for this specific machine
   # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base

@@ -209,7 +209,6 @@
           inputs.sops-nix.darwinModules.sops
           inputs.home-manager.darwinModules.home-manager
           inputs.nix-homebrew.darwinModules.nix-homebrew
-          inputs.virby.darwinModules.default
 
           ./modules/darwin # My modules
           ./machines/darwin/${hostname}/configuration.nix # System Config
