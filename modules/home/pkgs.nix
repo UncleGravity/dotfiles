@@ -38,6 +38,7 @@
     ruff
     alejandra
     shfmt
+    shellcheck
 
     # --- Debuggers -----------------------------------------------------------------------
     lldb

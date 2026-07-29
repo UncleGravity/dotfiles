@@ -408,6 +408,7 @@
             # vulnix
             omnix
             cachix
+            shellcheck
             # inputs.self.packages.${system}.scripts  # Your scripts available in dev shell
           ];
         };
