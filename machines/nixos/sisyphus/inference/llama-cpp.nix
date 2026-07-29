@@ -34,15 +34,23 @@ in {
       name = "ai";
       protocol = "http";
       full-domain = "ai.angel.pizza";
+      auth.password = "{{env.AI_PASSWORD}}";
       targets = [
         {
           hostname = "localhost";
           method = "http";
           port = 8080;
+          healthcheck = {
+            enabled = true;
+            hostname = "localhost";
+            method = "GET";
+            port = 8080;
+            path = "/health";
+            scheme = "http";
+            status = 200;
+          };
         }
       ];
-      # We can handle auth imperatively per resource
-      # auth.sso-enabled = false;
     };
   };
 }

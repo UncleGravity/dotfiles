@@ -10,6 +10,7 @@ in {
     name = "Uptime Kuma";
     protocol = "http";
     full-domain = "kuma.angel.pizza";
+    auth.sso-enabled = true;
     targets = [
       {
         hostname = "localhost";
