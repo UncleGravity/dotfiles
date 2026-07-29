@@ -178,9 +178,9 @@ provision host target:
     ./scripts/provision.sh "{{ host }}" "{{ target }}"
 
 # Partition the NVMe, install NixOS with its escrowed identity, and reboot.
-# The node must be booted into the NixOS USB installer first (see spark README).
+# The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
-    nix develop -c ./machines/nixos/spark/install.sh "{{ node }}"
+    nix develop -c ./machines/nixos/spark/scripts/install-node.sh "{{ node }}"
 
 # Deploy all four Sparks in canary order (stops on first failure).
 spark-deploy-all:

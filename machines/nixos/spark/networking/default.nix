@@ -88,4 +88,11 @@ in {
       workstation = true;
     };
   };
+
+  assertions = [
+    {
+      assertion = node.id >= 1 && node.id <= 254;
+      message = "Spark node IDs must fit in the two /24 fabric networks";
+    }
+  ];
 }

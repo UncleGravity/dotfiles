@@ -8,8 +8,8 @@
 }: let
   home = config.users.users.${username}.home;
 in {
-  # Hugging Face tooling for model staging (see staging.md): downloads happen
-  # on the controller, workers receive replicas over the fabric.
+  # Downloads happen on the controller; workers receive replicas over the
+  # fabric as described in ../docs/stage-models.md.
 
   environment.systemPackages = [
     # `hf` CLI plus python3 with huggingface_hub for scripting.
@@ -31,7 +31,7 @@ in {
   # Workers are not recipients of controller.yaml.
   sops.secrets = lib.mkIf node.controller {
     "hf/token" = {
-      sopsFile = ./secrets/controller.yaml;
+      sopsFile = ../secrets/controller.yaml;
       owner = username;
       mode = "0400";
       path = "${home}/.cache/huggingface/token";

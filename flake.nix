@@ -129,8 +129,9 @@
       hostname,
       systemStateVersion,
       homeStateVersion,
-      machineModule ? ./machines/nixos/${hostname}/configuration.nix,
-      homeModule ? ./machines/nixos/${hostname}/home.nix,
+      configDir ? ./machines/nixos/${hostname},
+      machineModule ? configDir + "/configuration.nix",
+      homeModule ? configDir + "/home.nix",
       extraModules ? [],
       extraSpecialArgs ? {},
       withHomeManager ? true,
@@ -174,23 +175,6 @@
             # -----------------------------------------------------------------
           ];
       };
-
-    sparkConfigurations =
-      nixpkgs.lib.mapAttrs (
-        hostname: node:
-          mkNixos {
-            system = systems.aarch64-linux;
-            username = "angel";
-            inherit hostname;
-            systemStateVersion = "26.05";
-            homeStateVersion = "26.05";
-            machineModule = ./machines/nixos/spark/configuration.nix;
-            homeModule = ./machines/nixos/spark/home.nix;
-            extraModules = [inputs.dgx-spark.nixosModules.dgx-spark];
-            extraSpecialArgs = {inherit node sparkNodes;};
-          }
-      )
-      sparkNodes;
 
     mkDarwin = {
       system,
@@ -314,6 +298,23 @@
     # NixOS Configurations
     # --------------------------------------------------------------------------
     nixosConfigurations =
+      let
+        sparkConfigurations =
+          nixpkgs.lib.mapAttrs (
+            hostname: node:
+              mkNixos {
+                system = systems.aarch64-linux;
+                username = "angel";
+                inherit hostname;
+                systemStateVersion = "26.05";
+                homeStateVersion = "26.05";
+                configDir = ./machines/nixos/spark;
+                extraModules = [inputs.dgx-spark.nixosModules.dgx-spark];
+                extraSpecialArgs = {inherit node sparkNodes;};
+              }
+          )
+          sparkNodes;
+      in
       {
         # AI workstation
         sisyphus = mkNixos {
