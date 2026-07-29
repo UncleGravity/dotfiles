@@ -166,10 +166,11 @@ sops-update-keys:
             fi
         done
 
-# Generate a host's SSH host key pair once and sops-encrypt it into the repo
-# (secrets/host-keys/). This is the host's permanent identity across respins.
-host-key host:
-    ./scripts/host-key.sh "{{ host }}"
+# Create, import, verify, or stage escrowed SSH host identities.
+# Usage: just host-key create <host> | import <host> <key|-> | check [host]
+[positional-arguments]
+host-key *args:
+    ./scripts/host-key.sh "$@"
 
 # Wipe a machine and install NixOS on it, injecting its stored host key.
 # Usage: just provision portal root@<ip>   (IP: just infra "output portal_ipv4")
