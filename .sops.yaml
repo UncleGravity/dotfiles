@@ -35,6 +35,10 @@ creation_rules:
   - path_regex: ^secrets/ntfy\.yaml$
     age: *all-recipients
 
+  # Cachix write access is shared by the entire fleet.
+  - path_regex: ^secrets/cachix\.yaml$
+    age: *all-recipients
+
   # Host-local secrets.
   - path_regex: ^machines/darwin/banana/.*\.(yaml|json|env|ini|sops)$
     age: [*angel, *banana]

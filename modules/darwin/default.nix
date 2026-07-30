@@ -3,6 +3,7 @@
     ../common
 
     # ── Baseline (always applied) ─────────────────────────────
+    ./cachix.nix
     ./networking.nix
     ./nh.nix
     ./nix.nix

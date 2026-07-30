@@ -20,11 +20,6 @@ in {
         sopsFile = ../secrets.yaml;
         mode = "0400";
       };
-
-      "cachix/auth-token" = {
-        sopsFile = ../secrets.yaml;
-        mode = "0400";
-      };
     };
 
     templates."nixbuild-ssh.conf" = {
