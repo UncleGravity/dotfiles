@@ -19,6 +19,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    copyparty = {
+      url = "github:9001/copyparty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     dgx-spark = {
       url = "github:ktrinh-anduril/nixos-dgx-spark/553ae12a9c162e9c6bff1b2172335fe35b3b2765";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -332,6 +337,7 @@
           hostname = "kiwi";
           systemStateVersion = "24.11";
           homeStateVersion = "25.05";
+          extraModules = [inputs.copyparty.nixosModules.default];
         };
 
         # portal (hcloud VPS: Pangolin tunnel server, see infra/)

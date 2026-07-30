@@ -1,6 +1,7 @@
 {...}: {
   imports = [
     ./backup
+    ./copyparty.nix
     ./grafana
     # ./guacamole
     ./iperf3.nix
