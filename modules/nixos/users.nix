@@ -13,6 +13,8 @@
     mutableUsers = lib.mkDefault false;
 
     users.${username} = {
+      uid = lib.mkDefault 1000;
+      group = lib.mkDefault "users";
       isNormalUser = true;
       description = "me";
       extraGroups = [

@@ -11,6 +11,10 @@
   my = {
     profile = "server";
     audio.enable = true;
+    nas.unas = {
+      ai.enable = true;
+      personal.enable = true;
+    };
 
     # Enable server-specific modules
     desktop = {

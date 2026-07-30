@@ -9,6 +9,13 @@
 
   my = {
     profile = "workstation";
+    nas = {
+      kiwi.enable = true;
+      unas = {
+        ai.enable = true;
+        personal.enable = true;
+      };
+    };
     power.alwaysOn = true;
 
     desktop = {
