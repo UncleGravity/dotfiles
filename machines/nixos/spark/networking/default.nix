@@ -4,8 +4,9 @@
   sparkNodes,
   ...
 }: let
-  rail0 = "enp1s0f0np0";
-  rail1 = "enP2p1s0f0np0";
+  managementInterface = "mgmt0";
+  fabric0Interface = "fabric0";
+  fabric1Interface = "fabric1";
   nodeId = toString node.id;
 
   fabricHosts =
@@ -27,7 +28,7 @@ in {
     firewall = {
       enable = true;
       allowedTCPPorts = [22];
-      trustedInterfaces = [rail0 rail1];
+      trustedInterfaces = [fabric0Interface fabric1Interface];
     };
   };
 
@@ -35,19 +36,29 @@ in {
     enable = true;
 
     links = {
+      "10-management" = {
+        matchConfig.PermanentMACAddress = node.managementMac;
+        linkConfig.Name = managementInterface;
+      };
       "10-fabric-0" = {
-        matchConfig.OriginalName = rail0;
-        linkConfig.MTUBytes = 9000;
+        matchConfig.Path = "pci-0000:01:00.0";
+        linkConfig = {
+          Name = fabric0Interface;
+          MTUBytes = 9000;
+        };
       };
       "10-fabric-1" = {
-        matchConfig.OriginalName = rail1;
-        linkConfig.MTUBytes = 9000;
+        matchConfig.Path = "pci-0002:01:00.0";
+        linkConfig = {
+          Name = fabric1Interface;
+          MTUBytes = 9000;
+        };
       };
     };
 
     networks = {
       "10-management" = {
-        matchConfig.Name = "enP7s7";
+        matchConfig.Name = managementInterface;
         networkConfig = {
           DHCP = "ipv4";
           IPv6AcceptRA = false;
@@ -59,7 +70,7 @@ in {
       };
 
       "20-fabric-0" = {
-        matchConfig.Name = rail0;
+        matchConfig.Name = fabric0Interface;
         address = ["10.100.0.${nodeId}/24"];
         networkConfig = {
           DHCP = "no";
@@ -69,7 +80,7 @@ in {
       };
 
       "20-fabric-1" = {
-        matchConfig.Name = rail1;
+        matchConfig.Name = fabric1Interface;
         address = ["10.100.1.${nodeId}/24"];
         networkConfig = {
           DHCP = "no";
@@ -80,14 +91,20 @@ in {
     };
   };
 
+  # mDNS
   services.avahi = {
     enable = true;
+    openFirewall = false;
+    allowInterfaces = [managementInterface];
+    nssmdns4 = true;
     publish = {
       enable = true;
       addresses = true;
       workstation = true;
     };
   };
+
+  networking.firewall.interfaces.${managementInterface}.allowedUDPPorts = [5353]; # mDNS
 
   assertions = [
     {
