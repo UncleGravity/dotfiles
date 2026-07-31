@@ -20,7 +20,7 @@
       config.sops.secrets."copyparty/password".path;
 
     settings = {
-      i = "0.0.0.0";
+      i = "0.0.0.0"; # careful!
       p = 3923;
       http-only = true;
       no-reload = true;

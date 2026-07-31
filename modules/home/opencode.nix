@@ -3,7 +3,7 @@
     enable = true;
 
     settings = {
-      model = lib.mkDefault "llamacpp/models/Bonsai-4B/Bonsai-4B-Q1_0.gguf";
+      # model = lib.mkDefault "llamacpp/qwen3.6-27b-heretic";
       # model = lib.mkDefault "opencode/glm-5.2";
 
       # -----------------------------------------------
@@ -34,9 +34,27 @@
           };
         };
 
+        sisyphus = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "llama.cpp (remote)";
+
+          options = {
+            baseURL = "https://ai.angel.pizza/v1";
+            apiKey = "{env:SISYPHUS_API_KEY}";
+          };
+
+          models."qwen3.6-27b-heretic" = {
+            name = "Qwen 3.6 27B Heretic";
+            # limit = {
+            #   context = 32768;
+            #   output = 8192;
+            # };
+          };
+        };
+
         penzai = {
           npm = "@ai-sdk/openai-compatible";
-          name = "llama.cpp (local)";
+          name = "penzai FPGA (local)";
 
           options = {
             baseURL = "http://127.0.0.1:8080/v1";
