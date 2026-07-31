@@ -3,16 +3,15 @@
     "brew-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784558651,
-        "narHash": "sha256-woXJ1ATKpSYRWCy46TQJjmm9XzAeZVEZw9xDfVG9NYI=",
-        "owner": "Homebrew",
+        "lastModified": 1785445275,
+        "narHash": "sha256-9eWHDcRTbMAhD47jmL9m+LB0zFFuGVsVRztyJoWw/AU=",
+        "owner": "homebrew",
         "repo": "brew",
-        "rev": "b48c7994b5f0eed7bef532efa63cb4e4f763887a",
+        "rev": "0bfbbb6c1a08254177d133f5c14a8f506ea7888e",
         "type": "github"
       },
       "original": {
-        "owner": "Homebrew",
-        "ref": "6.0.12",
+        "owner": "homebrew",
         "repo": "brew",
         "type": "github"
       }
@@ -300,6 +299,38 @@
         "type": "github"
       }
     },
+    "homebrew-cask": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785469440,
+        "narHash": "sha256-Xx8KAAH9tyHyHHBf6e6FanONfpAWifr958vL0AWAQNM=",
+        "owner": "homebrew",
+        "repo": "homebrew-cask",
+        "rev": "508f58b0d25f088879f0d6a621811a76654fb15a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "homebrew",
+        "repo": "homebrew-cask",
+        "type": "github"
+      }
+    },
+    "homebrew-core": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785457553,
+        "narHash": "sha256-yYDdi+/sudnXUScuellz3NZOixIqMAE6HMmgXPUJuXw=",
+        "owner": "homebrew",
+        "repo": "homebrew-core",
+        "rev": "491e598af03a5ec65bf8c2af34b4b875a8e49d20",
+        "type": "github"
+      },
+      "original": {
+        "owner": "homebrew",
+        "repo": "homebrew-core",
+        "type": "github"
+      }
+    },
     "microvm": {
       "inputs": {
         "nixpkgs": [
@@ -344,7 +375,9 @@
     },
     "nix-homebrew": {
       "inputs": {
-        "brew-src": "brew-src"
+        "brew-src": [
+          "brew-src"
+        ]
       },
       "locked": {
         "lastModified": 1784906761,
@@ -455,11 +488,14 @@
     },
     "root": {
       "inputs": {
+        "brew-src": "brew-src",
         "copyparty": "copyparty",
         "darwin": "darwin",
         "dgx-spark": "dgx-spark",
         "disko": "disko_2",
         "home-manager": "home-manager",
+        "homebrew-cask": "homebrew-cask",
+        "homebrew-core": "homebrew-core",
         "microvm": "microvm",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",

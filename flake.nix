@@ -34,9 +34,34 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # ----------------------------------------------------------------------------------------------
+    # BREW
+
     # Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+      inputs.brew-src.follows = "brew-src";
+    };
+
+    # ====================================================
+    # TEMPORARY. WAITING FOR https://github.com/zhaofengli/nix-homebrew/pull/164
+    brew-src = {
+      url = "github:homebrew/brew";
+      flake = false;
+    };
+    # ====================================================
+
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
+    # ----------------------------------------------------------------------------------------------
 
     # Secrets
     sops-nix = {
@@ -215,6 +240,11 @@
               enable = true;
               user = username; # Assuming username is the same as nix-homebrew user
               autoMigrate = true;
+              mutableTaps = false;
+              taps = {
+                "homebrew/homebrew-core" = inputs.homebrew-core;
+                "homebrew/homebrew-cask" = inputs.homebrew-cask;
+              };
             };
 
             # Nixpkgs Config

@@ -36,13 +36,14 @@ in {
     homebrew = {
       enable = true;
 
+      global.autoUpdate = false;
+
       onActivation = {
+        inherit (cfg) cleanup;
         autoUpdate = false;
-        cleanup = cfg.cleanup;
       };
 
-      taps = [
-      ];
+      taps = builtins.attrNames config.nix-homebrew.taps;
 
       # `brew install`
       brews = [
