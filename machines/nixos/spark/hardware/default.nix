@@ -1,7 +1,6 @@
 {pkgs, ...}: {
   imports = [
     ./disko.nix
-    ./kernel.nix
   ];
 
   hardware.dgx-spark.enable = true;

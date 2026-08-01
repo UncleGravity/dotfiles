@@ -70,17 +70,16 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1783842978,
-        "narHash": "sha256-RU9Axc4lmVWuyJI+0pB7TE2d9+j1O4PUSxyZw9beR3c=",
-        "owner": "ktrinh-anduril",
+        "lastModified": 1785495128,
+        "narHash": "sha256-m9gu9qF1tn+TW0W6GG3UzNpEzTDafyDj1EsY4KcyE/4=",
+        "owner": "graham33",
         "repo": "nixos-dgx-spark",
-        "rev": "553ae12a9c162e9c6bff1b2172335fe35b3b2765",
+        "rev": "338dc6d2a0acb0ae35379cd047a7bc07dca8f583",
         "type": "github"
       },
       "original": {
-        "owner": "ktrinh-anduril",
+        "owner": "graham33",
         "repo": "nixos-dgx-spark",
-        "rev": "553ae12a9c162e9c6bff1b2172335fe35b3b2765",
         "type": "github"
       }
     },

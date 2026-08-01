@@ -145,7 +145,7 @@ deploy host:
     set -euo pipefail
 
     echo "Deploying NixOS configuration to {{ host }}..."
-    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --elevation-strategy passwordless --ask
+    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
 # Manage cloud resources (infra/) with OpenTofu.
