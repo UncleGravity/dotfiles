@@ -362,14 +362,6 @@ in {
       slices.inference = lib.mkIf cfg.protectHostMemory {
         description = "Inference workloads";
       };
-
-      oomd.enable = lib.mkIf cfg.protectHostMemory false;
-    };
-
-    services.earlyoom = lib.mkIf cfg.protectHostMemory {
-      enable = true;
-      freeMemThreshold = 8;
-      freeMemKillThreshold = 4;
     };
 
     virtualisation = {
