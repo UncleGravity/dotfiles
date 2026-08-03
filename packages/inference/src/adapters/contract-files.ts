@@ -1,7 +1,8 @@
 import { FileSystem } from "@effect/platform"
-import { Effect, ParseResult, Schema } from "effect"
+import { Effect, Either } from "effect"
 import type { Schema as SchemaType } from "effect/Schema"
 import { CommandError } from "../domain/errors.js"
+import { decodeStrictJson, formatParseError } from "../domain/json-contract.js"
 
 export interface LoadedContract<A> {
   readonly value: A
@@ -25,11 +26,8 @@ export const loadContract = <A, I>(
           })
       )
     )
-    const value = yield* Schema.decodeUnknown(Schema.parseJson(schema), {
-      errors: "all",
-      onExcessProperty: "error"
-    })(raw).pipe(
-      Effect.mapError(
+    const value = yield* decodeStrictJson(schema, raw).pipe(
+      Either.mapLeft(
         (error) =>
           new CommandError({
             code: "invalid-contract",
@@ -37,7 +35,7 @@ export const loadContract = <A, I>(
             details: {
               name,
               path,
-              parseError: ParseResult.TreeFormatter.formatErrorSync(error)
+              parseError: formatParseError(error)
             }
           })
       )

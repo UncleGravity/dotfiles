@@ -33,6 +33,7 @@ import {
   ensureLocalModel,
   ensureModel,
   modelStatus,
+  validateHfDryRun,
   verifyModel
 } from "../src/workflows/model-store.js"
 
@@ -104,6 +105,152 @@ test("model selections normalize to one stable artifact identity", () => {
   )
 })
 
+test("Hugging Face dry-run output requires a non-empty safe file list", async () => {
+  await Effect.runPromise(
+    validateHfDryRun('[{"file":"config.json","size":"20.0"}]')
+  )
+
+  for (const raw of ["not-json", '[{"file":"../weights.bin"}]']) {
+    const invalid = await Effect.runPromise(
+      Effect.either(validateHfDryRun(raw))
+    )
+    assert.ok(Either.isLeft(invalid))
+    assert.equal(invalid.left.code, "hf-dry-run-invalid")
+  }
+
+  const empty = await Effect.runPromise(
+    Effect.either(validateHfDryRun("[]"))
+  )
+  assert.ok(Either.isLeft(empty))
+  assert.equal(empty.left.code, "empty-model-selection")
+})
+
+test("model status rejects malformed published artifact layouts", async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "inference-model-status-"))
+  const archiveRoot = path.join(temporary, "archive")
+  const localRoot = path.join(temporary, "local")
+  mkdirSync(archiveRoot)
+  mkdirSync(localRoot)
+
+  try {
+    const artifact = makeArtifact()
+    const artifactRoot = path.join(archiveRoot, artifact.relativePath)
+    const filesRoot = path.join(artifactRoot, "files")
+    const manifestPath = path.join(artifactRoot, "manifest.json")
+    const manifest = readFileSync(
+      "tests/fixtures/contracts/v1/model-manifest.json",
+      "utf8"
+    )
+    mkdirSync(filesRoot, { recursive: true })
+    writeFileSync(path.join(filesRoot, "config.json"), '{"model":"fixture"}\n')
+    writeFileSync(manifestPath, manifest)
+
+    const runner: ProcessRunnerService = {
+      foreground: () => Effect.die("unexpected foreground command"),
+      probe: () => Effect.die("unexpected probe command"),
+      run: () => Effect.die("metadata status must not hash files")
+    }
+    const runStatus = () =>
+      Effect.runPromise(
+        modelStatus(makeInventory(archiveRoot, localRoot), artifact).pipe(
+          Effect.provide(
+            Layer.mergeAll(
+              NodeContext.layer,
+              Layer.succeed(ProcessRunner, runner)
+            )
+          )
+        )
+      )
+
+    assert.equal((await runStatus()).archive.state, "ready")
+
+    const unexpected = path.join(artifactRoot, "unexpected")
+    writeFileSync(unexpected, "unexpected")
+    const unexpectedLayout = await runStatus()
+    assert.equal(unexpectedLayout.archive.state, "invalid")
+    assert.ok(
+      unexpectedLayout.archive.issues.includes(
+        "artifact root contains unexpected entries"
+      )
+    )
+    rmSync(unexpected)
+
+    writeFileSync(manifestPath, '{"schemaVersion":1,"unexpected":true}\n')
+    const malformedManifest = await runStatus()
+    assert.equal(malformedManifest.archive.state, "invalid")
+    assert.ok(malformedManifest.archive.issues.length > 0)
+
+    writeFileSync(manifestPath, manifest)
+    writeFileSync(path.join(filesRoot, "config.json"), "short")
+    const wrongSize = await runStatus()
+    assert.equal(wrongSize.archive.state, "invalid")
+    assert.ok(
+      wrongSize.archive.issues.includes("size differs for 'config.json'")
+    )
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
+})
+
+test("local model replication validates its declared source node", async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "inference-model-source-"))
+  const archiveRoot = path.join(temporary, "archive")
+  const localRoot = path.join(temporary, "local")
+  mkdirSync(archiveRoot)
+  mkdirSync(localRoot)
+
+  try {
+    const artifact = makeArtifact()
+    const runner: ProcessRunnerService = {
+      foreground: () => Effect.die("unexpected foreground command"),
+      probe: () => Effect.die("unexpected probe command"),
+      run: () => Effect.die("source validation must not run commands")
+    }
+    const localLock: LocalLockService = {
+      acquire: () => Effect.void
+    }
+    const runEnsure = (inventory: Inventory, source: string) =>
+      Effect.runPromise(
+        Effect.either(ensureLocalModel(inventory, artifact, source)).pipe(
+          Effect.provide(
+            Layer.mergeAll(
+              NodeContext.layer,
+              Layer.succeed(LocalLock, localLock),
+              Layer.succeed(ProcessRunner, runner)
+            )
+          )
+        )
+      )
+    const inventory = makeInventory(archiveRoot, localRoot)
+
+    const missing = await runEnsure(inventory, "missing-node")
+    assert.ok(Either.isLeft(missing))
+    assert.equal(missing.left.code, "model-source-node-not-found")
+
+    const local = await runEnsure(inventory, inventory.localNode)
+    assert.ok(Either.isLeft(local))
+    assert.equal(local.left.code, "model-source-is-local")
+
+    const nodes = inventory.nodes.map((node) =>
+      node.name === "spark-02"
+        ? {
+            ...node,
+            fabric: { fabric1: node.fabric.fabric1 }
+          }
+        : node
+    )
+    const withoutFabric: Inventory = {
+      ...inventory,
+      nodes: [nodes[0]!, ...nodes.slice(1)]
+    }
+    const unavailable = await runEnsure(withoutFabric, "spark-02")
+    assert.ok(Either.isLeft(unavailable))
+    assert.equal(unavailable.left.code, "model-source-fabric-unavailable")
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
+})
+
 test("archive can seed its resumable Hugging Face download", async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), "inference-model-seed-"))
   const archiveRoot = path.join(temporary, "archive")
@@ -119,6 +266,13 @@ test("archive can seed its resumable Hugging Face download", async () => {
     const commands: Array<string> = []
     let downloadSawSeed = false
     const runner: ProcessRunnerService = {
+      foreground: () =>
+        Effect.fail(
+          new CommandError({
+            code: "unexpected-test-command",
+            message: "The model workflow must not run foreground commands"
+          })
+        ),
       probe: () =>
         Effect.fail(
           new CommandError({
@@ -200,8 +354,23 @@ test("archive and ensure resume after interruption and publish atomically", asyn
     let rsyncCopies = 0
     let localLocks = 0
     let remoteSource: string | undefined
+    let downloadStarted!: () => void
+    let copyStarted!: () => void
+    const downloadStartedPromise = new Promise<void>((resolve) => {
+      downloadStarted = resolve
+    })
+    const copyStartedPromise = new Promise<void>((resolve) => {
+      copyStarted = resolve
+    })
 
     const runner: ProcessRunnerService = {
+      foreground: () =>
+        Effect.fail(
+          new CommandError({
+            code: "unexpected-test-command",
+            message: "The model workflow must not run foreground commands"
+          })
+        ),
       probe: () =>
         Effect.fail(
           new CommandError({
@@ -229,6 +398,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
                 recursive: true
               })
               writeFileSync(path.join(filesPath, "config.json"), "partial\n")
+              downloadStarted()
             }).pipe(Effect.zipRight(Effect.never))
           }
           return Effect.sync(() => completeDownload(filesPath)).pipe(
@@ -264,6 +434,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
                 path.join(destination, ".rsync-partial", "weights.bin"),
                 "partial"
               )
+              copyStarted()
             }).pipe(Effect.zipRight(Effect.never))
           }
           return Effect.sync(() => {
@@ -306,7 +477,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
     await run(
       Effect.gen(function* () {
         const fiber = yield* Effect.fork(archiveModel(inventory, artifact))
-        yield* Effect.sleep("50 millis")
+        yield* Effect.promise(() => downloadStartedPromise)
         yield* Fiber.interrupt(fiber)
       })
     )
@@ -345,7 +516,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
     await run(
       Effect.gen(function* () {
         const fiber = yield* Effect.fork(ensureModel(inventory, artifact))
-        yield* Effect.sleep("50 millis")
+        yield* Effect.promise(() => copyStartedPromise)
         yield* Fiber.interrupt(fiber)
       })
     )

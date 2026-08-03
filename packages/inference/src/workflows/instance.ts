@@ -1,8 +1,9 @@
 import { FileSystem } from "@effect/platform"
-import { Console, Effect, Either, Fiber, Option } from "effect"
+import { Console, Duration, Effect, Fiber, Option } from "effect"
 import { loadContract } from "../adapters/contract-files.js"
+import { HealthProbe } from "../adapters/health-probe.js"
 import { LocalLock } from "../adapters/local-lock.js"
-import { runForeground, ProcessRunner } from "../adapters/process-runner.js"
+import { ProcessRunner } from "../adapters/process-runner.js"
 import {
   Catalog,
   InstanceCatalog,
@@ -12,7 +13,7 @@ import {
   type RunPlan
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
-import { planInstance } from "../domain/planner.js"
+import { resolveInstancePlan } from "../domain/planner.js"
 import { ensureImage } from "./image-store.js"
 import { ensureLocalModel } from "./model-store.js"
 
@@ -73,17 +74,6 @@ export const containerArguments = (
   ]
 }
 
-const reachable = (url: string): Effect.Effect<boolean> =>
-  Effect.tryPromise({
-    try: async () => {
-      const response = await fetch(url, {
-        signal: AbortSignal.timeout(2_000)
-      })
-      return response.ok
-    },
-    catch: () => false
-  }).pipe(Effect.orElseSucceed(() => false))
-
 const failIfExited = (
   container: Fiber.Fiber<void, CommandError>
 ): Effect.Effect<void, CommandError> =>
@@ -92,7 +82,7 @@ const failIfExited = (
       Option.match({
         onNone: () => Effect.void,
         onSome: () =>
-          Fiber.join(container).pipe(
+          Fiber.await(container).pipe(
             Effect.zipRight(
               Effect.fail(
                 new CommandError({
@@ -106,40 +96,46 @@ const failIfExited = (
     )
   )
 
-const waitUntilHealthy = (
+export const waitUntilHealthy = (
   plan: RunPlan,
   container: Fiber.Fiber<void, CommandError>
-): Effect.Effect<void, CommandError> =>
+): Effect.Effect<void, CommandError, HealthProbe> =>
   Effect.gen(function* () {
-    const deadline = Date.now() + plan.endpoint.startupTimeoutSeconds * 1000
+    const health = yield* HealthProbe
     let successes = 0
-    while (Date.now() < deadline) {
+    while (successes < 2) {
       yield* failIfExited(container)
-      successes = (yield* reachable(plan.endpoint.healthUrl))
+      successes = (yield* health.reachable(plan.endpoint.healthUrl))
         ? successes + 1
         : 0
-      if (successes >= 2) return
+      if (successes >= 2) break
       yield* Effect.sleep("2 seconds")
     }
-    return yield* Effect.fail(
-      new CommandError({
-        code: "startup-timeout",
-        message: "Inference did not become healthy before its recipe timeout",
-        details: { timeoutSeconds: plan.endpoint.startupTimeoutSeconds }
-      })
-    )
-  })
+  }).pipe(
+    Effect.timeoutFail({
+      duration: Duration.seconds(plan.endpoint.startupTimeoutSeconds),
+      onTimeout: () =>
+        new CommandError({
+          code: "startup-timeout",
+          message: "Inference did not become healthy before its recipe timeout",
+          details: { timeoutSeconds: plan.endpoint.startupTimeoutSeconds }
+        })
+    })
+  )
 
-const monitorHealth = (
+export const monitorHealth = (
   plan: RunPlan,
   container: Fiber.Fiber<void, CommandError>
-): Effect.Effect<void, CommandError> =>
+): Effect.Effect<void, CommandError, HealthProbe> =>
   Effect.gen(function* () {
+    const health = yield* HealthProbe
     let failures = 0
     while (true) {
       yield* Effect.sleep("10 seconds")
       yield* failIfExited(container)
-      failures = (yield* reachable(plan.endpoint.healthUrl)) ? 0 : failures + 1
+      failures = (yield* health.reachable(plan.endpoint.healthUrl))
+        ? 0
+        : failures + 1
       if (failures >= 3) {
         return yield* Effect.fail(
           new CommandError({
@@ -207,28 +203,13 @@ export const prepareInstance = (
         InstanceCatalog
       )
     ])
-    const declaration = instances.value.instances.find(
-      (instance) => instance.name === name
-    )
-    if (declaration === undefined) {
-      return yield* Effect.fail(
-        new CommandError({
-          code: "instance-not-found",
-          message: `Instance '${name}' is not declared in this deployment`
-        })
-      )
-    }
-    const planned = planInstance(
+    const { declaration, plan } = yield* resolveInstancePlan(
       catalog.value,
       inventory.value,
       inventory.raw,
       instances.value,
       name
     )
-    const plan = yield* Either.match(planned, {
-      onLeft: Effect.fail,
-      onRight: Effect.succeed
-    })
     yield* phase(
       name,
       `Prepared plan for recipe '${declaration.recipe}' on '${inventory.value.localNode}'`
@@ -253,17 +234,6 @@ export const prepareInstance = (
       inventory.value,
       declaration.recipe
     )
-    if (
-      imageStatus.registry.digest === undefined ||
-      imageStatus.local.reference === undefined
-    ) {
-      return yield* Effect.fail(
-        new CommandError({
-          code: "image-ensure-failed",
-          message: "The prepared image has no immutable local reference"
-        })
-      )
-    }
     const image = {
       reference: imageStatus.local.reference,
       digest: imageStatus.registry.digest
@@ -277,10 +247,19 @@ export const runInstance = (
 ): Effect.Effect<
   void,
   CommandError,
-  FileSystem.FileSystem | LocalLock | ProcessRunner
+  FileSystem.FileSystem | HealthProbe | LocalLock | ProcessRunner
 > =>
   Effect.gen(function* () {
     const prepared = yield* prepareInstance(name)
+    yield* runPreparedInstance(name, prepared, process.env.INVOCATION_ID)
+  })
+
+export const runPreparedInstance = (
+  name: string,
+  prepared: PreparedInstance,
+  invocationId?: string
+): Effect.Effect<void, CommandError, HealthProbe | ProcessRunner> =>
+  Effect.gen(function* () {
     const { declaration, inventory, plan, image } = prepared
     const nodePlan = yield* localNodePlan(plan, inventory)
     const args = containerArguments(
@@ -288,16 +267,16 @@ export const runInstance = (
       plan,
       nodePlan,
       image,
-      process.env.INVOCATION_ID
+      invocationId
     )
 
     yield* Effect.scoped(
       Effect.gen(function* () {
         yield* phase(name, `Launching container '${containerName(name)}'`)
-        const container = yield* Effect.forkScoped(
-          runForeground({ command: "podman", args })
-        )
         const runner = yield* ProcessRunner
+        const container = yield* Effect.forkScoped(
+          runner.foreground({ command: "podman", args })
+        )
         if (nodePlan.role === "worker") {
           yield* Effect.sleep("2 seconds")
           yield* failIfExited(container)

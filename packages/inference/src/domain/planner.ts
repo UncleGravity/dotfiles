@@ -33,7 +33,7 @@ const fail = (
     })
   )
 
-const findInstance = (
+export const findInstance = (
   instances: InstanceCatalog,
   name: string
 ): Either.Either<InstanceDeclaration, CommandError> => {
@@ -52,7 +52,7 @@ const findInstance = (
 const hash = (value: string): string =>
   createHash("sha256").update(value, "utf8").digest("hex")
 
-const findRecipe = (
+export const findRecipe = (
   catalog: Catalog,
   name: string
 ): Either.Either<Recipe, CommandError> => {
@@ -200,92 +200,106 @@ export const planRun = (
   inventory: Inventory,
   inventoryJson: string,
   request: PlanRequest
-): Either.Either<RunPlan, CommandError> => {
-  const recipeResult = findRecipe(catalog, request.recipe)
-  if (Either.isLeft(recipeResult)) return Either.left(recipeResult.left)
+): Either.Either<RunPlan, CommandError> =>
+  Either.gen(function* () {
+    const recipe = yield* findRecipe(catalog, request.recipe)
+    const nodeMap = yield* validateInventory(inventory)
+    const selected = yield* selectNodes(
+      recipe,
+      inventory,
+      nodeMap,
+      request.nodes
+    )
+    const head = selected[0]!
+    const models = planModels(recipe, inventory)
+    const headAddress =
+      selected.length > 1
+        ? head.fabric.fabric0!
+        : head.managementAddress
+    const plannedNodes = selected.map((node, rank): NodePlan => {
+      const role: NodePlan["role"] =
+        selected.length === 1
+          ? "single"
+          : rank === 0
+            ? "head"
+            : "worker"
+      return {
+        node: node.name,
+        role,
+        rank,
+        container: {
+          devices: recipe.container.devices,
+          network: "host",
+          extraOptions: recipe.container.extraOptions,
+          environment: {
+            ...recipe.container.environment,
+            HF_HUB_OFFLINE: "1",
+            INFER_HEAD_ADDRESS: headAddress,
+            INFER_HEAD_NODE: head.name,
+            INFER_NODE: node.name,
+            INFER_NODE_ADDRESS:
+              selected.length > 1
+                ? node.fabric.fabric0!
+                : node.managementAddress,
+            INFER_PORT: String(recipe.endpoint.port),
+            INFER_RANK: String(rank),
+            INFER_ROLE: role,
+            INFER_WORLD_SIZE: String(selected.length)
+          },
+          args: recipe.container.args,
+          mounts: [
+            ...models.map((model) => model.mount),
+            ...recipe.container.mounts
+          ]
+        }
+      }
+    })
 
-  const inventoryResult = validateInventory(inventory)
-  if (Either.isLeft(inventoryResult)) return Either.left(inventoryResult.left)
-
-  const recipe = recipeResult.right
-  const nodesResult = selectNodes(
-    recipe,
-    inventory,
-    inventoryResult.right,
-    request.nodes
-  )
-  if (Either.isLeft(nodesResult)) return Either.left(nodesResult.left)
-
-  const selected = nodesResult.right
-  const head = selected[0]!
-  const models = planModels(recipe, inventory)
-  const headAddress =
-    selected.length > 1
-      ? head.fabric.fabric0!
-      : head.managementAddress
-  const plannedNodes = selected.map((node, rank): NodePlan => {
-    const role: NodePlan["role"] =
-      selected.length === 1
-        ? "single"
-        : rank === 0
-          ? "head"
-          : "worker"
     return {
-      node: node.name,
-      role,
-      rank,
-      container: {
-        devices: recipe.container.devices,
-        network: "host",
-        extraOptions: recipe.container.extraOptions,
-        environment: {
-          ...recipe.container.environment,
-          HF_HUB_OFFLINE: "1",
-          INFER_HEAD_ADDRESS: headAddress,
-          INFER_HEAD_NODE: head.name,
-          INFER_NODE: node.name,
-          INFER_NODE_ADDRESS:
-            selected.length > 1
-              ? node.fabric.fabric0!
-              : node.managementAddress,
-          INFER_PORT: String(recipe.endpoint.port),
-          INFER_RANK: String(rank),
-          INFER_ROLE: role,
-          INFER_WORLD_SIZE: String(selected.length)
-        },
-        args: recipe.container.args,
-        mounts: [
-          ...models.map((model) => model.mount),
-          ...recipe.container.mounts
-        ]
+      schemaVersion: 1,
+      recipe: {
+        name: recipe.name,
+        hash: recipe.recipeHash
+      },
+      inventoryHash: hash(inventoryJson),
+      startOrder: recipe.topology.startOrder,
+      nodes: selected.map((node) => node.name) as [string, ...Array<string>],
+      head: head.name,
+      models: models as [PlannedModel, ...Array<PlannedModel>],
+      image: {
+        platform: recipe.image.platform,
+        buildHash: recipe.image.buildHash
+      },
+      nodePlans: [plannedNodes[0]!, ...plannedNodes.slice(1)],
+      endpoint: {
+        node: head.name,
+        port: recipe.endpoint.port,
+        healthUrl: `http://${head.managementAddress}:${recipe.endpoint.port}${recipe.endpoint.healthPath}`,
+        startupTimeoutSeconds: recipe.endpoint.startupTimeoutSeconds
       }
     }
   })
 
-  return Either.right({
-    schemaVersion: 1,
-    recipe: {
-      name: recipe.name,
-      hash: recipe.recipeHash
-    },
-    inventoryHash: hash(inventoryJson),
-    startOrder: recipe.topology.startOrder,
-    nodes: selected.map((node) => node.name) as [string, ...Array<string>],
-    head: head.name,
-    models: models as [PlannedModel, ...Array<PlannedModel>],
-    image: {
-      platform: recipe.image.platform,
-      buildHash: recipe.image.buildHash
-    },
-    nodePlans: [plannedNodes[0]!, ...plannedNodes.slice(1)],
-    endpoint: {
-      node: head.name,
-      port: recipe.endpoint.port,
-      healthUrl: `http://${head.managementAddress}:${recipe.endpoint.port}${recipe.endpoint.healthPath}`,
-      startupTimeoutSeconds: recipe.endpoint.startupTimeoutSeconds
-    }
-  })
+export interface ResolvedInstancePlan {
+  readonly declaration: InstanceDeclaration
+  readonly plan: RunPlan
 }
+
+export const resolveInstancePlan = (
+  catalog: Catalog,
+  inventory: Inventory,
+  inventoryJson: string,
+  instances: InstanceCatalog,
+  name: string
+): Either.Either<ResolvedInstancePlan, CommandError> =>
+  Either.gen(function* () {
+    const declaration = yield* findInstance(instances, name)
+    const plan = yield* planRun(catalog, inventory, inventoryJson, {
+      recipe: declaration.recipe,
+      nodes: declaration.nodes
+    })
+    return { declaration, plan }
+  })
 
 export const planInstance = (
   catalog: Catalog,
@@ -293,14 +307,14 @@ export const planInstance = (
   inventoryJson: string,
   instances: InstanceCatalog,
   name: string
-): Either.Either<RunPlan, CommandError> => {
-  const instance = findInstance(instances, name)
-  if (Either.isLeft(instance)) return Either.left(instance.left)
-  return planRun(catalog, inventory, inventoryJson, {
-    recipe: instance.right.recipe,
-    nodes: instance.right.nodes
-  })
-}
+): Either.Either<RunPlan, CommandError> =>
+  resolveInstancePlan(
+    catalog,
+    inventory,
+    inventoryJson,
+    instances,
+    name
+  ).pipe(Either.map(({ plan }) => plan))
 
 export const listRecipes = (catalog: Catalog) => ({
   schemaVersion: 1 as const,

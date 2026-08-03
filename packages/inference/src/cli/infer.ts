@@ -1,5 +1,5 @@
 import { Args, Command, Options } from "@effect/cli"
-import { Effect, Either } from "effect"
+import { Effect } from "effect"
 import { loadContract } from "../adapters/contract-files.js"
 import {
   Catalog,
@@ -7,7 +7,6 @@ import {
   Inventory,
   type RunPlan
 } from "../domain/contracts.js"
-import { CommandError } from "../domain/errors.js"
 import {
   listInstances,
   listRecipes,
@@ -98,14 +97,6 @@ const instanceArgument = Args.text({ name: "instance" }).pipe(
   Args.withDescription("Declared inference instance name")
 )
 
-const fromEither = <A>(
-  value: Either.Either<A, CommandError>
-): Effect.Effect<A, CommandError> =>
-  Either.match(value, {
-    onLeft: Effect.fail,
-    onRight: Effect.succeed
-  })
-
 const renderPlan = (plan: RunPlan): string =>
   [
     `Recipe: ${plan.recipe.name}`,
@@ -136,14 +127,12 @@ const plan = Command.make(
             loadContract(inventory, "Inventory", Inventory),
             loadContract(instances, "InstanceCatalog", InstanceCatalog)
           ])
-        const value = yield* fromEither(
-          planInstance(
-            loadedCatalog.value,
-            loadedInventory.value,
-            loadedInventory.raw,
-            loadedInstances.value,
-            instance
-          )
+        const value = yield* planInstance(
+          loadedCatalog.value,
+          loadedInventory.value,
+          loadedInventory.raw,
+          loadedInstances.value,
+          instance
         )
         yield* printOutput(json, value, renderPlan(value))
       })

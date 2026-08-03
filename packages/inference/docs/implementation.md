@@ -33,7 +33,8 @@ packages/inference/
 |   |-- cli/           command trees and rendering
 |   |-- domain/        schemas, artifact identity, planner
 |   |-- workflows/     model, image, and instance workflows
-|   |-- adapters/      filesystem contracts, processes, flock
+|   |   `-- model-store/ immutable artifact validation and publication
+|   |-- adapters/      contracts, processes, health probes, flock
 |   `-- runtime/       CLI runtime wiring
 |-- nix/
 |   |-- lib/           internal normalization and contract helpers
@@ -226,7 +227,9 @@ that Podman runs.
   checksums, locks, and warm-local startup without archive access.
 - Image tests cover build-once publication, immutable restore, and registry
   failure classification.
-- Runtime tests assert exact shell-free Podman arguments and labels.
+- Runtime tests assert exact shell-free Podman arguments and labels, startup
+  timeout behavior, consecutive readiness checks, and health-monitor failure.
+- `npm run coverage` enforces 80% line, 75% branch, and 80% function coverage.
 - Nix checks evaluate recipes, inventories, instances, packaged commands, and
   contract interoperability.
 

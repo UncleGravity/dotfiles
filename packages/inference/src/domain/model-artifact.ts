@@ -42,22 +42,15 @@ const normalizePatterns = (
 export const normalizeSelection = (
   include: ReadonlyArray<string>,
   exclude: ReadonlyArray<string>
-): Either.Either<ModelSelection, CommandError> => {
-  const normalizedInclude = normalizePatterns(include, "include")
-  if (Either.isLeft(normalizedInclude)) {
-    return Either.left(normalizedInclude.left)
-  }
-
-  const normalizedExclude = normalizePatterns(exclude, "exclude")
-  if (Either.isLeft(normalizedExclude)) {
-    return Either.left(normalizedExclude.left)
-  }
-
-  return Either.right({
-    include: normalizedInclude.right,
-    exclude: normalizedExclude.right
+): Either.Either<ModelSelection, CommandError> =>
+  Either.gen(function* () {
+    const normalizedInclude = yield* normalizePatterns(include, "include")
+    const normalizedExclude = yield* normalizePatterns(exclude, "exclude")
+    return {
+      include: normalizedInclude,
+      exclude: normalizedExclude
+    }
   })
-}
 
 export const selectionHash = (selection: ModelSelection): string =>
   hash(

@@ -222,6 +222,14 @@ export const ArtifactLocationStatus = Schema.Struct({
 })
 export type ArtifactLocationStatus = typeof ArtifactLocationStatus.Type
 
+export type ReadyArtifactLocation = Omit<
+  ArtifactLocationStatus,
+  "manifest" | "state"
+> & {
+  readonly state: "ready"
+  readonly manifest: NonNullable<ArtifactLocationStatus["manifest"]>
+}
+
 export const ModelStatus = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   artifact: ArtifactIdentity,
@@ -240,6 +248,10 @@ export const ModelEnsureResult = Schema.Struct({
   local: ArtifactLocationStatus
 })
 export type ModelEnsureResult = typeof ModelEnsureResult.Type
+
+export type ReadyModelEnsureResult = Omit<ModelEnsureResult, "local"> & {
+  readonly local: ReadyArtifactLocation
+}
 
 export const ImageStatus = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -261,6 +273,17 @@ export const ImageStatus = Schema.Struct({
   })
 })
 export type ImageStatus = typeof ImageStatus.Type
+
+export type ReadyImageStatus = Omit<ImageStatus, "local" | "registry"> & {
+  readonly registry: Omit<ImageStatus["registry"], "digest" | "state"> & {
+    readonly state: "ready"
+    readonly digest: string
+  }
+  readonly local: Omit<ImageStatus["local"], "reference" | "state"> & {
+    readonly state: "ready"
+    readonly reference: string
+  }
+}
 
 export const PlannedModel = Schema.Struct({
   name: nonEmpty,

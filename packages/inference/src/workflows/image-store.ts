@@ -6,27 +6,13 @@ import type {
   Catalog,
   ImageStatus,
   Inventory,
+  ReadyImageStatus,
   Recipe
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
+import { findRecipe } from "../domain/planner.js"
 
 const digestPattern = /^sha256:[0-9a-f]{64}$/
-
-const findRecipe = (
-  catalog: Catalog,
-  name: string
-): Effect.Effect<Recipe, CommandError> => {
-  const recipe = catalog.recipes.find((candidate) => candidate.name === name)
-  return recipe === undefined
-    ? Effect.fail(
-        new CommandError({
-          code: "recipe-not-found",
-          message: `Recipe '${name}' does not exist in this deployment`,
-          details: { recipe: name }
-        })
-      )
-    : Effect.succeed(recipe)
-}
 
 const tagReference = (inventory: Inventory, recipe: Recipe): string =>
   `${inventory.registry.endpoint}/infer/${recipe.name}:build-${recipe.image.buildHash}`
@@ -176,9 +162,10 @@ export const imageStatus = (
   inventory: Inventory,
   recipeName: string
 ): Effect.Effect<ImageStatus, CommandError, ProcessRunner> =>
-  findRecipe(catalog, recipeName).pipe(
-    Effect.flatMap((recipe) => statusFor(inventory, recipe))
-  )
+  Effect.gen(function* () {
+    const recipe = yield* findRecipe(catalog, recipeName)
+    return yield* statusFor(inventory, recipe)
+  })
 
 const buildAndPublish = (
   recipe: Recipe,
@@ -216,7 +203,7 @@ export const ensureImage = (
   inventory: Inventory,
   recipeName: string
 ): Effect.Effect<
-  ImageStatus,
+  ReadyImageStatus,
   CommandError,
   FileSystem.FileSystem | LocalLock | ProcessRunner
 > =>
@@ -311,5 +298,23 @@ export const ensureImage = (
       )
     }
 
-    return yield* statusFor(inventory, recipe)
+    return {
+      schemaVersion: 1,
+      recipe: {
+        name: recipe.name,
+        buildHash: recipe.image.buildHash,
+        platform: recipe.image.platform
+      },
+      registry: {
+        state: "ready",
+        reference,
+        digest,
+        issues: []
+      },
+      local: {
+        state: "ready",
+        reference: immutableReference,
+        issues: []
+      }
+    }
   })

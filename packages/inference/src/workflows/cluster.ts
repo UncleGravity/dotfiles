@@ -1,25 +1,22 @@
 import { FileSystem } from "@effect/platform"
 import {
   Console,
+  Duration,
   Effect,
   Either,
   Fiber,
   Option,
-  ParseResult,
-  Schema,
   Scope
 } from "effect"
 import { LocalLock } from "../adapters/local-lock.js"
-import {
-  ProcessRunner,
-  runForeground
-} from "../adapters/process-runner.js"
+import { ProcessRunner } from "../adapters/process-runner.js"
 import {
   RemoteUnitStatus,
   type Inventory,
   type RunPlan
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
+import { decodeStrictJson, formatParseError } from "../domain/json-contract.js"
 import { prepareInstance } from "./instance.js"
 import { readUnitStatus } from "./remote.js"
 
@@ -90,37 +87,22 @@ const remoteAction = (
     yield* runner.run({ command: "ssh", args })
   })
 
-const decodeRemoteStatus = (
+export const decodeRemoteStatus = (
   raw: string,
   node: string
-): Effect.Effect<RemoteUnitStatus, CommandError> =>
-  Effect.try({
-    try: () => JSON.parse(raw) as unknown,
-    catch: () =>
-      new CommandError({
-        code: "cluster-status-invalid",
-        message: `Node '${node}' returned invalid status JSON`,
-        details: { node }
-      })
-  }).pipe(
-    Effect.flatMap((value) => {
-      const decoded = Schema.decodeUnknownEither(RemoteUnitStatus, {
-        errors: "all",
-        onExcessProperty: "error"
-      })(value)
-      return Either.isLeft(decoded)
-        ? Effect.fail(
-            new CommandError({
-              code: "cluster-status-invalid",
-              message: `Node '${node}' returned an invalid status contract`,
-              details: {
-                node,
-                issues: ParseResult.TreeFormatter.formatErrorSync(decoded.left)
-              }
-            })
-          )
-        : Effect.succeed(decoded.right)
-    })
+): Either.Either<RemoteUnitStatus, CommandError> =>
+  decodeStrictJson(RemoteUnitStatus, raw).pipe(
+    Either.mapLeft(
+      (error) =>
+        new CommandError({
+          code: "cluster-status-invalid",
+          message: `Node '${node}' returned an invalid status contract`,
+          details: {
+            node,
+            issues: formatParseError(error)
+          }
+        })
+    )
   )
 
 const statusNode = (
@@ -183,9 +165,12 @@ const checkLeases = (
 const launchNode = (
   inventory: Inventory,
   instance: string,
-  node: string,
-  leases: Array<NodeLease>
-): Effect.Effect<void, CommandError, ProcessRunner | Scope.Scope> =>
+  node: string
+): Effect.Effect<
+  Option.Option<NodeLease>,
+  CommandError,
+  ProcessRunner | Scope.Scope
+> =>
   Effect.gen(function* () {
     if (node === inventory.localNode) {
       const runner = yield* ProcessRunner
@@ -193,16 +178,18 @@ const launchNode = (
         command: "systemctl",
         args: ["start", "--no-block", `infer-node-${instance}.service`]
       })
-      return
+      return Option.none()
     }
 
+    const runner = yield* ProcessRunner
     const args = yield* remoteArguments(inventory, node, "lease", instance)
     const fiber = yield* Effect.forkScoped(
-      runForeground({ command: "ssh", args })
+      runner.foreground({ command: "ssh", args })
     )
-    leases.push({ node, fiber })
+    const lease = { node, fiber }
     yield* Effect.sleep("100 millis")
-    yield* checkLeases(leases)
+    yield* checkLeases([lease])
+    return Option.some(lease)
   })
 
 const stopNode = (
@@ -240,34 +227,38 @@ const waitUntilReady = (
   instance: string,
   leases: ReadonlyArray<NodeLease>
 ): Effect.Effect<void, CommandError, ProcessRunner> =>
-  Effect.gen(function* () {
-    const deadline = Date.now() + plan.endpoint.startupTimeoutSeconds * 1000
+  Effect.suspend(() => {
     let latest: ReadonlyArray<RemoteUnitStatus> = []
-    while (Date.now() < deadline) {
-      yield* checkLeases(leases)
-      latest = yield* Effect.forEach(
-        plan.nodes,
-        (node) => statusNode(inventory, instance, node),
-        { concurrency: "unbounded" }
-      )
-      const failed = latest.filter(failedStatus)
-      if (failed.length > 0) {
-        return yield* Effect.fail(
-          new CommandError({
-            code: "cluster-node-failed",
-            message: "A clustered inference node failed during startup",
-            details: { nodes: failed }
-          })
+    return Effect.gen(function* () {
+      while (true) {
+        yield* checkLeases(leases)
+        latest = yield* Effect.forEach(
+          plan.nodes,
+          (node) => statusNode(inventory, instance, node),
+          { concurrency: "unbounded" }
         )
+        const failed = latest.filter(failedStatus)
+        if (failed.length > 0) {
+          return yield* Effect.fail(
+            new CommandError({
+              code: "cluster-node-failed",
+              message: "A clustered inference node failed during startup",
+              details: { nodes: failed }
+            })
+          )
+        }
+        if (latest.every((status) => status.activeState === "active")) return
+        yield* Effect.sleep("2 seconds")
       }
-      if (latest.every((status) => status.activeState === "active")) return
-      yield* Effect.sleep("2 seconds")
-    }
-    return yield* Effect.fail(
-      new CommandError({
-        code: "cluster-startup-timeout",
-        message: "The clustered inference instance did not become ready",
-        details: { statuses: latest }
+    }).pipe(
+      Effect.timeoutFail({
+        duration: Duration.seconds(plan.endpoint.startupTimeoutSeconds),
+        onTimeout: () =>
+          new CommandError({
+            code: "cluster-startup-timeout",
+            message: "The clustered inference instance did not become ready",
+            details: { statuses: latest }
+          })
       })
     )
   })
@@ -311,7 +302,15 @@ export const runCluster = (
 > =>
   Effect.gen(function* () {
     const prepared = yield* prepareInstance(name)
-    const { inventory, plan } = prepared
+    yield* runPreparedCluster(name, prepared.inventory, prepared.plan)
+  })
+
+export const runPreparedCluster = (
+  name: string,
+  inventory: Inventory,
+  plan: RunPlan
+): Effect.Effect<void, CommandError, ProcessRunner> =>
+  Effect.gen(function* () {
     if (inventory.localNode !== inventory.controlNode) {
       return yield* Effect.fail(
         new CommandError({
@@ -356,18 +355,21 @@ export const runCluster = (
       Effect.acquireRelease(Effect.void, () => stopAll).pipe(
         Effect.zipRight(
           Effect.gen(function* () {
-            const leases: Array<NodeLease> = []
+            let leases: ReadonlyArray<NodeLease> = []
             for (const group of clusterStartGroups(plan)) {
-              yield* Effect.forEach(
+              const launched = yield* Effect.forEach(
                 group,
                 (node) =>
                   phase(name, `Starting '${node}'`).pipe(
-                    Effect.zipRight(
-                      launchNode(inventory, name, node, leases)
-                    )
+                    Effect.zipRight(launchNode(inventory, name, node))
                   ),
-                { concurrency: "unbounded", discard: true }
+                { concurrency: "unbounded" }
               )
+              leases = [
+                ...leases,
+                ...launched.filter(Option.isSome).map((lease) => lease.value)
+              ]
+              yield* checkLeases(leases)
             }
             yield* phase(name, "Waiting for all node units")
             yield* waitUntilReady(inventory, plan, name, leases)

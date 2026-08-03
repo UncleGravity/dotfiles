@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process"
+import { StringDecoder } from "node:string_decoder"
 import { Context, Effect, Layer } from "effect"
 import { CommandError } from "../domain/errors.js"
 
@@ -20,6 +21,9 @@ export interface ProcessOutcome extends ProcessResult {
 }
 
 export interface ProcessRunnerService {
+  readonly foreground: (
+    request: ProcessRequest
+  ) => Effect.Effect<void, CommandError>
   readonly probe: (
     request: ProcessRequest
   ) => Effect.Effect<ProcessOutcome, CommandError>
@@ -35,13 +39,14 @@ export class ProcessRunner extends Context.Tag("inference/ProcessRunner")<
 
 const outputLimit = 64 * 1024
 
-const appendOutput = (current: string, chunk: Uint8Array): string => {
-  const next = current + Buffer.from(chunk).toString("utf8")
+const appendOutput = (current: string, chunk: string): string => {
+  const next = current + chunk
   return next.length <= outputLimit ? next : next.slice(-outputLimit)
 }
 
 export const terminateProcess = (
-  child: ChildProcess
+  child: ChildProcess,
+  forceAfterMilliseconds = 5_000
 ): Effect.Effect<void> =>
   Effect.async((resume) => {
     if (child.exitCode !== null || child.signalCode !== null) {
@@ -49,7 +54,10 @@ export const terminateProcess = (
       return
     }
 
-    const force = setTimeout(() => child.kill("SIGKILL"), 5_000)
+    const force = setTimeout(
+      () => child.kill("SIGKILL"),
+      forceAfterMilliseconds
+    )
     child.once("close", () => {
       clearTimeout(force)
       resume(Effect.void)
@@ -62,7 +70,7 @@ export const terminateProcess = (
     })
   })
 
-export const runForeground = (
+const foreground = (
   request: ProcessRequest
 ): Effect.Effect<void, CommandError> =>
   Effect.async((resume) => {
@@ -111,6 +119,8 @@ const probe = (
   Effect.async((resume) => {
     let stdout = ""
     let stderr = ""
+    const stdoutDecoder = new StringDecoder("utf8")
+    const stderrDecoder = new StringDecoder("utf8")
     let settled = false
     const child = spawn(request.command, [...request.args], {
       env: {
@@ -126,10 +136,10 @@ const probe = (
     }
 
     child.stdout?.on("data", (chunk: Uint8Array) => {
-      stdout = appendOutput(stdout, chunk)
+      stdout = appendOutput(stdout, stdoutDecoder.write(chunk))
     })
     child.stderr?.on("data", (chunk: Uint8Array) => {
-      stderr = appendOutput(stderr, chunk)
+      stderr = appendOutput(stderr, stderrDecoder.write(chunk))
     })
     child.once("error", () => {
       if (settled) return
@@ -147,6 +157,8 @@ const probe = (
     child.once("close", (code, signal) => {
       if (settled) return
       settled = true
+      stdout = appendOutput(stdout, stdoutDecoder.end())
+      stderr = appendOutput(stderr, stderrDecoder.end())
       resume(Effect.succeed({ stdout, stderr, exitCode: code, signal }))
     })
 
@@ -154,6 +166,7 @@ const probe = (
   })
 
 export const ProcessRunnerLive = Layer.succeed(ProcessRunner, {
+  foreground,
   probe,
   run: (request) =>
     probe(request).pipe(

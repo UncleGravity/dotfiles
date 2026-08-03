@@ -1,5 +1,5 @@
 import { Args, Command, Options } from "@effect/cli"
-import { Effect, Either, Option } from "effect"
+import { Effect, Option } from "effect"
 import { loadContract } from "../adapters/contract-files.js"
 import {
   Inventory,
@@ -65,24 +65,14 @@ const common = {
   json: jsonOption
 }
 
-const fromEither = <A>(
-  value: Either.Either<A, CommandError>
-): Effect.Effect<A, CommandError> =>
-  Either.match(value, {
-    onLeft: Effect.fail,
-    onRight: Effect.succeed
-  })
-
 const resolve = (
   model: string,
   include: ReadonlyArray<string>,
   exclude: ReadonlyArray<string>
 ) =>
   Effect.gen(function* () {
-    const reference = yield* fromEither(parseModelReference(model))
-    const selection = yield* fromEither(
-      normalizeSelection(include, exclude)
-    )
+    const reference = yield* parseModelReference(model)
+    const selection = yield* normalizeSelection(include, exclude)
     return artifactIdentity(reference.repo, reference.revision, selection)
   })
 

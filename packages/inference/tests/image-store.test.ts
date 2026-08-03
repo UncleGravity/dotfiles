@@ -49,8 +49,19 @@ test("image ensure builds once and restores the immutable digest", async () => {
     let locks = 0
     let interruptFirstBuild = true
     const requests: Array<ProcessRequest> = []
+    let buildStarted!: () => void
+    const buildStartedPromise = new Promise<void>((resolve) => {
+      buildStarted = resolve
+    })
 
     const runner: ProcessRunnerService = {
+      foreground: () =>
+        Effect.fail(
+          new CommandError({
+            code: "unexpected-test-command",
+            message: "The image workflow must not run foreground commands"
+          })
+        ),
       probe: (request) =>
         Effect.sync(() => {
           requests.push(request)
@@ -75,8 +86,10 @@ test("image ensure builds once and restores the immutable digest", async () => {
           interruptFirstBuild
         ) {
           interruptFirstBuild = false
-          requests.push(request)
-          return Effect.never
+          return Effect.sync(() => {
+            requests.push(request)
+            buildStarted()
+          }).pipe(Effect.zipRight(Effect.never))
         }
         return Effect.sync(() => {
           requests.push(request)
@@ -135,7 +148,7 @@ test("image ensure builds once and restores the immutable digest", async () => {
         const fiber = yield* Effect.fork(
           ensureImage(catalog, inventory, "fixture-vllm")
         )
-        yield* Effect.sleep("50 millis")
+        yield* Effect.promise(() => buildStartedPromise)
         yield* Fiber.interrupt(fiber)
       })
     )
@@ -206,6 +219,13 @@ test("image ensure builds once and restores the immutable digest", async () => {
 
 test("image status reports registry failures without claiming absence", async () => {
   const runner: ProcessRunnerService = {
+    foreground: () =>
+      Effect.fail(
+        new CommandError({
+          code: "unexpected-test-command",
+          message: "Status must not run foreground commands"
+        })
+      ),
     probe: () => Effect.succeed(outcome(1, "", "connection refused")),
     run: () =>
       Effect.fail(
@@ -222,4 +242,125 @@ test("image status reports registry failures without claiming absence", async ()
   )
   assert.equal(status.registry.state, "unavailable")
   assert.equal(status.local.state, "unknown")
+})
+
+test("image status rejects invalid digests and local inspection failures", async () => {
+  const invalidDigest: ProcessRunnerService = {
+    foreground: () => Effect.die("unexpected foreground command"),
+    probe: (request) =>
+      Effect.succeed(
+        request.command === "skopeo"
+          ? outcome(0, "not-a-digest\n")
+          : outcome(0)
+      ),
+    run: () => Effect.die("status must not mutate images")
+  }
+  const invalid = await Effect.runPromise(
+    imageStatus(catalog, baseInventory, "fixture-vllm").pipe(
+      Effect.provide(Layer.succeed(ProcessRunner, invalidDigest))
+    )
+  )
+  assert.equal(invalid.registry.state, "unavailable")
+  assert.deepEqual(invalid.registry.issues, [
+    "the registry returned an invalid image digest"
+  ])
+
+  const localFailure: ProcessRunnerService = {
+    foreground: () => Effect.die("unexpected foreground command"),
+    probe: (request) =>
+      Effect.succeed(
+        request.command === "skopeo"
+          ? outcome(0, `${digest}\n`)
+          : outcome(2, "", "storage failure")
+      ),
+    run: () => Effect.die("status must not mutate images")
+  }
+  const failed = await Effect.runPromise(
+    Effect.either(
+      imageStatus(catalog, baseInventory, "fixture-vllm").pipe(
+        Effect.provide(Layer.succeed(ProcessRunner, localFailure))
+      )
+    )
+  )
+  assert.ok(Either.isLeft(failed))
+  assert.equal(failed.left.code, "image-status-failed")
+})
+
+test("image ensure verifies publication and local retention", async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "inference-image-errors-"))
+  const inventory: Inventory = {
+    ...baseInventory,
+    modelStore: {
+      ...baseInventory.modelStore,
+      localRoot: path.join(temporary, "models")
+    }
+  }
+  const localLock: LocalLockService = {
+    acquire: () => Effect.void
+  }
+  const run = <A, E>(
+    effect: Effect.Effect<
+      A,
+      E,
+      FileSystem.FileSystem | LocalLock | ProcessRunner
+    >,
+    runner: ProcessRunnerService
+  ) =>
+    Effect.runPromise(
+      effect.pipe(
+        Effect.provide(
+          Layer.mergeAll(
+            NodeContext.layer,
+            Layer.succeed(LocalLock, localLock),
+            Layer.succeed(ProcessRunner, runner)
+          )
+        )
+      )
+    )
+
+  try {
+    const unpublished: ProcessRunnerService = {
+      foreground: () => Effect.die("unexpected foreground command"),
+      probe: (request) =>
+        Effect.succeed(
+          request.command === "skopeo"
+            ? outcome(1, "", "manifest unknown")
+            : outcome(1)
+        ),
+      run: () => Effect.succeed({ stdout: "", stderr: "" })
+    }
+    const publication = await run(
+      Effect.either(ensureImage(catalog, inventory, "fixture-vllm")),
+      unpublished
+    )
+    assert.ok(Either.isLeft(publication))
+    assert.equal(publication.left.code, "image-publication-failed")
+
+    let pulls = 0
+    const notRetained: ProcessRunnerService = {
+      foreground: () => Effect.die("unexpected foreground command"),
+      probe: (request) =>
+        Effect.succeed(
+          request.command === "skopeo"
+            ? outcome(0, `${digest}\n`)
+            : outcome(1)
+        ),
+      run: (request) =>
+        Effect.sync(() => {
+          if (request.command === "podman" && request.args[0] === "pull") {
+            pulls += 1
+          }
+          return { stdout: "", stderr: "" }
+        })
+    }
+    const retention = await run(
+      Effect.either(ensureImage(catalog, inventory, "fixture-vllm")),
+      notRetained
+    )
+    assert.ok(Either.isLeft(retention))
+    assert.equal(retention.left.code, "image-ensure-failed")
+    assert.equal(pulls, 1)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
 })

@@ -1,7 +1,16 @@
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from "node:fs"
+import { tmpdir } from "node:os"
+import * as path from "node:path"
 import test from "node:test"
-import { Either, Schema } from "effect"
+import { NodeContext } from "@effect/platform-node"
+import { Effect, Either, Schema } from "effect"
+import { loadContract } from "../src/adapters/contract-files.js"
 import {
   Catalog,
   InstanceCatalog,
@@ -108,4 +117,125 @@ test("planning rejects duplicate nodes", () => {
 
   assert.ok(Either.isLeft(result))
   assert.equal(result.left.code, "duplicate-node")
+})
+
+test("planning rejects invalid recipes, selections, and node capabilities", () => {
+  const node0 = inventory.nodes[0]!
+  const node1 = inventory.nodes[1]!
+  const node2 = {
+    ...node1,
+    name: "spark-03",
+    managementAddress: "192.168.1.33",
+    fabric: { fabric0: "10.100.0.3", fabric1: "10.100.1.3" }
+  }
+  const cases: ReadonlyArray<{
+    readonly expected: string
+    readonly inventory?: Inventory
+    readonly recipe?: string
+    readonly nodes?: ReadonlyArray<string>
+  }> = [
+    { recipe: "missing", nodes: [node0.name, node1.name], expected: "recipe-not-found" },
+    { nodes: [node0.name, "missing"], expected: "unknown-node" },
+    { nodes: [], expected: "empty-node-selection" },
+    {
+      inventory: { ...inventory, nodes: [node0, node1, node2] },
+      nodes: [node0.name, node1.name, node2.name],
+      expected: "unsupported-node-count"
+    },
+    {
+      inventory: {
+        ...inventory,
+        nodes: [
+          { ...node0, platform: "linux/amd64" },
+          node1
+        ]
+      },
+      nodes: [node0.name, node1.name],
+      expected: "platform-mismatch"
+    },
+    {
+      inventory: {
+        ...inventory,
+        nodes: [
+          node0,
+          { ...node1, fabric: { fabric1: node1.fabric.fabric1 } }
+        ]
+      },
+      nodes: [node0.name, node1.name],
+      expected: "missing-fabric-address"
+    }
+  ]
+
+  for (const testCase of cases) {
+    const result = planRun(
+      catalog,
+      testCase.inventory ?? inventory,
+      inventoryJson,
+      {
+        recipe: testCase.recipe ?? "fixture-vllm",
+        ...(testCase.nodes === undefined ? {} : { nodes: testCase.nodes })
+      }
+    )
+    assert.ok(Either.isLeft(result), testCase.expected)
+    assert.equal(result.left.code, testCase.expected)
+  }
+})
+
+test("planning rejects structurally inconsistent inventories", () => {
+  const node0 = inventory.nodes[0]!
+  const node1 = inventory.nodes[1]!
+  const cases: ReadonlyArray<Inventory> = [
+    { ...inventory, nodes: [node0, node0] },
+    { ...inventory, nodes: [node1, node0] },
+    { ...inventory, localNode: "missing" },
+    { ...inventory, controlNode: "missing" }
+  ]
+
+  for (const invalid of cases) {
+    const result = planRun(catalog, invalid, inventoryJson, {
+      recipe: "fixture-vllm",
+      nodes: [node0.name, node1.name]
+    })
+    assert.ok(Either.isLeft(result))
+    assert.equal(result.left.code, "invalid-inventory")
+  }
+})
+
+test("contract files preserve raw input and classify read and schema errors", async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "inference-contract-"))
+  const validPath = path.join(temporary, "inventory.json")
+  const invalidPath = path.join(temporary, "invalid.json")
+  writeFileSync(validPath, inventoryJson)
+  writeFileSync(
+    invalidPath,
+    JSON.stringify({ ...JSON.parse(inventoryJson), unexpected: true })
+  )
+
+  const run = <A, E>(effect: Effect.Effect<A, E, NodeContext.NodeContext>) =>
+    Effect.runPromise(effect.pipe(Effect.provide(NodeContext.layer)))
+
+  try {
+    const loaded = await run(
+      loadContract(validPath, "Inventory", Inventory)
+    )
+    assert.equal(loaded.raw, inventoryJson)
+    assert.deepEqual(loaded.value, inventory)
+
+    const invalid = await run(
+      Effect.either(loadContract(invalidPath, "Inventory", Inventory))
+    )
+    assert.ok(Either.isLeft(invalid))
+    assert.equal(invalid.left.code, "invalid-contract")
+    assert.equal(invalid.left.details?.path, invalidPath)
+
+    const missingPath = path.join(temporary, "missing.json")
+    const missing = await run(
+      Effect.either(loadContract(missingPath, "Inventory", Inventory))
+    )
+    assert.ok(Either.isLeft(missing))
+    assert.equal(missing.left.code, "contract-read-failed")
+    assert.equal(missing.left.details?.path, missingPath)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
 })
