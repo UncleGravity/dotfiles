@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Binary caches shared by every host
   nix.settings = {
     substituters = [
@@ -16,5 +16,6 @@
     ];
 
     always-allow-substitutes = true;
+    fallback = true;
   };
 }
