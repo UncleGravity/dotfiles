@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "name": "fixture-vllm",
+    "hash": "d9c1a161bee504d378117b1a3066f8ca60a31e7b094113100fa7908777d5bc0f"
+  },
+  "inventoryHash": "8c60775a44fde717442730f388ac3b91a0b1e50e1bd0104d00fcaa0c6d16d0c7",
+  "startOrder": "workers-first",
+  "nodes": ["spark-02", "spark-01"],
+  "head": "spark-02",
+  "models": [
+    {
+      "name": "target",
+      "artifact": {
+        "source": "hf",
+        "repo": "example/tiny-model",
+        "revision": "1111111111111111111111111111111111111111",
+        "selection": {
+          "include": [],
+          "exclude": []
+        },
+        "selectionHash": "bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01",
+        "relativePath": "hf/example/tiny-model/1111111111111111111111111111111111111111/bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01"
+      },
+      "mount": {
+        "sourcePath": "/srv/models/hf/example/tiny-model/1111111111111111111111111111111111111111/bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01/files",
+        "targetPath": "/models/target",
+        "readOnly": true
+      }
+    }
+  ],
+  "image": {
+    "platform": "linux/arm64",
+    "buildHash": "74d1d98b5ee79bd1117b9440fef099eab58ecec6cc9a3e3fd8c7aed3d1c7ccbc"
+  },
+  "nodePlans": [
+    {
+      "node": "spark-02",
+      "role": "head",
+      "rank": 0,
+      "container": {
+        "devices": ["nvidia.com/gpu=all"],
+        "network": "host",
+        "extraOptions": ["--ipc=host"],
+        "environment": {
+          "HF_HUB_OFFLINE": "1",
+          "INFER_HEAD_ADDRESS": "10.100.0.2",
+          "INFER_HEAD_NODE": "spark-02",
+          "INFER_NODE": "spark-02",
+          "INFER_NODE_ADDRESS": "10.100.0.2",
+          "INFER_PORT": "8000",
+          "INFER_RANK": "0",
+          "INFER_ROLE": "head",
+          "INFER_WORLD_SIZE": "2"
+        },
+        "args": ["/models/target", "--served-model-name", "fixture"],
+        "mounts": [
+          {
+            "sourcePath": "/srv/models/hf/example/tiny-model/1111111111111111111111111111111111111111/bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01/files",
+            "targetPath": "/models/target",
+            "readOnly": true
+          }
+        ]
+      }
+    },
+    {
+      "node": "spark-01",
+      "role": "worker",
+      "rank": 1,
+      "container": {
+        "devices": ["nvidia.com/gpu=all"],
+        "network": "host",
+        "extraOptions": ["--ipc=host"],
+        "environment": {
+          "HF_HUB_OFFLINE": "1",
+          "INFER_HEAD_ADDRESS": "10.100.0.2",
+          "INFER_HEAD_NODE": "spark-02",
+          "INFER_NODE": "spark-01",
+          "INFER_NODE_ADDRESS": "10.100.0.1",
+          "INFER_PORT": "8000",
+          "INFER_RANK": "1",
+          "INFER_ROLE": "worker",
+          "INFER_WORLD_SIZE": "2"
+        },
+        "args": ["/models/target", "--served-model-name", "fixture"],
+        "mounts": [
+          {
+            "sourcePath": "/srv/models/hf/example/tiny-model/1111111111111111111111111111111111111111/bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01/files",
+            "targetPath": "/models/target",
+            "readOnly": true
+          }
+        ]
+      }
+    }
+  ],
+  "endpoint": {
+    "node": "spark-02",
+    "port": 8000,
+    "healthUrl": "http://192.168.1.32:8000/health",
+    "startupTimeoutSeconds": 900
+  }
+}

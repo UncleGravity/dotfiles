@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "instances": [
+    {
+      "name": "fixture",
+      "recipe": "fixture-vllm",
+      "nodes": ["spark-02", "spark-01"],
+      "autoStart": true
+    }
+  ]
+}

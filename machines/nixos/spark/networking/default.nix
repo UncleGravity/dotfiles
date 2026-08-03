@@ -20,6 +20,11 @@
     ) {}
     sparkNodes;
 in {
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.all.arp_announce" = 2;
+    "net.ipv4.conf.all.arp_ignore" = 1;
+  };
+
   networking = {
     useDHCP = false;
     useNetworkd = true;

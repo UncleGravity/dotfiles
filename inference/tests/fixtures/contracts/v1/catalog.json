@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "recipes": [
+    {
+      "schemaVersion": 1,
+      "name": "fixture-vllm",
+      "recipeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "models": [
+        {
+          "name": "target",
+          "repo": "example/tiny-model",
+          "revision": "1111111111111111111111111111111111111111",
+          "selection": {
+            "include": [],
+            "exclude": []
+          }
+        }
+      ],
+      "image": {
+        "platform": "linux/arm64",
+        "context": "/nix/store/fixture-context",
+        "containerfile": "/nix/store/fixture-containerfile",
+        "buildArgs": {
+          "VLLM_VERSION": "0.25.1"
+        },
+        "buildHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "topology": {
+        "nodeCounts": [1, 2],
+        "startOrder": "workers-first"
+      },
+      "container": {
+        "devices": ["nvidia.com/gpu=all"],
+        "extraOptions": ["--ipc=host"],
+        "environment": {
+          "HF_HUB_OFFLINE": "1"
+        },
+        "args": ["/models/target", "--served-model-name", "fixture"],
+        "mounts": []
+      },
+      "endpoint": {
+        "port": 8000,
+        "healthPath": "/health",
+        "startupTimeoutSeconds": 900
+      }
+    }
+  ]
+}

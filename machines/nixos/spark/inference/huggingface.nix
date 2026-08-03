@@ -23,6 +23,7 @@ in {
   environment.variables = {
     HF_HUB_ENABLE_HF_TRANSFER = "1"; # parallel chunked downloads
     HF_HUB_DISABLE_TELEMETRY = "1";
+    HF_HUB_DISABLE_XET = "1"; # Might improve download speed. Test.
   };
 
   # The hf CLI and huggingface_hub read ~/.cache/huggingface/token natively.

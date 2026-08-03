@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "hf",
+  "repo": "example/tiny-model",
+  "revision": "1111111111111111111111111111111111111111",
+  "selection": {
+    "include": [],
+    "exclude": []
+  },
+  "selectionHash": "bcc2f7aed6b59d62d50e40584b82bc67d8b784d501cdd45a57cf21871681cf01",
+  "files": [
+    {
+      "path": "config.json",
+      "size": 20,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "createdAt": "2026-07-31T00:00:00.000Z"
+}

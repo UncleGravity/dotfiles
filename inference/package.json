@@ -1,0 +1,40 @@
+{
+  "name": "inference",
+  "version": "0.1.0",
+  "description": "Declarative model preparation and inference orchestration",
+  "type": "module",
+  "bin": {
+    "infer": "dist/src/entrypoints/infer.js",
+    "infer-cluster": "dist/src/entrypoints/cluster.js",
+    "infer-instance": "dist/src/entrypoints/instance.js",
+    "infer-prepare": "dist/src/entrypoints/prepare.js",
+    "infer-remote": "dist/src/entrypoints/remote.js",
+    "models": "dist/src/entrypoints/models.js"
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/tests/cli.test.js dist/tests/contracts.test.js dist/tests/image-store.test.js dist/tests/instance-runtime.test.js dist/tests/model-store.test.js dist/tests/remote.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@effect/cli": "0.77.0",
+    "@effect/platform": "0.97.1",
+    "@effect/platform-node": "0.108.1",
+    "@effect/printer": "0.51.0",
+    "@effect/printer-ansi": "0.51.0",
+    "effect": "3.22.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "@types/ws": "8.18.1",
+    "typescript": "7.0.2"
+  },
+  "license": "UNLICENSED"
+}

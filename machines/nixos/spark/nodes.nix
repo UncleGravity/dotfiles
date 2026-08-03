@@ -1,8 +1,14 @@
-{
+let
+  readHostKey = name:
+    builtins.replaceStrings ["\n" "\r"] ["" ""] (
+      builtins.readFile ../../../secrets/host-keys/${name}.pub
+    );
+in {
   spark-01 = {
     id = 1;
     managementAddress = "192.168.1.31";
     managementMac = "4c:bb:47:2e:47:8c";
+    sshHostKey = readHostKey "spark-01";
     controller = true;
   };
 
@@ -10,6 +16,7 @@
     id = 2;
     managementAddress = "192.168.1.32";
     managementMac = "4c:bb:47:2e:35:8c";
+    sshHostKey = readHostKey "spark-02";
     controller = false;
   };
 

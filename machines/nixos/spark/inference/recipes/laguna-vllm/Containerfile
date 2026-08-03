@@ -1,0 +1,33 @@
+FROM docker.io/nvidia/cuda@sha256:450d11555d20ac8ebbbc13ebf17589c2bd42869171a90179ce7098b4a5e64c6a
+
+LABEL org.opencontainers.image.title="vLLM for Laguna S 2.1 on DGX Spark"
+LABEL org.opencontainers.image.version="0.25.1"
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    git \
+    libnuma1 \
+    python3.12 \
+    python3.12-dev \
+    python3-pip \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN python3.12 -m pip install --break-system-packages "uv==0.11.31" \
+  && uv venv /opt/vllm --python /usr/bin/python3.12 \
+  && uv pip install --python /opt/vllm/bin/python \
+    "vllm==0.25.1" \
+    --torch-backend=cu130 \
+  && uv pip install --python /opt/vllm/bin/python \
+    "flashinfer-python==0.6.15.dev20260712" \
+    "flashinfer-cubin==0.6.15.dev20260712" \
+    "flashinfer-jit-cache==0.6.15.dev20260712" \
+    --extra-index-url https://flashinfer.ai/whl/nightly/ \
+    --extra-index-url https://flashinfer.ai/whl/nightly/cu130/ \
+    --index-strategy unsafe-best-match \
+  && rm -rf /root/.cache/uv
+
+ENV PATH=/opt/vllm/bin:/usr/local/cuda/bin:$PATH
+ENTRYPOINT ["/opt/vllm/bin/vllm", "serve"]

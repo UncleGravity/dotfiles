@@ -1,30 +1,37 @@
 # Model staging over the Spark fabric
 
-Download large Hugging Face models once on `spark-01.local`, then replicate them
-to the other Sparks over the 200 Gbit/s fabric before starting inference. Ray and
-vLLM do not distribute model files themselves; every worker should load its
-tensor-parallel shard from an identical path on local NVMe.
+Archive a pinned Hugging Face artifact once and materialize one verified local
+replica on a Spark. Other Sparks can then pull that immutable artifact over
+`fabric0` without reading the NAS:
 
-Proposed workflow:
+```bash
+ssh spark-02.local models ensure \
+  poolside/Laguna-S-2.1-NVFP4@b482b5d57fda6e4e562a652869bde24ba2a57c92 \
+  --source spark-01
+```
 
-1. Use `hf download --local-dir` on `spark-01.local` to populate
-   `/srv/models/<model>`.
-2. Copy the completed directory to the other nodes using explicit fabric host
-   aliases. Use a tree transfer so `spark-01.local` does not send all three
-   copies sequentially.
-3. Verify the revision, file manifest, and transfer completion on every node.
-4. Mount the directory read-only at the same container path on all four nodes.
-5. Set `HF_HUB_OFFLINE=1`, start Ray, and start vLLM only after every local copy
-   is ready.
+Each Spark runs a read-only rsync daemon bound to its `10.100.0.x` address. The
+node name is resolved through `/etc/infer/inventory.json`; callers do not supply
+an address or arbitrary rsync path. The receiver copies the complete artifact
+into `/srv/models/.staging`, resumes interrupted files, verifies every byte
+against the included manifest, and atomically publishes the final path.
 
-The staging operation should be declarative and idempotent: pin the Hugging Face
-revision, support partial/resumable transfers, copy into a temporary directory,
-and atomically mark or rename a verified copy as ready. Compression should be
-disabled for weight files. A single SSH or rsync flow will normally use only one
-of the two logical fabric paths; saturating the aggregate 200 Gbit/s connection
-would require parallel shard transfers across both paths and will likely be
-limited by NVMe or encryption throughput first.
+Both physical fabric ports share a Layer-2 network. The Spark networking module
+uses Linux ARP announcement and reply controls so each logical fabric address is
+resolved only through the interface that owns it.
 
-Prefer replicated local storage over serving the model from `spark-01.local`
-through NFS, which would make model startup depend on one node's storage and
-network performance.
+The source daemon permits one outgoing stream. Cluster preparation therefore
+stages missing nodes sequentially in v1. `fabric1`, parallel shard transfer,
+tree fan-out, and compression are intentionally deferred until measurements
+show that NVMe or `fabric0` is not already the limiting resource.
+
+Inference containers continue to mount identical verified local paths read-only.
+They never load weights from NFS or the rsync daemon.
+
+## Measured baseline
+
+The first two-node test copied the 2.23 GB Laguna draft artifact in about one
+second and completed its full workflow in about eight seconds. The 71.9 GB
+primary artifact transferred in about 22 seconds, approximately 3.3 GB/s, then
+passed full SHA-256 verification and atomic publication. These figures are a
+baseline, not a performance contract.

@@ -18,6 +18,7 @@
     t = pkgs.callPackage ./t.nix {inherit pkgs lib;};
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
     helix = pkgs.callPackage ./helix {};
+    inference = pkgs.callPackage ../inference/nix/package.nix {};
   } // lib.optionalAttrs (system == "aarch64-darwin") {
     vm = pkgs.callPackage ./vm.nix {
       inherit lib pkgs;

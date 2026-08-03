@@ -1,0 +1,5 @@
+FROM docker.io/library/python@sha256:6d43704baacd1bfbe7c295d7f13079d5d8104ed33568873133f8fc69980419df
+
+COPY entrypoint.py /opt/infer/entrypoint.py
+
+ENTRYPOINT ["python3", "/opt/infer/entrypoint.py"]

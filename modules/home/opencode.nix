@@ -69,6 +69,24 @@
             };
           };
         };
+
+        dgx-spark = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "DGX Spark";
+
+          options = {
+            baseURL = "http://192.168.1.31:8888/v1";
+            apiKey = "vllm"; # Required by some clients, but not currently validated by vLLM
+          };
+
+          # models."poolside/Laguna-S-2.1-NVFP4" = {
+          #   name = "Laguna S 2.1 NVFP4";
+          # };
+
+          models."deepseek-ai/DeepSeek-V4-Flash-0731" = {
+            name = "DeepSeek V4 Flash 0731";
+          };
+        };
       };
       # -----------------------------------------------
     };
