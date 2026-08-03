@@ -107,7 +107,7 @@ in {
         "--block-size"
         "256"
         "--max-model-len"
-        "1048576"
+        "524288"
         "--max-num-seqs"
         "6"
         "--max-num-batched-tokens"

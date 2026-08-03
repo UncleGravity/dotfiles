@@ -24,7 +24,6 @@
     ./features/guacamole.nix
     ./features/hackrf.nix
     ./features/immich.nix
-    ../../inference/nix/modules
     ./features/nas.nix
     ./features/nvidia-ai.nix
     ./features/power.nix

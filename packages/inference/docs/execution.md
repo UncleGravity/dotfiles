@@ -2,11 +2,11 @@
 
 ## Status
 
-Sisyphus and single-node Spark execution are deployed. The static clustered
-unit model, pinned forced-command SSH transport, readiness barrier, coordinated
-stop, and automatic recovery have been hardware-validated between `spark-01`
-and `spark-02`. The `deepseek-v4-flash-0731` distributed recipe is declared but
-not yet hardware-validated.
+Sisyphus and Spark run declared inference instances as NixOS services. The
+single-node path and the static two-node lifecycle have been hardware-validated,
+including model and image preparation, ordered startup, readiness, coordinated
+stop, lease-loss cleanup, and OpenAI-compatible generation from the distributed
+DeepSeek V4 service.
 
 ## Instance Declaration
 
@@ -24,8 +24,8 @@ On a single-node deployment, omitted `nodes` selects the local node. A Spark
 instance declares an ordered node list explicitly:
 
 ```nix
-my.inference.instances.laguna-two-node = {
-  recipe = "laguna-vllm";
+my.inference.instances.deepseek-v4-flash-0731 = {
+  recipe = "deepseek-v4-flash-0731";
   nodes = ["spark-01" "spark-02"];
   autoStart = false;
 };
@@ -114,10 +114,10 @@ directly to the unit journal.
 
 ## Allocation
 
-V1 uses one non-blocking whole-node `flock`. It prevents two declared services
-from using the same GPU node at once without introducing a scheduler or lock
-database. The lock follows the service process and disappears after any exit,
-including a crash.
+Each node uses one non-blocking whole-node `flock`. It prevents two declared
+services from using the same GPU node at once without introducing a scheduler
+or lock database. The lock follows the service process and disappears after any
+exit, including a crash.
 
 For expected alternatives, declare several `autoStart = false` instances and
 start one. Starting an overlapping instance fails; systemd's start limit
@@ -145,8 +145,10 @@ idempotent `--ignore` behavior.
 Consequences:
 
 - closing an SSH session does not stop inference;
-- a runtime or container crash becomes a failed systemd invocation; clustered
-  controllers do not retry the whole cluster automatically;
+- a single-node runtime or container crash becomes a failed invocation and uses
+  `Restart=on-failure`;
+- a clustered failure stops every participant and leaves the control unit
+  failed for explicit operator review; it does not retry the whole cluster;
 - a host reboot restores only instances with `autoStart = true`;
 - an interrupted model copy remains resumable below `.staging`;
 - no stale desired-state file can resurrect a removed instance;
@@ -177,6 +179,12 @@ This adds coordination without restoring arbitrary command payloads, mutable
 topology flags, UUID state, or a general scheduler. Laguna remains a
 single-node recipe. DeepSeek V4 Flash 0731 keeps its worker-first vLLM MP
 startup and checkpoint-specific encoding preparation inside its recipe-local
-container entrypoint. Its 1M-context Spark profile uses eager execution because
-CUDA-graph profiling causes sustained host-memory reclaim during startup on the
-128 GB nodes.
+container entrypoint. Its 524,288-token context ceiling uses eager execution
+because CUDA-graph profiling causes sustained host-memory reclaim during
+startup on the 128 GB nodes.
+
+The DeepSeek recipe persists Triton, B12x, FlashInfer, and vLLM compiler caches
+below `/var/cache/deepseek-v4-flash-0731`. Those caches reduce repeated
+compilation, but every process start must still allocate and initialize its
+volatile KV cache and max-context workspaces. The service is therefore intended
+to remain running between requests rather than being started per task.

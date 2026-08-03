@@ -2,9 +2,9 @@
 
 ## Status
 
-These documents describe the current architecture and mark future Spark work
-where it matters. [Implementation](implementation.md) distinguishes completed,
-implemented-but-unvalidated, and future milestones.
+These documents describe the implemented inference package, its NixOS
+integration, and the deployment-local recipes that run on Sisyphus and Spark.
+Deferred work is recorded only where it affects an existing contract.
 
 ## Reading guide
 
@@ -14,7 +14,7 @@ implemented-but-unvalidated, and future milestones.
 | [Artifacts](artifacts.md) | How are models and OCI images identified, prepared, verified, and distributed? |
 | [Recipes](recipes.md) | How is a complete inference workload declared in Nix? |
 | [Execution](execution.md) | How does a Nix instance become a systemd service and recover from failure? |
-| [Implementation](implementation.md) | How will Nix, Effect, and existing host tools implement the design? |
+| [Implementation](implementation.md) | How do Nix, Effect, and existing host tools implement the design? |
 
 Read `architecture.md` first for the overview. Recipe authors can then go
 directly to `recipes.md`; runtime work generally needs `execution.md` and
@@ -29,9 +29,8 @@ definition.
 - Model manifests and image identity belong to `artifacts.md`.
 - Recipe and catalog contracts belong to `recipes.md`.
 - Instance planning and service behavior belong to `execution.md`.
-- Technology, source layout, packaging, and delivery order belong to
+- Technology, source layout, packaging, and validation belong to
   `implementation.md`.
 
-Deferred decisions stay with the document that owns the affected behavior.
-Add an operations guide when there is a deployed system to operate, and add a
-decision log only when a decision needs rationale beyond these design docs.
+Deferred decisions stay with the document that owns the affected behavior. Add
+a decision log only when a choice needs rationale beyond these design docs.

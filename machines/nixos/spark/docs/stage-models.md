@@ -21,17 +21,17 @@ uses Linux ARP announcement and reply controls so each logical fabric address is
 resolved only through the interface that owns it.
 
 The source daemon permits one outgoing stream. Cluster preparation therefore
-stages missing nodes sequentially in v1. `fabric1`, parallel shard transfer,
-tree fan-out, and compression are intentionally deferred until measurements
-show that NVMe or `fabric0` is not already the limiting resource.
+stages missing nodes sequentially. `fabric1`, parallel shard transfer, tree
+fan-out, and compression are intentionally deferred until measurements show
+that NVMe or `fabric0` is not already the limiting resource.
 
 Inference containers continue to mount identical verified local paths read-only.
 They never load weights from NFS or the rsync daemon.
 
 ## Measured baseline
 
-The first two-node test copied the 2.23 GB Laguna draft artifact in about one
-second and completed its full workflow in about eight seconds. The 71.9 GB
-primary artifact transferred in about 22 seconds, approximately 3.3 GB/s, then
-passed full SHA-256 verification and atomic publication. These figures are a
-baseline, not a performance contract.
+The 2.23 GB Laguna draft artifact has copied in about one second and completed
+its full workflow in about eight seconds. The 71.9 GB primary artifact has
+transferred in about 22 seconds, approximately 3.3 GB/s, then passed full
+SHA-256 verification and atomic publication. These figures are a baseline, not
+a performance contract.

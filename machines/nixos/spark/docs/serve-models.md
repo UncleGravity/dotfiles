@@ -29,9 +29,9 @@ ssh spark-01.local sudo systemctl stop infer-cluster-smoke
 ```
 
 This path has been validated across `spark-01` and `spark-02`, including exact
-digest distribution, readiness, clean coordinated stop, and automatic recovery
-after killing the worker container. It validates the cluster machinery, not a
-distributed inference engine.
+digest distribution, readiness, clean coordinated stop, and cleanup after a
+worker failure. It validates the cluster machinery, not a distributed inference
+engine.
 
 ## DeepSeek V4 Flash 0731
 
@@ -42,7 +42,7 @@ at its exact OCI digest. It declares worker-first startup, while its
 recipe-local entrypoint installs the checkpoint's encoding module and derives
 rank and rendezvous arguments from the generated plan. The service uses TP=2
 over `fabric0`, the `mlx5_0` RoCE device, NVFP4 DS-MLA KV cache, DSpark
-speculative decoding, and a 1M-token context ceiling.
+speculative decoding, and a 524,288-token context ceiling.
 
 Archive the approximately 167 GB checkpoint once. This command is resumable:
 
@@ -71,8 +71,10 @@ ssh spark-01.local curl --fail http://192.168.1.31:8888/v1/models
 ssh spark-01.local sudo systemctl stop infer-deepseek-v4-flash-0731
 ```
 
-The instance remains `autoStart = false` until its startup, generation,
-shutdown, and failure recovery have been validated on both nodes.
+The instance remains `autoStart = false` because it allocates both Sparks and
+has a substantial cold-start cost. Triton, B12x, FlashInfer, and vLLM compiler
+caches persist below `/var/cache/deepseek-v4-flash-0731`; KV cache and
+max-context workspaces are recreated on every process start.
 
 ## Laguna S 2.1 with vLLM
 
@@ -102,8 +104,8 @@ the image when its build hash is absent, restores its exact digest, and waits
 for the vLLM health endpoint. The preserved `/var/cache/vllm-laguna` mount
 retains runtime compilation artifacts across container restarts. The recipe
 selects vLLM's `fastsafetensors` loader; on `spark-01` this reduced the reported
-weight-loading phase from 472.53 seconds to about 21 seconds. After hardware
-validation, set `my.inference.instances.laguna.autoStart = true`.
+weight-loading phase from 472.53 seconds to about 21 seconds. The instance
+remains `autoStart = false` so the Spark is allocated explicitly.
 
 ## Open WebUI
 

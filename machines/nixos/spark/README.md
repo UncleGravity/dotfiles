@@ -1,8 +1,8 @@
 # DGX Spark cluster
 
-Four DGX Sparks on a MikroTik CRS804 fabric. `spark-01` currently carries the
-controller-only infrastructure configuration; inference roles are selected per
-run. The configuration uses
+Four DGX Sparks on a MikroTik CRS804 fabric. `spark-01` hosts shared inference
+coordination and the deployment-local OCI registry; each declared instance
+selects its participant nodes and assigns their roles. The configuration uses
 [nixos-dgx-spark](https://github.com/graham33/nixos-dgx-spark).
 
 ## Inventory
@@ -58,8 +58,8 @@ Rollback is a reboot into the previous systemd-boot generation.
 ## Documentation
 
 - [Install a node](docs/install-node.md)
-- [Inference architecture](../../../inference/docs/architecture.md)
-- [Inference implementation](../../../inference/docs/implementation.md)
+- [Inference architecture](../../../packages/inference/docs/architecture.md)
+- [Inference implementation](../../../packages/inference/docs/implementation.md)
 - [Stage models across the fabric](docs/stage-models.md)
 - [Serve models](docs/serve-models.md)
 

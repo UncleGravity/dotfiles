@@ -55,45 +55,50 @@ The attribute key is the canonical recipe name injected into the catalog, so
 the recipe value does not repeat it.
 
 If two deployments later use one recipe unchanged, promote it to
-`inference/recipes/<name>/` and select it from both configurations. Do not
-import a recipe from another machine directory.
+`packages/inference/recipes/<name>/` and select it from both configurations.
+Do not import a recipe from another machine directory.
 
 ## Recipe example
 
-A deployment-local recipe remains self-contained:
+A deployment-local recipe remains self-contained. For example, the Sisyphus
+llama.cpp recipe declares its model, secret, image context, and server command
+together:
 
 ```nix
-# machines/nixos/spark/inference/recipes/laguna-vllm/default.nix
+# machines/nixos/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix
 let
-  modelRoot = "/models/target";
+  modelFile = "Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf";
+  modelPath = "/models/primary/${modelFile}";
+  apiKeyPath = "/run/secrets/sisyphus/llama-api-key";
 in {
-  my.inference.recipes.laguna-vllm = {
-    models.target = {
-      repo = "poolside/Laguna-S-2.1-NVFP4";
-      revision = "<commit>";
+  sops.secrets."sisyphus/llama-api-key".mode = "0400";
+
+  my.inference.recipes.qwen3-6-heretic-27b = {
+    models.primary = {
+      repo = "llmfan46/Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-GGUF";
+      revision = "a6b6a6d9385fe7850644e56bfdc93a04a6cb2ee8";
+      selection.include = [modelFile];
     };
 
-    image = {
-      context = ./.;
-      buildArgs.VLLM_VERSION = "0.25.1";
-    };
-
-    topology = {
-      nodeCounts = [2 4];
-      startOrder = "workers-first";
-    };
+    image.context = ./.;
 
     container = {
       devices = ["nvidia.com/gpu=all"];
-      extraOptions = ["--ipc=host"];
+      mounts = [{
+        sourcePath = apiKeyPath;
+        targetPath = apiKeyPath;
+      }];
       args = [
-        modelRoot
-        "--served-model-name"
-        "poolside/Laguna-S-2.1-NVFP4"
+        "--model"
+        modelPath
+        "--port"
+        "8080"
+        "--api-key-file"
+        apiKeyPath
       ];
     };
 
-    endpoint.port = 8000;
+    endpoint.port = 8080;
   };
 }
 ```
@@ -113,15 +118,15 @@ invariants injected by the normalizer and planner. Additional host mounts
 default to read-only and may explicitly set `readOnly = false` for a required
 persistent runtime cache.
 
-Endpoint ports are recipe-defined in v1; because each node permits one
-inference allocation, the node lock prevents two recipes from binding the same
-host port. `/health` and a 900-second startup timeout are defaults that recipes
-may override.
+Endpoint ports are recipe-defined. Because each node permits one inference
+allocation, the node lock prevents two recipes from binding the same host port.
+`/health` and a 900-second startup timeout are defaults that recipes may
+override.
 
 Endpoint authentication is also recipe policy rather than a generic runtime
 schema. A recipe may mount a deployment secret and configure its server to
-enforce it. The Spark Laguna recipe deliberately uses unauthenticated HTTP on
-the trusted LAN in v1 and remains `autoStart = false` at the instance layer.
+enforce it. Spark recipes currently use unauthenticated HTTP on the trusted LAN
+and remain `autoStart = false` at the instance layer.
 
 ## Topology and entrypoints
 

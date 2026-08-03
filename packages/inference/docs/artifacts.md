@@ -34,7 +34,7 @@ Store each selected model revision as one immutable, materialized artifact:
         `-- model-00001-of-00008.safetensors
 ```
 
-The initial roots are:
+The default roots are:
 
 ```text
 archive: /mnt/nas/unas/ai/models
@@ -86,8 +86,9 @@ Cluster replication copies the final artifact into the destination's matching
 integrity contract, but it does not need to describe a Hugging Face blob closure
 or generate an rsync file list.
 
-Both control nodes may archive so Sisyphus remains independent of the Sparks.
-Archive writers serialize each artifact with an atomic lock directory under:
+Each deployment control node may archive, so Sisyphus remains independent of
+the Sparks. Archive writers serialize each artifact with an atomic lock
+directory under:
 
 ```text
 <archive>/.locks/hf/<org>/<repo>/<commit>/<selection-hash>/
@@ -111,8 +112,7 @@ models status ORG/REPO@COMMIT [--include PATTERN] [--exclude PATTERN]
 models verify ORG/REPO@COMMIT [--include PATTERN] [--exclude PATTERN]
 ```
 
-Here, `[selection]` means the same optional repeated `--include` and
-`--exclude` flags. Omitting them selects the complete revision. Every read
+Omitting `--include` and `--exclude` selects the complete revision. Every
 command supports `--json`.
 
 `status` checks publication metadata and reports archive and replica readiness
@@ -145,16 +145,17 @@ NAS artifact -> local staging -> verify -> atomic rename
 The clustered instance workflow extends the same primitive. For several
 Sparks:
 
-1. Select an existing verified replica as the seed when possible.
-2. If none exists, stage one selected Spark from the NAS.
-3. Have each missing node pull sequentially from the seed's read-only rsync
-   daemon on `fabric0`.
-4. Use `--whole-file` and a partial directory against the exact artifact path.
-5. Verify and atomically publish every requested replica before returning
+1. Ensure a verified replica on the deployment control node, using the archive
+   only when its local replica is missing.
+2. Have each missing participant pull sequentially from the control node's
+   read-only rsync daemon on `fabric0`.
+3. Use `--whole-file` and a partial directory against the exact artifact path.
+4. Verify and atomically publish every requested replica before returning
    success.
 
-V1 permits one outgoing model stream per seed and does not use `fabric1` or a
-tree topology. Transfer parallelism is tuning, not part of correctness.
+The current implementation permits one outgoing model stream from the control
+node and does not use `fabric1` or a tree topology. Transfer parallelism is
+tuning, not part of correctness.
 
 Every Spark exposes its local model root as the read-only `models` rsync module,
 bound only to its `fabric0` address on port 873. The daemon runs with enough
@@ -182,11 +183,11 @@ Each deployment runs a minimal OCI registry using local filesystem storage:
 - Spark: `10.100.0.1:5000`, bound only to `spark-01`'s trusted fabric address.
 - Sisyphus: `127.0.0.1:5000`, bound only to loopback on `sisyphus`.
 
-Both store data in `/var/lib/infer/registry`. V1 uses plain HTTP inside these
-restricted boundaries, disables deletion, keeps all published images, and
-performs no garbage collection. The registry is a rebuildable cache and is not
-backed up. V1 needs no registry UI, database, Redis, replication, or high
-availability.
+Both store data in `/var/lib/infer/registry`. The registry uses plain HTTP
+inside these restricted boundaries, disables deletion, keeps all published
+images, and performs no garbage collection. It is a rebuildable cache and is
+not backed up. It has no UI, database, Redis, replication, or high-availability
+layer.
 
 Two identifiers remain distinct:
 
@@ -247,8 +248,8 @@ consumer are one host. This avoids a second local-image identity backend.
 Registry unavailability blocks instance preparation, including a restart with
 an image already cached by Podman. This conservative behavior avoids running a
 local image whose build tag can no longer be resolved. Recipes pin base images
-by digest and dependency versions wherever practical; v1 does not mirror
-external package repositories.
+by digest and dependency versions wherever practical; the system does not
+mirror external package repositories.
 
 References:
 

@@ -2,10 +2,10 @@
 
 ## Status
 
-This document defines the current architecture. Sisyphus and Spark implement
-the single-node path. Spark artifact distribution and generic two-node
-clustered execution are hardware-validated; a real distributed inference
-recipe is declared but not yet hardware-validated.
+This document defines the implemented architecture. Sisyphus runs independent
+single-node inference. Spark supports single-node services, fabric-only artifact
+distribution, and static multi-node services; the two-node DeepSeek V4 recipe
+has served OpenAI-compatible requests across `spark-01` and `spark-02`.
 
 - [Artifacts](artifacts.md) owns model and image identity and preparation.
 - [Recipes](recipes.md) owns workload declarations.
@@ -30,7 +30,7 @@ recipe is declared but not yet hardware-validated.
 - Encoding downloaded artifacts in the Nix store.
 - Building a general scheduler, container DSL, or distributed database.
 - Creating arbitrary topologies at runtime.
-- Running more than one inference allocation on a node in v1.
+- Running more than one inference allocation on a node.
 - Coordinating Sisyphus and Spark as one deployment.
 
 ## Deployments
@@ -90,7 +90,7 @@ state.
 - systemd stopping or failure cleanup removes the named container.
 - Sisyphus has no runtime dependency on a Spark host.
 
-## Control Role
+## Control role
 
 The control node is deployment configuration, not necessarily an inference
 participant. It owns image publication and coordination of statically declared
