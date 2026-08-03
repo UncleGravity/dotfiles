@@ -1,47 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Script to create ZFS snapshot for backup.
-# It takes the path to the zfs binary as its first argument, followed by the dataset and snapshot name.
 # Usage: create-snapshots.sh <zfs_binary_path> <dataset> <snapshot_name>
 
 log() { echo "(pre-backup hook) $*"; }
 
-# ---------------------- argument handling ----------------------
-if [ $# -ne 3 ]; then
+if (( $# != 3 )); then
   log "Usage: $0 <zfs_binary_path> <dataset> <snapshot_name>"
   exit 1
 fi
 
-ZFS=$1
-DATASET=$2
-SNAPSHOT_NAME=$3
+readonly ZFS=$1
+readonly DATASET=$2
+readonly SNAPSHOT_NAME=$3
+readonly SNAPSHOT="${DATASET}@${SNAPSHOT_NAME}"
 
-if [ ! -x "$ZFS" ]; then
+if [[ ! -x "$ZFS" ]]; then
   log "ERROR: '$ZFS' is not executable"
   exit 1
 fi
-# ---------------------------------------------------------------
 
-log "Processing $DATASET"
-
-# ---- hard fail if snapshot already exists ----
-if "$ZFS" list -H -o name "${DATASET}@${SNAPSHOT_NAME}" &>/dev/null; then
-  log "ERROR: ${DATASET}@${SNAPSHOT_NAME} already exists; aborting."
-  exit 1
-fi
-# ---------------------------------------------
-
-if "$ZFS" snapshot "${DATASET}@${SNAPSHOT_NAME}"; then
-  sleep 1
-  log "Created ${DATASET}@${SNAPSHOT_NAME}"
-
-  # For some reason accessing the snapshot helps the stability of the backup script
-  MOUNTPOINT=$("$ZFS" get -H -o value mountpoint "$DATASET")
-  ls "$MOUNTPOINT/.zfs/snapshot/${SNAPSHOT_NAME}"
-else
-  log "ERROR: failed to create ${DATASET}@${SNAPSHOT_NAME}"
+if "$ZFS" list -H -t snapshot -o name "$SNAPSHOT" &>/dev/null; then
+  log "ERROR: $SNAPSHOT already exists; aborting"
   exit 1
 fi
 
-log "Snapshot created successfully"
+if ! "$ZFS" snapshot "$SNAPSHOT"; then
+  log "ERROR: failed to create $SNAPSHOT"
+  exit 1
+fi
+
+mountpoint=$("$ZFS" get -H -o value mountpoint "$DATASET")
+snapshot_path="$mountpoint/.zfs/snapshot/$SNAPSHOT_NAME"
+
+if [[ ! -d "$snapshot_path" ]]; then
+  log "ERROR: snapshot is not accessible at $snapshot_path"
+  exit 1
+fi
+
+# Force ZFS to automount the snapshot before Restic applies --one-file-system.
+if ! ls -A "$snapshot_path" >/dev/null; then
+  log "ERROR: failed to access snapshot contents at $snapshot_path"
+  exit 1
+fi
+
+log "Created $SNAPSHOT at $snapshot_path"

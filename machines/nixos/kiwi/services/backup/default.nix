@@ -1,155 +1,132 @@
 {
-  pkgs,
   config,
   hostname,
+  lib,
+  pkgs,
   ...
-}:
-# Inspo: https://www.arthurkoziel.com/restic-backups-b2-nixos/
-# Cache Dir: /var/cache/restic-backups-${name}
-let
+}: let
   backupDataset = "storagepool/root";
-  mountPoint = "/nas"; # List zfs datasets and mountpoints: `zfs list`
-  snapshotName = "backup"; # List zfs snapshots: zfs list -t snapshot
+  mountPoint = "/nas";
+  ntfy = lib.getExe pkgs.ntfy-sh;
+  ntfyTitle = "${hostname} Backup";
+  ntfyTopicFile = config.sops.secrets."ntfy/topic".path;
 
-  # Notification helper
-  notify = message: "NTFY_TOPIC=$(cat ${config.sops.secrets."ntfy/topic".path}) ${pkgs.ntfy-sh}/bin/ntfy pub -m \"${message}\" -t \"${hostname} Backup\"";
-in {
-  # -----------------------------------------------------------------------------------------------
-  # Secrets
-  sops.secrets = {
-    "backup/b2.env" = {}; # Backblaze B2
-    "backup/b2/restic/repo" = {}; # Backblaze B2
-    "backup/b2/restic/password" = {}; # Backblaze B2
-    "backup/t7-password" = {}; # Backblaze B2
-    "ntfy/topic" = {}; # NTFY notifications
-  };
+  notify = message: ''NTFY_TOPIC="$(<${ntfyTopicFile})" ${ntfy} pub -m ${lib.escapeShellArg message} -t ${lib.escapeShellArg ntfyTitle}'';
 
-  # --- B2 ----------------------------------------------------------
-  # This service is automatically created by services.restic.backup.
-  # Here we modify it to add better error handling
-  systemd.services."restic-backups-b2" = {
-    unitConfig = {
-      RequiresMountsFor = ["${mountPoint}"]; # Fail if /nas is not mounted
-      After = ["network-online.target"]; # Internet required
-      Wants = ["network-online.target"]; # Internet Required
-      OnFailure = ["notify-backup-failed@%n.service"]; # "%n" becomes "restic-backups-[b2|t7]"
-    };
-    # Allows us to use ./<snapshot> as restic path
-    # See (<mountpoint>/<files>) instead of <mountpoint>/nas/.zfs/snapshot/<files>
-    serviceConfig.WorkingDirectory = "${mountPoint}/.zfs/snapshot/";
-  };
+  mkBackup = {
+    extraBackupArgs ? [],
+    label,
+    name,
+    onCalendar,
+  }: let
+    snapshotName = "backup-${name}";
+  in {
+    initialize = true;
+    inhibitsSleep = true;
 
-  # --- T7 SSD ------------------------------------------------------
-  systemd.services."restic-backups-t7" = {
-    unitConfig = {
-      RequiresMountsFor = ["${mountPoint}" "/mnt/t7"]; # Fail if /nas + /mnt/t7 are not mounted
-      After = ["network-online.target"]; # Internet required
-      Wants = ["network-online.target"]; # Internet Required
-      OnFailure = ["notify-backup-failed@%n.service"]; # "%n" becomes "restic-backups-[b2|t7]"
-    };
-    # Allows us to use ./<snapshot> as restic path
-    # See (<mountpoint>/<files>) instead of <mountpoint>/nas/.zfs/snapshot/<files>
-    serviceConfig.WorkingDirectory = "${mountPoint}/.zfs/snapshot/";
-  };
+    paths = ["./${snapshotName}"];
 
-  # -----------------------------------------------------------------------------------------------
-  # On Backup Failed Service
-  # For more details: https://manpages.ubuntu.com/manpages/xenial/man5/systemd.unit.5.html
-
-  systemd.services."notify-backup-failed@" = {
-    description = "Send ntfy alert when %i fails";
-    restartIfChanged = false; # it’s oneshot; no need to restart on config change
-    serviceConfig.Type = "oneshot";
-    scriptArgs = "%i"; # %i → failed-unit name becomes $1 in the shell
-    path = with pkgs; [ntfy-sh coreutils];
-
-    script = ''
-      failed="$1"
-      logs=$(journalctl -u "$failed" -n 20 -o cat)
-      echo "$logs"
-      ${notify ''$failed failed!''} # Yell out who failed
+    backupPrepareCommand = ''
+      ${notify "${label} Backup started"} || true
+      ${pkgs.bash}/bin/bash ${./create-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
     '';
+
+    backupCleanupCommand = ''
+      ${pkgs.bash}/bin/bash ${./cleanup-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
+    '';
+
+    extraBackupArgs =
+      [
+        "--tag=nas"
+        "--one-file-system"
+      ]
+      ++ extraBackupArgs;
+
+    pruneOpts = [
+      "--keep-weekly=7"
+      "--keep-monthly=6"
+    ];
+
+    timerConfig = {
+      OnCalendar = onCalendar;
+      Persistent = true;
+    };
   };
 
-  # -----------------------------------------------------------------------------------------------
-  # Restic config
+  mkResticService = requiredMounts: {
+    unitConfig = {
+      RequiresMountsFor = requiredMounts;
+      OnFailure = ["notify-backup-failed@%N.service"];
+      OnSuccess = ["notify-backup-success@%N.service"];
+    };
+    serviceConfig.WorkingDirectory = "${mountPoint}/.zfs/snapshot";
+  };
+in {
+  sops.secrets = {
+    "backup/b2.env" = {};
+    "backup/b2/restic/repo" = {};
+    "backup/b2/restic/password" = {};
+    "backup/t7-password" = {};
+    "ntfy/topic" = {};
+  };
+
+  systemd.services = {
+    "restic-backups-b2" = mkResticService [mountPoint];
+    "restic-backups-t7" = mkResticService [mountPoint "/mnt/t7"];
+
+    "notify-backup-success@" = {
+      description = "Send ntfy alert when %i completes";
+      serviceConfig.Type = "oneshot";
+      scriptArgs = "%i";
+      script = ''
+        unit="$1"
+        NTFY_TOPIC="$(<${ntfyTopicFile})" ${ntfy} pub \
+          -m "$unit completed successfully" \
+          -t ${lib.escapeShellArg ntfyTitle}
+      '';
+    };
+
+    "notify-backup-failed@" = {
+      description = "Send ntfy alert when %i fails";
+      serviceConfig.Type = "oneshot";
+      scriptArgs = "%i";
+      script = ''
+        unit="$1"
+        logs="$(journalctl -u "$unit.service" -n 20 -o cat --no-pager | tail -c 3000 || true)"
+        message="$unit failed"
+        if [[ -n "$logs" ]]; then
+          message+=$'\n\n'"$logs"
+        fi
+        NTFY_TOPIC="$(<${ntfyTopicFile})" ${ntfy} pub \
+          -m "$message" \
+          -t ${lib.escapeShellArg ntfyTitle}
+      '';
+    };
+  };
+
   services.restic.backups = {
-    b2 = {
-      initialize = true; # Create repo if it doesn't exist
-      inhibitsSleep = true;
-
-      environmentFile = config.sops.secrets."backup/b2.env".path;
-      repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
-      passwordFile = config.sops.secrets."backup/b2/restic/password".path;
-
-      paths = ["./${snapshotName}"];
-      # exclude = [];
-
-      # Create snapshot of the dataset. They will be named <dataset-mountpoint>@<snapshotName>
-      backupPrepareCommand = ''
-        ${notify "B2 Backup started"}
-        ${pkgs.bash}/bin/bash ${./create-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
-      '';
-
-      backupCleanupCommand = ''
-        ${pkgs.bash}/bin/bash ${./cleanup-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
-        ${notify "B2 Backup complete"}
-      '';
-
-      extraBackupArgs = [
-        "--tag=nas"
-        "--one-file-system"
-        "--limit-upload 10000" # speed limit
-        # "--verbose=2"
-      ];
-
-      pruneOpts = [
-        # "--keep-daily 24"
-        "--keep-weekly 7"
-        "--keep-monthly 6"
-      ];
-
-      timerConfig = {
-        # OnCalendar = "Sun *-*-* 03:01:00"; # Weekly backup on Sundays at 3:01 AM
-        OnCalendar = "03:01:00"; # Daily backup at 3:01 AM
+    b2 =
+      mkBackup {
+        name = "b2";
+        label = "B2";
+        onCalendar = "03:01:00";
+        extraBackupArgs = ["--limit-upload=10000"];
+      }
+      // {
+        environmentFile = config.sops.secrets."backup/b2.env".path;
+        repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
+        passwordFile = config.sops.secrets."backup/b2/restic/password".path;
       };
-    };
-    t7 = {
-      initialize = true; # Create repo if it doesn't exist
-      inhibitsSleep = true;
 
-      passwordFile = config.sops.secrets."backup/t7-password".path;
-      repository = "/mnt/t7/restic";
-
-      paths = ["./${snapshotName}"];
-      # exclude = [];
-
-      # Create snapshot of the dataset. They will be named <dataset-mountpoint>@<snapshotName>
-      backupPrepareCommand = ''
-        ${notify "T7 Backup started"}
-        ${pkgs.bash}/bin/bash ${./create-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
-      '';
-
-      backupCleanupCommand = ''
-        ${pkgs.bash}/bin/bash ${./cleanup-snapshots.sh} ${pkgs.zfs}/bin/zfs ${backupDataset} ${snapshotName}
-        ${notify "T7 Backup complete"}
-      '';
-
-      extraBackupArgs = [
-        "--tag=nas"
-        "--one-file-system"
-        # "--verbose=2"
-      ];
-
-      pruneOpts = [
-        # "--keep-daily 24"
-        "--keep-weekly 7"
-        "--keep-monthly 6"
-      ];
-
-      timerConfig = {
-        OnCalendar = "02:01:00"; # Daily backup at 2:01 AM
+    t7 =
+      mkBackup {
+        name = "t7";
+        label = "T7";
+        onCalendar = "02:01:00";
+      }
+      // {
+        passwordFile = config.sops.secrets."backup/t7-password".path;
+        repository = "/mnt/t7/restic";
       };
-    };
   };
 }
