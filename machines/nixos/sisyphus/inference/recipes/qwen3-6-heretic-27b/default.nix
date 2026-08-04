@@ -1,12 +1,8 @@
 let
   modelFile = "Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf";
   modelPath = "/models/primary/${modelFile}";
-  apiKeyPath = "/run/secrets/sisyphus/llama-api-key";
+  port = 8080;
 in {
-  sops.secrets."sisyphus/llama-api-key" = {
-    mode = "0400";
-  };
-
   my.inference.recipes.qwen3-6-heretic-27b = {
     models.primary = {
       repo = "llmfan46/Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-GGUF";
@@ -18,12 +14,6 @@ in {
 
     container = {
       devices = ["nvidia.com/gpu=all"];
-      mounts = [
-        {
-          sourcePath = apiKeyPath;
-          targetPath = apiKeyPath;
-        }
-      ];
       args = [
         "--model"
         modelPath
@@ -36,11 +26,9 @@ in {
         "--threads"
         "8"
         "--port"
-        "8080"
+        (toString port)
         "--host"
-        "127.0.0.1"
-        "--api-key-file"
-        apiKeyPath
+        "0.0.0.0"
         "--spec-type"
         "draft-mtp"
         "--spec-draft-n-max"
@@ -49,8 +37,10 @@ in {
     };
 
     endpoint = {
-      port = 8080;
+      inherit port;
       startupTimeoutSeconds = 300;
     };
   };
+
+  networking.firewall.allowedTCPPorts = [port];
 }

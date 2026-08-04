@@ -3,13 +3,19 @@
   config,
   ...
 }: let
+  domain = "grafana.angel.pizza";
+  authDomain = "auth.angel.pizza";
+  port = 3131;
   # Store our dashboards JSON under ./dashboards/*.json relative to this file
   dashboardDir = "/etc/grafana/dashboards";
 in {
-  sops.secrets."grafana/password" = {
+  sops.secrets."grafana/oauth-client-secret" = {
+    sopsFile = ../../secrets/secrets.yaml;
+    key = "tinyauth/oidc/grafana-client-secret";
     mode = "0600";
     owner = "grafana";
     group = "grafana";
+    restartUnits = ["grafana.service"];
   };
 
   sops.secrets."grafana/secret-key" = {
@@ -25,8 +31,9 @@ in {
     settings = {
       server = {
         http_addr = "0.0.0.0";
-        http_port = 3131;
-        domain = "grafana.angel.pizza";
+        http_port = port;
+        inherit domain;
+        root_url = "https://${domain}/";
       };
 
       # Security / user management:
@@ -36,11 +43,31 @@ in {
       };
 
       security = {
-        admin_user = "admin";
-        admin_password = "$__file{${config.sops.secrets."grafana/password".path}}";
         secret_key = "$__file{${config.sops.secrets."grafana/secret-key".path}}";
+        disable_initial_admin_creation = true;
         disable_gravatar = true;
         cookie_secure = true;
+      };
+
+      auth.disable_login_form = true;
+      "auth.basic".enabled = false;
+      "auth.generic_oauth" = {
+        enabled = true;
+        name = "TinyAuth";
+        allow_sign_up = true;
+        auto_login = true;
+        client_id = "686c07de-8601-48af-8ac1-59c2a05856c0";
+        client_secret = "$__file{${config.sops.secrets."grafana/oauth-client-secret".path}}";
+        scopes = "openid profile email";
+        auth_url = "https://${authDomain}/authorize";
+        token_url = "https://${authDomain}/api/oidc/token";
+        api_url = "https://${authDomain}/api/oidc/userinfo";
+        login_attribute_path = "preferred_username";
+        name_attribute_path = "name";
+        email_attribute_path = "email";
+        role_attribute_path = "preferred_username == 'angel' && 'Admin'";
+        role_attribute_strict = true;
+        use_refresh_token = true;
       };
 
       analytics.reporting_enabled = false; # opt-out telemetry
@@ -91,6 +118,19 @@ in {
         };
       };
     };
+  };
+
+  services.newt.blueprint.proxy-resources.grafana = {
+    name = "Grafana";
+    protocol = "http";
+    full-domain = domain;
+    targets = [
+      {
+        hostname = "localhost";
+        method = "http";
+        inherit port;
+      }
+    ];
   };
 
   services.prometheus = {
@@ -213,11 +253,11 @@ in {
   };
 
   # Make dashboards available to Grafana
-  # environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
-  # environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+  environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
+  environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
 
   networking.firewall.allowedTCPPorts = [
-    3131
+    port
     9273
     9753
   ]; # Grafana, Telegraf, and restic exporters

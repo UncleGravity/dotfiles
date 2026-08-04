@@ -3,7 +3,7 @@
     enable = true;
 
     settings = {
-      # model = lib.mkDefault "llamacpp/qwen3.6-27b-heretic";
+      # model = lib.mkDefault "litellm/sisyphus-current";
       # model = lib.mkDefault "opencode/glm-5.2";
 
       # -----------------------------------------------
@@ -34,21 +34,23 @@
           };
         };
 
-        sisyphus = {
+        litellm = {
           npm = "@ai-sdk/openai-compatible";
-          name = "llama.cpp (remote)";
+          name = "LiteLLM";
 
           options = {
-            baseURL = "https://ai.angel.pizza/v1";
-            apiKey = "{env:SISYPHUS_API_KEY}";
+            baseURL = "https://ai-api.angel.pizza/v1";
+            apiKey = "{env:LITELLM_API_KEY}";
           };
 
-          models."qwen3.6-27b-heretic" = {
-            name = "Qwen 3.6 27B Heretic";
-            # limit = {
-            #   context = 32768;
-            #   output = 8192;
-            # };
+          models = {
+            "sisyphus-current" = {
+              name = "Sisyphus Current";
+            };
+
+            "spark-current" = {
+              name = "Spark Current";
+            };
           };
         };
 
@@ -67,24 +69,6 @@
               context = 5120;
               output = 1024;
             };
-          };
-        };
-
-        dgx-spark = {
-          npm = "@ai-sdk/openai-compatible";
-          name = "DGX Spark";
-
-          options = {
-            baseURL = "http://192.168.1.31:8888/v1";
-            apiKey = "vllm"; # Required by some clients, but not currently validated by vLLM
-          };
-
-          # models."poolside/Laguna-S-2.1-NVFP4" = {
-          #   name = "Laguna S 2.1 NVFP4";
-          # };
-
-          models."deepseek-ai/DeepSeek-V4-Flash-0731" = {
-            name = "DeepSeek V4 Flash 0731";
           };
         };
       };

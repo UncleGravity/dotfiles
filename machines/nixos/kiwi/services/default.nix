@@ -1,5 +1,6 @@
 {...}: {
   imports = [
+    ./ai.nix
     ./backup
     ./copyparty.nix
     ./grafana
@@ -9,6 +10,7 @@
     ./nfs.nix
     ./samba.nix
     ./tailscale.nix
+    ./tinyauth.nix
     ./uptime-kuma.nix
   ];
 }
