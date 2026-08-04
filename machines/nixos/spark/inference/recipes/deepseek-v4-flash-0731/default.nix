@@ -35,6 +35,7 @@ in {
       devices = [
         "nvidia.com/gpu=all"
         "/dev/infiniband/uverbs0"
+        "/dev/infiniband/uverbs2"
       ];
       extraOptions = [
         "--ipc=host"
@@ -57,7 +58,8 @@ in {
         NCCL_DEBUG = "WARN";
         NCCL_IB_ADDR_FAMILY = "AF_INET";
         NCCL_IB_DISABLE = "0";
-        NCCL_IB_HCA = "mlx5_0";
+        NCCL_IB_HCA = "=mlx5_0:1,mlx5_2:1";
+        NCCL_IB_MERGE_NICS = "1";
         NCCL_IB_ROCE_VERSION_NUM = "2";
         NCCL_IGNORE_CPU_AFFINITY = "1";
         NCCL_NET = "IB";
@@ -73,8 +75,10 @@ in {
         VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M = "16";
         VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM = "0";
         VLLM_CACHE_ROOT = "/cache/vllm";
+        VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS = "0";
         VLLM_SPARSE_INDEXER_MAX_LOGITS_MB = "256";
         VLLM_USE_B12X_MOE = "1";
+        VLLM_USE_BREAKABLE_CUDAGRAPH = "0";
         VLLM_USE_FLASHINFER_SAMPLER = "1";
       };
       mounts = [
@@ -112,9 +116,10 @@ in {
         "6"
         "--max-num-batched-tokens"
         "8192"
+        "--max-cudagraph-capture-size"
+        "36"
         "--gpu-memory-utilization"
         "0.80"
-        "--enforce-eager"
         "--enable-prefix-caching"
         "--enable-prompt-tokens-details"
         "--async-scheduling"
@@ -125,6 +130,8 @@ in {
         "deepseek_v4"
         "--distributed-executor-backend"
         "mp"
+        "--distributed-timeout-seconds"
+        "3600"
         "--moe-backend"
         "flashinfer_b12x"
         "--tool-call-parser"

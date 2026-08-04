@@ -41,8 +41,11 @@ commit `7872f01b1d1fe23eabc4c98b48bffcef5a386062` and the Anemll GB10 vLLM image
 at its exact OCI digest. It declares worker-first startup, while its
 recipe-local entrypoint installs the checkpoint's encoding module and derives
 rank and rendezvous arguments from the generated plan. The service uses TP=2
-over `fabric0`, the `mlx5_0` RoCE device, NVFP4 DS-MLA KV cache, DSpark
-speculative decoding, and a 524,288-token context ceiling.
+with NCCL traffic balanced across the `mlx5_0` and `mlx5_2` RoCE devices;
+rendezvous and other control traffic remain on `fabric0`. It also uses NVFP4
+DS-MLA KV cache, DSpark speculative decoding, regular CUDA graphs, and a
+524,288-token context ceiling. The distributed startup timeout is extended to
+cover graph capture on both ranks.
 
 Archive the approximately 167 GB checkpoint once. This command is resumable:
 
