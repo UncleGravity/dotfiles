@@ -1,264 +1,323 @@
 {
-  pkgs,
   config,
+  lib,
+  pkgs,
   ...
 }: let
   domain = "grafana.angel.pizza";
   authDomain = "auth.angel.pizza";
-  port = 3131;
-  # Store our dashboards JSON under ./dashboards/*.json relative to this file
+  address = "127.0.0.1";
+  grafanaPort = 3131;
+  prometheusPort = 9090;
+  nodeExporterPort = 9100;
+  resticExporterPorts = {
+    b2 = 9753;
+    t7 = 9754;
+  };
   dashboardDir = "/etc/grafana/dashboards";
-in {
-  sops.secrets."grafana/oauth-client-secret" = {
-    sopsFile = ../../secrets/secrets.yaml;
-    key = "tinyauth/oidc/grafana-client-secret";
-    mode = "0600";
-    owner = "grafana";
-    group = "grafana";
-    restartUnits = ["grafana.service"];
-  };
 
-  sops.secrets."grafana/secret-key" = {
-    mode = "0600";
-    owner = "grafana";
-    group = "grafana";
-  };
+  mkResticExporter = {
+    environmentFile ? null,
+    name,
+    passwordFile,
+    port,
+    repository ? null,
+    repositoryFile ? null,
+    requiredMounts ? [],
+  }: let
+    repositorySetup =
+      if repositoryFile != null
+      then ''export RESTIC_REPOSITORY="$(<"$CREDENTIALS_DIRECTORY/RESTIC_REPOSITORY")"''
+      else ''export RESTIC_REPOSITORY=${lib.escapeShellArg repository}'';
+  in
+    assert (repository == null) != (repositoryFile == null); {
+      description = "Prometheus exporter for the ${name} Restic repository";
+      after = ["network-online.target"];
+      wants = ["network-online.target"];
+      wantedBy = ["multi-user.target"];
+      unitConfig.RequiresMountsFor = requiredMounts;
 
-  services.grafana = {
-    enable = true;
-
-    # Basic server settings:
-    settings = {
-      server = {
-        http_addr = "0.0.0.0";
-        http_port = port;
-        inherit domain;
-        root_url = "https://${domain}/";
+      environment = {
+        EXIT_ON_ERROR = "true";
+        LISTEN_ADDRESS = address;
+        LISTEN_PORT = toString port;
+        REFRESH_INTERVAL = "129600";
+        RESTIC_CACHE_DIR = "/var/cache/restic-exporter-${name}";
       };
 
-      # Security / user management:
-      users = {
-        allow_sign_up = false; # no one can self-register
-        auto_assign_org = true; # new orgs not created per user
-      };
+      script = ''
+        ${repositorySetup}
+        export RESTIC_PASSWORD_FILE="$CREDENTIALS_DIRECTORY/RESTIC_PASSWORD"
+        exec ${lib.getExe pkgs.prometheus-restic-exporter}
+      '';
 
-      security = {
-        secret_key = "$__file{${config.sops.secrets."grafana/secret-key".path}}";
-        disable_initial_admin_creation = true;
-        disable_gravatar = true;
-        cookie_secure = true;
-      };
+      serviceConfig =
+        {
+          CacheDirectory = "restic-exporter-${name}";
+          CacheDirectoryMode = "0700";
+          DynamicUser = true;
+          LoadCredential =
+            ["RESTIC_PASSWORD:${passwordFile}"]
+            ++ lib.optional (repositoryFile != null) "RESTIC_REPOSITORY:${repositoryFile}";
+          Restart = "on-failure";
+          RestartSec = "6h";
+          UMask = "0077";
 
-      auth.disable_login_form = true;
-      "auth.basic".enabled = false;
-      "auth.generic_oauth" = {
-        enabled = true;
-        name = "TinyAuth";
-        allow_sign_up = true;
-        auto_login = true;
-        client_id = "686c07de-8601-48af-8ac1-59c2a05856c0";
-        client_secret = "$__file{${config.sops.secrets."grafana/oauth-client-secret".path}}";
-        scopes = "openid profile email";
-        auth_url = "https://${authDomain}/authorize";
-        token_url = "https://${authDomain}/api/oidc/token";
-        api_url = "https://${authDomain}/api/oidc/userinfo";
-        login_attribute_path = "preferred_username";
-        name_attribute_path = "name";
-        email_attribute_path = "email";
-        role_attribute_path = "preferred_username == 'angel' && 'Admin'";
-        role_attribute_strict = true;
-        use_refresh_token = true;
-      };
-
-      analytics.reporting_enabled = false; # opt-out telemetry
+          CapabilityBoundingSet = "";
+          DeviceAllow = "";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateTmp = true;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          RemoveIPC = true;
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_UNIX"
+          ];
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+        }
+        // lib.optionalAttrs (environmentFile != null) {
+          EnvironmentFile = environmentFile;
+        };
     };
 
-    # # Plugins:
-    # declarativePlugins = with pkgs.grafanaPlugins; [
-    #   grafana-admin-panel
-    #   grafana-clock-panel
-    #   simple-json-datasource
-    # ];
+  mkResticExporterRefresh = name: {
+    description = "Refresh ${name} Restic exporter metrics";
+    serviceConfig = {
+      Type = "oneshot";
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+    };
+    script = ''
+      ${pkgs.systemd}/bin/systemctl restart prometheus-restic-exporter-${name}.service
+    '';
+  };
+in {
+  sops.secrets = {
+    "grafana/oauth-client-secret" = {
+      sopsFile = ../../secrets/secrets.yaml;
+      key = "tinyauth/oidc/grafana-client-secret";
+      owner = "grafana";
+      group = "grafana";
+      mode = "0400";
+      restartUnits = ["grafana.service"];
+    };
 
-    # Provisioning:
-    provision = {
+    "grafana/secret-key" = {
+      owner = "grafana";
+      group = "grafana";
+      mode = "0400";
+      restartUnits = ["grafana.service"];
+    };
+  };
+
+  services = {
+    grafana = {
       enable = true;
+      settings = {
+        server = {
+          http_addr = address;
+          http_port = grafanaPort;
+          inherit domain;
+          root_url = "https://${domain}/";
+          enable_gzip = true;
+        };
 
-      # Data sources: "prom" for Prometheus
-      datasources = {
-        settings = {
+        users = {
+          allow_sign_up = false;
+          allow_org_create = false;
+          auto_assign_org = true;
+          auto_assign_org_role = "Viewer";
+        };
+
+        security = {
+          secret_key = "$__file{${config.sops.secrets."grafana/secret-key".path}}";
+          disable_initial_admin_creation = true;
+          disable_gravatar = true;
+          cookie_secure = true;
+          strict_transport_security = true;
+          strict_transport_security_max_age_seconds = 31536000;
+        };
+
+        auth.disable_login_form = true;
+        "auth.basic".enabled = false;
+        "auth.generic_oauth" = {
+          enabled = true;
+          name = "TinyAuth";
+          allow_sign_up = true;
+          auto_login = true;
+          client_id = "686c07de-8601-48af-8ac1-59c2a05856c0";
+          client_secret = "$__file{${config.sops.secrets."grafana/oauth-client-secret".path}}";
+          scopes = "openid profile email";
+          auth_url = "https://${authDomain}/authorize";
+          token_url = "https://${authDomain}/api/oidc/token";
+          api_url = "https://${authDomain}/api/oidc/userinfo";
+          use_pkce = true;
+          use_refresh_token = true;
+          validate_id_token = true;
+          jwk_set_url = "https://${authDomain}/.well-known/jwks.json";
+          login_attribute_path = "preferred_username";
+          name_attribute_path = "name";
+          email_attribute_path = "email";
+          role_attribute_path = "preferred_username == 'angel' && 'GrafanaAdmin' || 'Viewer'";
+          role_attribute_strict = true;
+          allow_assign_grafana_admin = true;
+        };
+
+        analytics = {
+          reporting_enabled = false;
+          check_for_updates = false;
+          check_for_plugin_updates = false;
+          feedback_links_enabled = false;
+        };
+        news.news_feed_enabled = false;
+        plugins.preinstall_disabled = true;
+        snapshots.external_enabled = false;
+      };
+
+      provision = {
+        enable = true;
+        datasources.settings = {
+          prune = true;
           datasources = [
             {
               name = "Prometheus";
+              uid = "prometheus";
               type = "prometheus";
-              url = "http://${config.services.prometheus.listenAddress}:${toString config.services.prometheus.port}";
+              access = "proxy";
+              url = "http://${address}:${toString prometheusPort}";
+              isDefault = true;
+              editable = false;
+              jsonData.timeInterval = "10s";
             }
           ];
         };
-      };
-
-      # Dashboards: pick up all JSON under dashboardDir
-      dashboards = {
-        settings = {
-          providers = [
-            {
-              name = "default";
-              orgId = 1;
-              folder = "System Monitoring";
-              type = "file";
-              disableDeletion = false;
-              allowUiUpdates = true;
-              updateIntervalSeconds = 60;
-              options = {
-                path = dashboardDir;
-                foldersFromFilesStructure = false;
-              };
-            }
-          ];
-        };
+        dashboards.settings.providers = [
+          {
+            name = "system";
+            orgId = 1;
+            folder = "System Monitoring";
+            type = "file";
+            disableDeletion = false;
+            allowUiUpdates = false;
+            updateIntervalSeconds = 60;
+            options = {
+              path = dashboardDir;
+              foldersFromFilesStructure = false;
+            };
+          }
+        ];
       };
     };
-  };
 
-  services.newt.blueprint.proxy-resources.grafana = {
-    name = "Grafana";
-    protocol = "http";
-    full-domain = domain;
-    targets = [
-      {
-        hostname = "localhost";
-        method = "http";
-        inherit port;
-      }
-    ];
-  };
+    newt.blueprint.proxy-resources.grafana = {
+      name = "Grafana";
+      protocol = "http";
+      full-domain = domain;
+      auth.sso-enabled = false;
+      targets = [
+        {
+          hostname = address;
+          method = "http";
+          port = grafanaPort;
+          healthcheck = {
+            enabled = true;
+            hostname = address;
+            method = "GET";
+            port = grafanaPort;
+            path = "/api/health";
+            scheme = "http";
+            status = 200;
+          };
+        }
+      ];
+    };
 
-  services.prometheus = {
-    enable = true;
-    port = 9090;
-    extraFlags = ["--web.enable-otlp-receiver"];
-    globalConfig.scrape_interval = "10s"; # "1m"
-    exporters = {
-      node = {
+    prometheus = {
+      enable = true;
+      listenAddress = address;
+      port = prometheusPort;
+      retentionTime = "180d";
+      globalConfig.scrape_interval = "10s";
+      exporters.node = {
         enable = true;
+        listenAddress = address;
+        port = nodeExporterPort;
         enabledCollectors = [
           "systemd"
           "processes"
         ];
       };
-      # restic = {
-      #   enable = true;
-      #   repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
-      #   passwordFile = config.sops.secrets."backup/b2/restic/password".path;
-      #   environmentFile = config.sops.secrets."backup/b2.env".path;
-      #   port = 9753;
-      #   refreshInterval = 86400; # 1x/day - keep high since it's expensive
-      # };
-    };
-    scrapeConfigs = [
-      {
-        job_name = "kiwi";
-        static_configs = [
-          {
-            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.node.port}"];
-          }
-        ];
-      }
-      {
-        job_name = "telegraf";
-        static_configs = [
-          {
-            targets = ["127.0.0.1:9273"]; # Telegraf Prometheus output port
-          }
-        ];
-      }
-      # {
-      #   job_name = "restic-b2";
-      #   static_configs = [{
-      #     targets = [ "127.0.0.1:9753" ]; # Restic B2 exporter
-      #   }];
-      #   scrape_interval = "86400s"; # Match the refresh interval
-      # }
-    ];
-  };
-
-  # Telegraf configuration for system monitoring
-  services.telegraf = {
-    enable = true;
-
-    extraConfig = {
-      agent = {
-        interval = "10s";
-        round_interval = true;
-        metric_batch_size = 1000;
-        metric_buffer_limit = 10000;
-        collection_jitter = "0s";
-        flush_interval = "10s";
-        flush_jitter = "0s";
-        precision = "";
-        hostname = "";
-        omit_hostname = false;
-      };
-
-      # Prometheus output
-      outputs.prometheus_client = {
-        listen = ":9273";
-        metric_version = 2;
-      };
-
-      # Input plugins for system monitoring
-      inputs = {
-        # CPU metrics
-        cpu = {
-          percpu = true;
-          totalcpu = true;
-          collect_cpu_time = false;
-          report_active = false;
-        };
-
-        # Memory metrics
-        mem = {};
-
-        # Disk metrics
-        disk = {
-          ignore_fs = [
-            "tmpfs"
-            "devtmpfs"
-            "devfs"
-            "iso9660"
-            "overlay"
-            "aufs"
-            "squashfs"
+      scrapeConfigs = [
+        {
+          job_name = "kiwi";
+          static_configs = [
+            {
+              targets = ["${address}:${toString nodeExporterPort}"];
+            }
           ];
-        };
-
-        # Disk I/O metrics
-        diskio = {};
-
-        # Network metrics
-        net = {
-          ignore_protocol_stats = false;
-        };
-
-        # System load
-        system = {};
-
-        # Process metrics
-        processes = {};
-
-        # Kernel metrics
-        kernel = {};
-      };
+        }
+        {
+          job_name = "restic-b2";
+          scrape_interval = "1m";
+          static_configs = [
+            {
+              targets = ["${address}:${toString resticExporterPorts.b2}"];
+              labels.repository = "B2";
+            }
+          ];
+        }
+        {
+          job_name = "restic-t7";
+          scrape_interval = "1m";
+          static_configs = [
+            {
+              targets = ["${address}:${toString resticExporterPorts.t7}"];
+              labels.repository = "T7";
+            }
+          ];
+        }
+      ];
     };
   };
 
-  # Make dashboards available to Grafana
-  environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
-  environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+  systemd.services = {
+    prometheus-restic-exporter-b2 = mkResticExporter {
+      name = "b2";
+      port = resticExporterPorts.b2;
+      environmentFile = config.sops.secrets."backup/b2.env".path;
+      repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
+      passwordFile = config.sops.secrets."backup/b2/restic/password".path;
+    };
 
-  networking.firewall.allowedTCPPorts = [
-    port
-    9273
-    9753
-  ]; # Grafana, Telegraf, and restic exporters
+    prometheus-restic-exporter-t7 = mkResticExporter {
+      name = "t7";
+      port = resticExporterPorts.t7;
+      repository = "/mnt/t7/restic";
+      passwordFile = config.sops.secrets."backup/t7-password".path;
+      requiredMounts = ["/mnt/t7"];
+    };
+
+    refresh-restic-exporter-b2 = mkResticExporterRefresh "b2";
+    refresh-restic-exporter-t7 = mkResticExporterRefresh "t7";
+
+    restic-backups-b2.unitConfig.OnSuccess = lib.mkAfter ["refresh-restic-exporter-b2.service"];
+    restic-backups-t7.unitConfig.OnSuccess = lib.mkAfter ["refresh-restic-exporter-t7.service"];
+  };
+
+  environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+  environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
 }

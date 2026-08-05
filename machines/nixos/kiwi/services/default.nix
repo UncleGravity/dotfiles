@@ -3,6 +3,7 @@
     ./ai.nix
     ./backup
     ./copyparty.nix
+    ./dawarich.nix
     ./grafana
     # ./guacamole
     ./iperf3.nix

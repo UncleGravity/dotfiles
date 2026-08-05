@@ -8,6 +8,7 @@
   statePath = "/var/lib/tinyauth";
   secretNames = [
     "tinyauth/users"
+    "tinyauth/oidc/dawarich-client-secret"
     "tinyauth/oidc/open-webui-client-secret"
     "tinyauth/oidc/pangolin-client-secret"
     "tinyauth/oidc/grafana-client-secret"
@@ -49,6 +50,10 @@ in {
         OIDC_CLIENTS_OPENWEBUI_CLIENTSECRETFILE = config.sops.secrets."tinyauth/oidc/open-webui-client-secret".path;
         OIDC_CLIENTS_OPENWEBUI_NAME = "Open WebUI";
         OIDC_CLIENTS_OPENWEBUI_TRUSTEDREDIRECTURIS = "https://ai.angel.pizza/oauth/oidc/callback";
+        OIDC_CLIENTS_DAWARICH_CLIENTID = "19ca6a2e-1dd9-4b02-b4f4-3b8520cd878e";
+        OIDC_CLIENTS_DAWARICH_CLIENTSECRETFILE = config.sops.secrets."tinyauth/oidc/dawarich-client-secret".path;
+        OIDC_CLIENTS_DAWARICH_NAME = "Dawarich";
+        OIDC_CLIENTS_DAWARICH_TRUSTEDREDIRECTURIS = "https://dawarich.angel.pizza/users/auth/openid_connect/callback";
         OIDC_CLIENTS_PANGOLIN_CLIENTID = "a2ceaf54-0329-422e-81f8-ef801a87ac1d";
         OIDC_CLIENTS_PANGOLIN_CLIENTSECRETFILE = config.sops.secrets."tinyauth/oidc/pangolin-client-secret".path;
         OIDC_CLIENTS_PANGOLIN_NAME = "Pangolin";

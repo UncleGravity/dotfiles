@@ -15,7 +15,7 @@
       }
     ]
   },
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -102,9 +102,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "100 - (cpu_usage_idle{cpu=\"cpu-total\"} * 100)",
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{job=\"kiwi\", mode=\"idle\"}[$__rate_interval])) * 100)",
           "interval": "",
           "legendFormat": "CPU Usage %",
           "refId": "A"
@@ -116,7 +116,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -193,9 +193,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "(mem_used / mem_total) * 100",
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"kiwi\"} / node_memory_MemTotal_bytes{job=\"kiwi\"})",
           "interval": "",
           "legendFormat": "Memory Usage %",
           "refId": "A"
@@ -207,7 +207,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -284,11 +284,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "((disk_total - disk_free) / disk_total) * 100",
+          "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"kiwi\", fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs\", mountpoint!~\"/nix/store|/run/.*\"} / node_filesystem_size_bytes{job=\"kiwi\", fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs\", mountpoint!~\"/nix/store|/run/.*\"})",
           "interval": "",
-          "legendFormat": "{{device}} - {{path}}",
+          "legendFormat": "{{mountpoint}} ({{device}})",
           "refId": "A"
         }
       ],
@@ -298,7 +298,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -373,21 +373,21 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "rate(net_bytes_recv[5m])",
+          "expr": "rate(node_network_receive_bytes_total{job=\"kiwi\", device!~\"lo|veth.*|br-.*|docker.*\"}[$__rate_interval])",
           "interval": "",
-          "legendFormat": "{{interface}} - RX",
+          "legendFormat": "{{device}} - RX",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "rate(net_bytes_sent[5m])",
+          "expr": "rate(node_network_transmit_bytes_total{job=\"kiwi\", device!~\"lo|veth.*|br-.*|docker.*\"}[$__rate_interval])",
           "interval": "",
-          "legendFormat": "{{interface}} - TX",
+          "legendFormat": "{{device}} - TX",
           "refId": "B"
         }
       ],
@@ -397,7 +397,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -450,9 +450,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "100 - (cpu_usage_idle{cpu=\"cpu-total\"} * 100)",
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{job=\"kiwi\", mode=\"idle\"}[$__rate_interval])) * 100)",
           "interval": "",
           "legendFormat": "CPU",
           "refId": "A"
@@ -464,7 +464,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -517,9 +517,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "(mem_used / mem_total) * 100",
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"kiwi\"} / node_memory_MemTotal_bytes{job=\"kiwi\"})",
           "interval": "",
           "legendFormat": "Memory",
           "refId": "A"
@@ -531,7 +531,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -606,9 +606,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "system_load1",
+          "expr": "node_load1{job=\"kiwi\"}",
           "interval": "",
           "legendFormat": "1m Load Average",
           "refId": "A"
@@ -616,9 +616,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "system_load5",
+          "expr": "node_load5{job=\"kiwi\"}",
           "interval": "",
           "legendFormat": "5m Load Average",
           "refId": "B"
@@ -626,9 +626,9 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           },
-          "expr": "system_load15",
+          "expr": "node_load15{job=\"kiwi\"}",
           "interval": "",
           "legendFormat": "15m Load Average",
           "refId": "C"
@@ -638,10 +638,10 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "10s",
   "schemaVersion": 36,
   "style": "dark",
-  "tags": ["telegraf", "system", "monitoring"],
+  "tags": ["kiwi", "node-exporter", "system", "monitoring"],
   "templating": {
     "list": []
   },
@@ -651,8 +651,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "System Overview - Telegraf",
-  "uid": "telegraf-system-overview",
+  "title": "Kiwi System Overview",
+  "uid": "kiwi-system-overview",
   "version": 1,
   "weekStart": ""
 }
