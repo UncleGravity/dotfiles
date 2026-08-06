@@ -32,6 +32,7 @@ in {
     id = 4;
     managementAddress = "192.168.1.34";
     managementMac = "4c:bb:47:2e:e0:b0";
+    sshHostKey = readHostKey "spark-04";
     controller = false;
   };
 }
