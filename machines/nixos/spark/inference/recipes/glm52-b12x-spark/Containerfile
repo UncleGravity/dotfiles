@@ -1,0 +1,94 @@
+FROM docker.io/nvidia/cuda@sha256:450d11555d20ac8ebbbc13ebf17589c2bd42869171a90179ce7098b4a5e64c6a
+
+ARG VLLM_REPO
+ARG VLLM_COMMIT
+ARG B12X_REPO
+ARG B12X_COMMIT
+
+LABEL org.opencontainers.image.title="GLM 5.2 NVFP4 with native MTP on four DGX Sparks"
+LABEL org.opencontainers.image.version="0.23.1rc1-spark4"
+LABEL org.opencontainers.image.source="https://github.com/m9e/blackwell-llm-docker/tree/main/recipes/4x-spark-cluster/glm52-b12x-spark"
+LABEL io.angel.infer.vllm-commit="${VLLM_COMMIT}"
+LABEL io.angel.infer.b12x-commit="${B12X_COMMIT}"
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    cmake \
+    curl \
+    git \
+    libibverbs-dev \
+    libnuma1 \
+    ninja-build \
+    pkg-config \
+    procps \
+    protobuf-compiler \
+    python3.12 \
+    python3.12-dev \
+    python3-pip \
+    rdma-core \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN python3.12 -m pip install --break-system-packages "uv==0.11.31" \
+  && uv venv /opt/vllm --python /usr/bin/python3.12
+
+ENV CARGO_HOME=/opt/cargo
+ENV RUSTUP_HOME=/opt/rustup
+ENV PATH=/opt/vllm/bin:/opt/cargo/bin:/usr/local/cuda/bin:$PATH
+RUN curl --proto "=https" --tlsv1.2 --silent --show-error --fail \
+    https://sh.rustup.rs \
+  | sh -s -- -y --profile minimal --default-toolchain 1.95 --no-modify-path
+
+ENV CMAKE_BUILD_PARALLEL_LEVEL=8
+ENV MAX_JOBS=8
+ENV NVCC_THREADS=1
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.23.1rc1.dev344
+ENV TORCH_CUDA_ARCH_LIST=12.1a
+ENV UV_HTTP_TIMEOUT=600
+ENV UV_INDEX_STRATEGY=unsafe-best-match
+ENV UV_LINK_MODE=copy
+ENV VLLM_TARGET_DEVICE=cuda
+
+RUN git init /opt/src/vllm \
+  && git -C /opt/src/vllm remote add origin "${VLLM_REPO}" \
+  && git -C /opt/src/vllm fetch --depth=1 origin "${VLLM_COMMIT}" \
+  && git -C /opt/src/vllm checkout --detach FETCH_HEAD \
+  && test "$(git -C /opt/src/vllm rev-parse HEAD)" = "${VLLM_COMMIT}"
+
+RUN uv pip install --python /opt/vllm/bin/python \
+    --torch-backend=cu130 \
+    --requirement /opt/src/vllm/requirements/build/cuda.txt \
+    --requirement /opt/src/vllm/requirements/cuda.txt \
+  && uv pip install --python /opt/vllm/bin/python \
+    --no-build-isolation \
+    --no-deps \
+    /opt/src/vllm
+
+RUN git init /opt/src/b12x \
+  && git -C /opt/src/b12x remote add origin "${B12X_REPO}" \
+  && git -C /opt/src/b12x fetch --depth=1 origin "${B12X_COMMIT}" \
+  && git -C /opt/src/b12x checkout --detach FETCH_HEAD \
+  && test "$(git -C /opt/src/b12x rev-parse HEAD)" = "${B12X_COMMIT}" \
+  && uv pip install --python /opt/vllm/bin/python \
+    --no-build-isolation \
+    --no-deps \
+    /opt/src/b12x
+
+RUN printf "torch==2.12.0\n" >/tmp/torch-constraint.txt \
+  && uv pip install --python /opt/vllm/bin/python \
+    --constraint /tmp/torch-constraint.txt \
+    "fastsafetensors==0.3.2" \
+    "instanttensor==0.1.5" \
+    "ray[default]==2.48.0" \
+  && python3 -c "import b12x, ray, torch, vllm; assert torch.__version__.startswith('2.12.0')" \
+  && rm -rf /opt/src /root/.cache/uv /tmp/torch-constraint.txt
+
+COPY prepare-model.py /usr/local/libexec/infer-glm52-prepare-model
+COPY entrypoint.sh /usr/local/bin/infer-glm52-b12x-spark
+RUN chmod 0755 \
+    /usr/local/libexec/infer-glm52-prepare-model \
+    /usr/local/bin/infer-glm52-b12x-spark
+
+ENTRYPOINT ["/usr/local/bin/infer-glm52-b12x-spark"]

@@ -13,17 +13,7 @@
     kernelModules = ["r8127" "mlx5_core"];
   };
 
-  services = {
-    # GB10 CUDA allocations are not fully represented by cgroup memory
-    # accounting. Protect the host using available memory instead.
-    earlyoom = {
-      enable = true;
-      # Ask the inference workload to stop below 8%, then force it below 4%.
-      freeMemThreshold = 8;
-      freeMemKillThreshold = 4;
-    };
-    fstrim.enable = true;
-  };
+  services.fstrim.enable = true;
 
   # PSI pressure rises during expected unified-memory reclaim, making
   # systemd-oomd unsuitable for these hosts.

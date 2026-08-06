@@ -121,7 +121,7 @@
       }
       // lib.optionalAttrs cfg.protectHostMemory {
         Slice = "inference.slice";
-        MemoryMax = "90%";
+        MemoryMax = "${toString cfg.memoryMaxPercent}%";
         MemorySwapMax = 0;
         OOMPolicy = "stop";
         OOMScoreAdjust = 500;
@@ -264,6 +264,11 @@ in {
       type = lib.types.bool;
       default = false;
       description = "Protect the host from inference workload memory exhaustion";
+    };
+    memoryMaxPercent = lib.mkOption {
+      type = lib.types.ints.between 1 100;
+      default = 90;
+      description = "Per-node systemd memory limit percentage for protected inference workloads";
     };
     modelStore = {
       archiveRoot = lib.mkOption {

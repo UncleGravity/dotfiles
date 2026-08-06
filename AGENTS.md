@@ -1,5 +1,3 @@
-# AGENTS.md - Nix Configuration Repository
-
 ## Build/Test Commands
 - `just sync` - Rebuild system configuration (auto-detects NixOS/Darwin/Home Manager)
 - `nix flake check` - Validate flake configuration

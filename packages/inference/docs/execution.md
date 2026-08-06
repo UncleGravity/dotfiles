@@ -135,6 +135,9 @@ counters, so recipes must still reserve explicit unified-memory headroom. A
 terminated container stops its node unit so the cluster controller can clean up
 the remaining participants.
 
+`my.inference.memoryMaxPercent` controls the per-node cgroup limit and defaults
+to 90. Deployments may raise it for workloads that require more unified memory.
+
 ## Stopping and Recovery
 
 `systemctl stop` invokes `podman stop`, then force-removes any remaining named
