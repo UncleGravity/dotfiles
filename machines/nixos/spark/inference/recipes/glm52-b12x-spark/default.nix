@@ -1,20 +1,28 @@
 {config, ...}: let
   modelRoot = "/cache/model";
   cacheRoot = "/var/cache/glm52-b12x-spark";
-  port = 18089;
+  port = 8888;
   instances = builtins.attrValues config.my.inference.instances;
   enabled = builtins.any (instance: instance.recipe == "glm52-b12x-spark") instances;
   speculativeConfig = builtins.toJSON {
     model = modelRoot;
     method = "mtp";
-    num_speculative_tokens = 4;
+    num_speculative_tokens = 3;
     moe_backend = "flashinfer_cutlass";
     draft_attention_backend = "B12X_MLA_SPARSE";
+    draft_kv_cache_dtype = "fp8_ds_mla";
     draft_sample_method = "probabilistic";
   };
-  hfOverrides = builtins.toJSON {
-    use_index_cache = true;
-    index_topk_pattern = "FFFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSSFSSS";
+  earlyoomFits =
+    !config.services.earlyoom.enable
+    || (
+      config.services.earlyoom.freeMemThreshold
+      <= 2
+      && config.services.earlyoom.freeMemKillThreshold <= 1
+    );
+  swapFits = config.my.inference.allowSwap && config.swapDevices != [];
+  chatTemplateDefaults = builtins.toJSON {
+    reasoning_effort = "high";
   };
 in {
   assertions = [
@@ -24,6 +32,14 @@ in {
         || !config.my.inference.protectHostMemory
         || config.my.inference.memoryMaxPercent >= 95;
       message = "glm52-b12x-spark requires my.inference.memoryMaxPercent >= 95 when host memory protection is enabled";
+    }
+    {
+      assertion = !enabled || earlyoomFits;
+      message = "glm52-b12x-spark requires earlyoom thresholds no higher than 2% TERM and 1% KILL";
+    }
+    {
+      assertion = !enabled || swapFits;
+      message = "glm52-b12x-spark requires declared swap and my.inference.allowSwap";
     }
   ];
 
@@ -73,12 +89,16 @@ in {
         B12X_DENSE_SPLITK_TURBO = "0";
         B12X_MOE_FORCE_A16 = "0";
         B12X_W4A16_TC_DECODE = "0";
+        # CUDA JIT workers consume several GiB each while weights occupy unified memory.
+        CMAKE_BUILD_PARALLEL_LEVEL = "1";
         CUDA_DEVICE_MAX_CONNECTIONS = "32";
         CUDA_DEVICE_ORDER = "PCI_BUS_ID";
         CUTE_DSL_ARCH = "sm_121a";
         FLASHINFER_CUDA_ARCH_LIST = "12.1a";
+        FLASHINFER_WORKSPACE_BASE = "/cache/flashinfer";
         GLOO_SOCKET_IFNAME = "fabric0";
         HF_HOME = "/cache/huggingface";
+        MAX_JOBS = "1";
         NCCL_DEBUG = "WARN";
         NCCL_IB_ADDR_FAMILY = "AF_INET";
         NCCL_IB_DISABLE = "0";
@@ -95,6 +115,7 @@ in {
         "RAY_memory_usage_threshold" = "0.99";
         SAFETENSORS_FAST_GPU = "1";
         TORCH_CUDA_ARCH_LIST = "12.1a";
+        TORCHINDUCTOR_COMPILE_THREADS = "1";
         TRANSFORMERS_OFFLINE = "1";
         TRITON_CACHE_DIR = "/cache/triton";
         USES_B12X = "True";
@@ -130,7 +151,7 @@ in {
         "--tokenizer"
         modelRoot
         "--served-model-name"
-        "glm52-spark4-dcp4-mtp4-128k"
+        "spark-current"
         "--host"
         "0.0.0.0"
         "--port"
@@ -157,22 +178,31 @@ in {
         "--max-model-len"
         "131072"
         "--max-num-seqs"
-        "4"
+        "1"
         "--max-num-batched-tokens"
         "1024"
         "--max-cudagraph-capture-size"
-        "20"
+        "4"
         "--gpu-memory-utilization"
         "0.89"
+        "--block-size"
+        "64"
         "--kv-cache-memory-bytes"
         "1810000000"
         "--kv-cache-dtype"
         "fp8_ds_mla"
         "--enable-prefix-caching"
+        "--enable-auto-tool-choice"
+        "--tool-call-parser"
+        "glm47"
+        "--reasoning-parser"
+        "glm45"
+        "--chat-template-content-format"
+        "string"
+        "--default-chat-template-kwargs"
+        chatTemplateDefaults
         "--generation-config"
         "vllm"
-        "--hf-overrides"
-        hfOverrides
         "--attention-backend"
         "B12X_MLA_SPARSE"
         "--moe-backend"
@@ -185,7 +215,7 @@ in {
 
     endpoint = {
       inherit port;
-      startupTimeoutSeconds = 3600;
+      startupTimeoutSeconds = 7200;
     };
   };
 }

@@ -27,6 +27,7 @@ in {
     enable = true;
     operators = [username];
     protectHostMemory = true;
+    allowSwap = true;
     memoryMaxPercent = 95;
     controlNode = "spark-01";
     nodes = inferenceNodes;
@@ -48,6 +49,12 @@ in {
       nodes = ["spark-01" "spark-02"];
       autoStart = false;
     };
+
+    instances.glm52 = {
+      recipe = "glm52-b12x-spark";
+      nodes = ["spark-01" "spark-02" "spark-03" "spark-04"];
+      autoStart = false;
+    };
   };
 
   services = {
@@ -55,11 +62,20 @@ in {
     # accounting. Protect the host using available memory instead.
     earlyoom = {
       enable = true;
-      # Ask the inference workload to stop below 8%, then force it below 4%.
-      freeMemThreshold = 4;
-      freeMemKillThreshold = 2;
+      # GLM 5.2 leaves about 2% free at steady state.
+      freeMemThreshold = 2;
+      freeMemKillThreshold = 1;
     };
   };
+
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 32 * 1024;
+    }
+  ];
+
+  boot.kernel.sysctl."vm.swappiness" = 1;
 
   networking.firewall.allowedTCPPorts = lib.optionals node.controller [8000 8888];
 }

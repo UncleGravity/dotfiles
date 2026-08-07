@@ -73,7 +73,7 @@ in {
           {
             model_name = "spark-current";
             litellm_params = {
-              model = "openai/deepseek-ai/DeepSeek-V4-Flash-0731";
+              model = "openai/spark-current";
               api_base = "http://192.168.1.31:8888/v1";
               api_key = "unused";
             };

@@ -122,9 +122,11 @@
       // lib.optionalAttrs cfg.protectHostMemory {
         Slice = "inference.slice";
         MemoryMax = "${toString cfg.memoryMaxPercent}%";
-        MemorySwapMax = 0;
         OOMPolicy = "stop";
         OOMScoreAdjust = 500;
+      }
+      // lib.optionalAttrs (cfg.protectHostMemory && !cfg.allowSwap) {
+        MemorySwapMax = 0;
       };
   };
 
@@ -265,6 +267,7 @@ in {
       default = false;
       description = "Protect the host from inference workload memory exhaustion";
     };
+    allowSwap = lib.mkEnableOption "swap for protected inference workloads";
     memoryMaxPercent = lib.mkOption {
       type = lib.types.ints.between 1 100;
       default = 90;

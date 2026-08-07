@@ -221,6 +221,16 @@ export const clusterStartGroups = (
 const failedStatus = (status: RemoteUnitStatus): boolean =>
   status.loadState !== "loaded" || status.activeState === "failed"
 
+const formatStatuses = (
+  statuses: ReadonlyArray<RemoteUnitStatus>
+): string =>
+  statuses
+    .map(
+      (status) =>
+        `${status.node}: ${status.result} (${status.loadState}, ${status.activeState}/${status.subState})`
+    )
+    .join(", ")
+
 const waitUntilReady = (
   inventory: Inventory,
   plan: RunPlan,
@@ -242,7 +252,7 @@ const waitUntilReady = (
           return yield* Effect.fail(
             new CommandError({
               code: "cluster-node-failed",
-              message: "A clustered inference node failed during startup",
+              message: `Clustered inference startup failed: ${formatStatuses(failed)}`,
               details: { nodes: failed }
             })
           )

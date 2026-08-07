@@ -82,7 +82,15 @@ RUN printf "torch==2.12.0\n" >/tmp/torch-constraint.txt \
     "fastsafetensors==0.3.2" \
     "instanttensor==0.1.5" \
     "ray[default]==2.48.0" \
-  && python3 -c "import b12x, ray, torch, vllm; assert torch.__version__.startswith('2.12.0')" \
+  && uv pip uninstall --python /opt/vllm/bin/python flashinfer-cubin \
+  && uv pip install --python /opt/vllm/bin/python \
+    --no-deps \
+    "flashinfer-python==0.6.14" \
+  && uv pip install --python /opt/vllm/bin/python \
+    --no-deps \
+    --index-url https://flashinfer.ai/whl/cu130/ \
+    "flashinfer-jit-cache==0.6.14+cu130" \
+  && python3 -c "import b12x, flashinfer, ray, torch, vllm; from importlib.metadata import version; assert torch.__version__.startswith('2.12.0'); assert flashinfer.__version__ == '0.6.14'; assert version('flashinfer-jit-cache') == '0.6.14+cu130'" \
   && rm -rf /opt/src /root/.cache/uv /tmp/torch-constraint.txt
 
 COPY prepare-model.py /usr/local/libexec/infer-glm52-prepare-model

@@ -41,7 +41,7 @@ const status = (node: string, activeState = "active"): RemoteUnitStatus => ({
   loadState: "loaded",
   activeState,
   subState: activeState === "active" ? "running" : "dead",
-  result: "success"
+  result: activeState === "failed" ? "oom-kill" : "success"
 })
 
 const systemdStatus = (activeState = "active") => ({
@@ -201,6 +201,41 @@ test("lost cluster lease fails startup and still stops every node", async () => 
   assert.ok(Either.isLeft(result))
   assert.equal(result.left.code, "cluster-lease-lost")
   assert.deepEqual(stopped, ["spark-01", "spark-02"])
+})
+
+test("cluster startup failure identifies the failed node and result", async () => {
+  const runner: ProcessRunnerService = {
+    foreground: () => Effect.never,
+    probe: () => Effect.die("unexpected probe"),
+    run: (request) => {
+      const action = remoteAction(request)
+      if (action === "status fixture") {
+        return Effect.succeed({
+          stdout: JSON.stringify(status("spark-02", "failed")),
+          stderr: ""
+        })
+      }
+      if (request.command === "systemctl" && request.args[0] === "show") {
+        return Effect.succeed(systemdStatus())
+      }
+      return Effect.succeed({ stdout: "", stderr: "" })
+    }
+  }
+
+  const result = await Effect.runPromise(
+    Effect.either(
+      runPreparedCluster("fixture", inventory, plan).pipe(
+        Effect.provide(Layer.succeed(ProcessRunner, runner))
+      )
+    )
+  )
+
+  assert.ok(Either.isLeft(result))
+  assert.equal(result.left.code, "cluster-node-failed")
+  assert.equal(
+    result.left.message,
+    "Clustered inference startup failed: spark-02: oom-kill (loaded, failed/dead)"
+  )
 })
 
 test("cluster startup timeout reports the latest statuses and cleans up", async () => {

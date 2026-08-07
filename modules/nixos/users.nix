@@ -22,8 +22,8 @@
         "wheel" # sudo
       ];
     };
-    # defaultUserShell = pkgs.zsh;
-    defaultUserShell = pkgs.nushell;
+    defaultUserShell = pkgs.zsh;
+    # defaultUserShell = pkgs.nushell;
   };
 
   # SSH is key-only. No password.

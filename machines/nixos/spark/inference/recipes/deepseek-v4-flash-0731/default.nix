@@ -96,7 +96,7 @@ in {
       args = [
         modelRoot
         "--served-model-name"
-        "deepseek-ai/DeepSeek-V4-Flash-0731"
+        "spark-current"
         "--host"
         "0.0.0.0"
         "--port"

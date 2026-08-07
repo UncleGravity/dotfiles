@@ -67,7 +67,7 @@ The controller stages the model on `spark-01`, copies the verified artifact to
 `spark-02` over `fabric0`, publishes one image digest, starts the worker first,
 and reports ready only after the head API is healthy. The OpenAI-compatible API
 is then available at `http://192.168.1.31:8888/v1` with served model name
-`deepseek-ai/DeepSeek-V4-Flash-0731`.
+`spark-current`.
 
 ```bash
 ssh spark-01.local curl --fail http://192.168.1.31:8888/v1/models

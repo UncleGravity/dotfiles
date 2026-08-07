@@ -9,5 +9,6 @@
     git
     ghostty.terminfo # fix ghostty TERM errors
     pciutils
+    nushell
   ];
 }

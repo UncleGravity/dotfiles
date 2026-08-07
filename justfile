@@ -182,13 +182,61 @@ provision host target:
 spark-install node:
     nix develop -c ./machines/nixos/spark/scripts/install-node.sh "{{ node }}"
 
-# Deploy all four Sparks in canary order (stops on first failure).
+# Deploy all four Sparks concurrently.
 spark-deploy-all:
     #!/usr/bin/env bash
-    set -euo pipefail
-    for node in spark-01 spark-02 spark-03 spark-04; do
-        just deploy "$node"
+    set -uo pipefail
+
+    nodes=(spark-01 spark-02 spark-03 spark-04)
+    log_dir=$(mktemp -d)
+    declare -A node_by_pid=()
+    failures=()
+
+    cleanup() {
+        rm -rf "$log_dir"
+    }
+    trap cleanup EXIT
+
+    for node in "${nodes[@]}"; do
+        echo "Starting deployment for '$node'..."
+        (
+            nh os switch . \
+                -H "$node" \
+                --target-host "$node" \
+                --build-host "$node" \
+                --elevation-strategy passwordless
+        ) >"$log_dir/$node.log" 2>&1 &
+        node_by_pid[$!]="$node"
     done
+
+    remaining=${#nodes[@]}
+    while ((remaining > 0)); do
+        completed_pid=""
+        if wait -n -p completed_pid; then
+            status=0
+        else
+            status=$?
+        fi
+
+        node=${node_by_pid[$completed_pid]}
+        if ((status == 0)); then
+            echo "Deployment for '$node' completed successfully!"
+        else
+            echo "Deployment for '$node' failed with status $status:" >&2
+            sed "s/^/[$node] /" "$log_dir/$node.log" >&2
+            failures+=("$node")
+        fi
+
+        unset 'node_by_pid[$completed_pid]'
+        ((remaining -= 1))
+    done
+
+    if ((${#failures[@]} > 0)); then
+        printf 'Failed Spark deployments: %s\n' "${failures[*]}" >&2
+        exit 1
+    fi
+
+    echo "All Spark deployments completed successfully!"
 
 # Check nixpkgs version status
 nixpkgs-status:

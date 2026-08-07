@@ -53,3 +53,6 @@
 - Test configurations with `just sync` before committing
 - Use `nix build` to test package builds without installing
 - Validate flake with `nix flake check` before pushing changes
+
+Never use `path:`/`builtins.path`; they copy (sometimes large) untracked files to the store.
+Instead ask to stage the relevant files.

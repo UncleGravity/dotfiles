@@ -125,15 +125,18 @@ prevents an unbounded retry loop.
 
 Spark enables host memory protection for every inference workload. Podman
 leaves container payloads in their node unit's cgroup under
-`inference.slice`. The node unit limits CPU-accounted memory, prohibits swap,
-and raises the workload's OOM victim priority. Earlyoom monitors host-available
-memory instead of PSI stall time, which avoids treating expected GB10
-unified-memory reclaim as an OOM. It sends `SIGTERM` below 8% available memory
-and `SIGKILL` below 4%; the inference score makes the workload the preferred
-victim. GB10 CUDA allocations are not fully represented by cgroup memory
-counters, so recipes must still reserve explicit unified-memory headroom. A
-terminated container stops its node unit so the cluster controller can clean up
-the remaining participants.
+`inference.slice`. The node unit limits CPU-accounted memory and raises the
+workload's OOM victim priority. Swap is prohibited by default; deployments can
+set `my.inference.allowSwap` for unified-memory workloads that require disk
+backing. Spark declares a 32 GiB swapfile for GLM 5.2 and uses a swappiness of
+1, allowing inactive Ray memory to move without encouraging routine swapping.
+Earlyoom monitors host-available memory instead of PSI stall time, which avoids
+treating expected GB10 unified-memory reclaim as an OOM. It sends `SIGTERM`
+below 2% available memory and `SIGKILL` below 1%; the inference score makes the
+workload the preferred victim. GB10 CUDA allocations are not fully represented
+by cgroup memory counters, so recipes must still reserve explicit unified-memory
+headroom. A terminated container stops its node unit so the cluster controller
+can clean up the remaining participants.
 
 `my.inference.memoryMaxPercent` controls the per-node cgroup limit and defaults
 to 90. Deployments may raise it for workloads that require more unified memory.

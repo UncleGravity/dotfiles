@@ -48,6 +48,25 @@ config = json.loads(config_path.read_text())
 if config.get("num_hidden_layers") != 78 or config.get("num_nextn_predict_layers") != 1:
     fail("the overlay config does not describe the expected GLM 5.2 MTP layout")
 
+indexer_types = config.get("indexer_types")
+if not isinstance(indexer_types, list) or len(indexer_types) != 78:
+    fail("the overlay config does not contain one indexer type per model layer")
+try:
+    index_topk_pattern = "".join(
+        {"full": "F", "shared": "S"}[indexer_type]
+        for indexer_type in indexer_types
+    )
+except KeyError as error:
+    fail(f"unsupported indexer type: {error.args[0]}")
+if index_topk_pattern.count("F") != 21 or index_topk_pattern.count("S") != 57:
+    fail("the overlay config contains an unexpected GLM 5.2 indexer layout")
+
+# vLLM's sparse MLA path consumes this compact pattern, including for MTP.
+config["index_topk_pattern"] = index_topk_pattern
+config["use_index_cache"] = True
+config_path.unlink()
+config_path.write_text(json.dumps(config, indent=2) + "\n")
+
 weight_map = json.loads(index_path.read_text()).get("weight_map", {})
 if not any(name.startswith("model.layers.78.") for name in weight_map):
     fail("the overlay index does not contain the native MTP layer")
