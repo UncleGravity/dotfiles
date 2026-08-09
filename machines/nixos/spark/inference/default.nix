@@ -38,12 +38,6 @@ in {
       autoStart = false;
     };
 
-    instances.cluster-smoke = {
-      recipe = "cluster-smoke";
-      nodes = ["spark-01" "spark-02"];
-      autoStart = false;
-    };
-
     instances.deepseek-v4-flash-0731 = {
       recipe = "deepseek-v4-flash-0731";
       nodes = ["spark-01" "spark-02"];

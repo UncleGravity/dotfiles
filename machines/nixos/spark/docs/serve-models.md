@@ -1,38 +1,5 @@
 # Serve models
 
-## Cluster smoke test
-
-The `cluster-smoke` instance validates two-node coordination without CUDA or a
-distributed inference runtime. It reuses the archived Laguna draft artifact,
-publishes a small pinned Python image, starts a health endpoint on `spark-01`,
-and keeps a participant container running on `spark-02`.
-
-Because inference uses a whole-node lock, stop Laguna before starting the smoke
-instance:
-
-```bash
-ssh spark-01.local sudo systemctl stop infer-laguna
-ssh spark-01.local sudo systemctl start infer-cluster-smoke
-ssh spark-01.local systemctl status infer-cluster-smoke
-```
-
-While it is active, the endpoint reports the planned head role:
-
-```bash
-ssh spark-01.local curl --fail http://192.168.1.31:18080/health
-```
-
-Stop the control unit to stop both participant units and containers:
-
-```bash
-ssh spark-01.local sudo systemctl stop infer-cluster-smoke
-```
-
-This path has been validated across `spark-01` and `spark-02`, including exact
-digest distribution, readiness, clean coordinated stop, and cleanup after a
-worker failure. It validates the cluster machinery, not a distributed inference
-engine.
-
 ## DeepSeek V4 Flash 0731
 
 The `deepseek-v4-flash-0731` recipe adapts the upstream two-DGX-Spark DSpark
