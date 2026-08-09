@@ -241,8 +241,6 @@ Hardware validation covers:
   locking, and failure restart for single-node Spark;
 - approximately 3.3 GB/s transfer of a 71.9 GB model from `spark-01` to
   `spark-02` over `fabric0`, followed by full manifest verification;
-- restricted two-node preparation, ordered startup, readiness, lease cleanup,
-  and coordinated stop with `cluster-smoke`;
 - real TP=2 DeepSeek V4 generation across `spark-01` and `spark-02`.
 
 The DeepSeek recipe persists compiler and autotuning caches but recreates its

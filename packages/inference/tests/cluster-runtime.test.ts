@@ -162,6 +162,118 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
   )
 })
 
+test("remote node preparation runs with bounded concurrency", async () => {
+  const clusterInventory: Inventory = {
+    ...inventory,
+    nodes: [
+      ...inventory.nodes,
+      {
+        name: "spark-03",
+        platform: "linux/arm64",
+        managementAddress: "192.168.1.33",
+        fabric: {
+          fabric0: "10.100.0.3",
+          fabric1: "10.100.1.3"
+        }
+      },
+      {
+        name: "spark-04",
+        platform: "linux/arm64",
+        managementAddress: "192.168.1.34",
+        fabric: {
+          fabric0: "10.100.0.4",
+          fabric1: "10.100.1.4"
+        }
+      }
+    ]
+  }
+  const clusterPlan: RunPlan = {
+    ...plan,
+    startOrder: "head-first",
+    nodes: ["spark-01", "spark-02", "spark-03", "spark-04"],
+    head: "spark-01",
+    endpoint: {
+      ...plan.endpoint,
+      node: "spark-01",
+      healthUrl: "http://192.168.1.31:8000/health"
+    }
+  }
+  let activePreparations = 0
+  let peakPreparations = 0
+  let ready!: () => void
+  const readyPromise = new Promise<void>((resolve) => {
+    ready = resolve
+  })
+  const remoteNode = (request: ProcessRequest) => {
+    const target = request.args.find((arg) => arg.startsWith("infer-remote@"))
+    return clusterInventory.nodes.find(
+      (node) => target === `infer-remote@${node.fabric.fabric0}`
+    )
+  }
+  const runner: ProcessRunnerService = {
+    foreground: () => Effect.never,
+    probe: () => Effect.die("unexpected probe"),
+    run: (request) => {
+      const action = remoteAction(request)
+      if (action === "prepare fixture") {
+        return Effect.acquireUseRelease(
+          Effect.sync(() => {
+            activePreparations += 1
+            peakPreparations = Math.max(
+              peakPreparations,
+              activePreparations
+            )
+          }),
+          () =>
+            Effect.sleep("50 millis").pipe(
+              Effect.as({ stdout: "", stderr: "" })
+            ),
+          () =>
+            Effect.sync(() => {
+              activePreparations -= 1
+            })
+        )
+      }
+      if (action === "status fixture") {
+        const node = remoteNode(request)
+        assert.ok(node)
+        return Effect.succeed({
+          stdout: JSON.stringify(status(node.name)),
+          stderr: ""
+        })
+      }
+      if (action !== undefined) {
+        return Effect.succeed({ stdout: "", stderr: "" })
+      }
+      if (request.command === "systemctl") {
+        return Effect.succeed(
+          request.args[0] === "show"
+            ? systemdStatus()
+            : { stdout: "", stderr: "" }
+        )
+      }
+      if (request.command === "systemd-notify") {
+        ready()
+        return Effect.succeed({ stdout: "", stderr: "" })
+      }
+      return Effect.die(`Unexpected command '${request.command}'`)
+    }
+  }
+
+  await Effect.runPromise(
+    Effect.gen(function* () {
+      const fiber = yield* Effect.fork(
+        runPreparedCluster("fixture", clusterInventory, clusterPlan)
+      )
+      yield* Effect.promise(() => readyPromise)
+      yield* Fiber.interrupt(fiber)
+    }).pipe(Effect.provide(Layer.succeed(ProcessRunner, runner)))
+  )
+
+  assert.equal(peakPreparations, 3)
+  assert.equal(activePreparations, 0)
+})
+
 test("lost cluster lease fails startup and still stops every node", async () => {
   const stopped: Array<string> = []
   let leaseStarted!: () => void

@@ -29,6 +29,7 @@ interface NodeLease {
 
 const sshIdentity = "/etc/ssh/ssh_host_ed25519_key"
 const sshKnownHosts = "/etc/ssh/ssh_known_hosts"
+const remotePreparationConcurrency = 3
 
 const phase = (instance: string, message: string): Effect.Effect<void> =>
   Console.error(`[infer:${instance}:cluster] ${message}`)
@@ -347,7 +348,7 @@ export const runPreparedCluster = (
         phase(name, `Preparing '${node}'`).pipe(
           Effect.zipRight(remoteAction(inventory, node, "prepare", name))
         ),
-      { concurrency: 1, discard: true }
+      { concurrency: remotePreparationConcurrency, discard: true }
     )
 
     const stopAll = Effect.forEach(
