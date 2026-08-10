@@ -7,6 +7,7 @@
   imports = [
     ./hardware
     ./inference
+    ./monitoring.nix
     ./networking
     ./users.nix
   ];

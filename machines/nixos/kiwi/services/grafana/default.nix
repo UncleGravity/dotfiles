@@ -10,6 +10,17 @@
   grafanaPort = 3131;
   prometheusPort = 9090;
   nodeExporterPort = 9100;
+  gpuExporterPort = 9835;
+  sparkNodes = import ../../../spark/nodes.nix;
+  mkSparkStaticConfigs = port:
+    lib.mapAttrsToList (hostname: peer: {
+      targets = ["${peer.managementAddress}:${toString port}"];
+      labels = {
+        cluster = "spark";
+        node = hostname;
+      };
+    })
+    sparkNodes;
   resticExporterPorts = {
     b2 = 9753;
     t7 = 9754;
@@ -271,6 +282,18 @@ in {
           ];
         }
         {
+          job_name = "spark-node";
+          scrape_interval = "5s";
+          scrape_timeout = "4s";
+          static_configs = mkSparkStaticConfigs nodeExporterPort;
+        }
+        {
+          job_name = "spark-gpu";
+          scrape_interval = "5s";
+          scrape_timeout = "4s";
+          static_configs = mkSparkStaticConfigs gpuExporterPort;
+        }
+        {
           job_name = "restic-b2";
           scrape_interval = "1m";
           static_configs = [
@@ -319,5 +342,7 @@ in {
   };
 
   environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+  environment.etc."grafana/dashboards/spark-cluster-overview.json".source = ./dashboards/spark-cluster-overview.json;
+  environment.etc."grafana/dashboards/spark-cluster.json".source = ./dashboards/spark-cluster.json;
   environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
 }
