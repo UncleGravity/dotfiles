@@ -95,6 +95,7 @@
     wants = ["network-online.target"] ++ lib.optional (!clustered && isRegistryHost) "docker-registry.service";
     requires = lib.optional usesNvidia nvidiaService;
     wantedBy = lib.optional (!clustered && instance.autoStart) "multi-user.target";
+    restartIfChanged = false;
     restartTriggers = [catalogFile inventoryFile instancesFile];
     path = [package pkgs.podman pkgs.systemd pkgs.util-linux];
     unitConfig = {
@@ -165,6 +166,7 @@
           description = "Inference cluster ${instance.name}";
           after = ["network-online.target" "docker-registry.service"];
           wants = ["network-online.target" "docker-registry.service"];
+          restartIfChanged = false;
           restartTriggers = [catalogFile inventoryFile instancesFile];
           wantedBy = lib.optional instance.autoStart "multi-user.target";
           path = [package pkgs.systemd];
