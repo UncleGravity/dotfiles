@@ -3,13 +3,12 @@ import { readFileSync } from "node:fs"
 import test from "node:test"
 import {
   Effect,
-  Either,
+  Result,
   Fiber,
   Layer,
-  Schema,
-  TestClock,
-  TestContext
+  Schema
 } from "effect"
+import { TestClock } from "effect/testing"
 import {
   ProcessRunner,
   type ProcessRequest,
@@ -59,17 +58,17 @@ const remoteAction = (request: ProcessRequest): string | undefined =>
 
 test("remote status decoding is strict and identifies the source node", () => {
   const valid = decodeRemoteStatus(JSON.stringify(status("spark-02")), "spark-02")
-  assert.ok(Either.isRight(valid))
-  assert.equal(valid.right.node, "spark-02")
+  assert.ok(Result.isSuccess(valid))
+  assert.equal(valid.success.node, "spark-02")
 
   for (const raw of [
     "not-json",
     JSON.stringify({ ...status("spark-02"), unexpected: true })
   ]) {
     const invalid = decodeRemoteStatus(raw, "spark-02")
-    assert.ok(Either.isLeft(invalid))
-    assert.equal(invalid.left.code, "cluster-status-invalid")
-    assert.equal(invalid.left.details?.node, "spark-02")
+    assert.ok(Result.isFailure(invalid))
+    assert.equal(invalid.failure.code, "cluster-status-invalid")
+    assert.equal(invalid.failure.details?.node, "spark-02")
   }
 })
 
@@ -96,7 +95,7 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
             Effect.sync(() => {
               events.push("lease:released")
             })
-        ).pipe(Effect.zipRight(Effect.never))
+        ).pipe(Effect.andThen(Effect.never))
       ),
     probe: () =>
       Effect.fail(
@@ -142,7 +141,7 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
   }
 
   const program = Effect.gen(function* () {
-    const fiber = yield* Effect.fork(
+    const fiber = yield* Effect.forkChild(
       runPreparedCluster("fixture", inventory, plan)
     )
     yield* Effect.promise(() => leasePromise)
@@ -262,7 +261,7 @@ test("remote node preparation runs with bounded concurrency", async () => {
 
   await Effect.runPromise(
     Effect.gen(function* () {
-      const fiber = yield* Effect.fork(
+      const fiber = yield* Effect.forkChild(
         runPreparedCluster("fixture", clusterInventory, clusterPlan)
       )
       yield* Effect.promise(() => readyPromise)
@@ -283,7 +282,7 @@ test("lost cluster lease fails startup and still stops every node", async () => 
   const runner: ProcessRunnerService = {
     foreground: () =>
       Effect.sync(leaseStarted).pipe(
-        Effect.zipRight(
+        Effect.andThen(
           Effect.fail(
             new CommandError({
               code: "ssh-lease-ended",
@@ -309,9 +308,9 @@ test("lost cluster lease fails startup and still stops every node", async () => 
     )
   )
   await leasePromise
-  const result = await Effect.runPromise(Effect.either(Fiber.join(fiber)))
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "cluster-lease-lost")
+  const result = await Effect.runPromise(Effect.result(Fiber.join(fiber)))
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "cluster-lease-lost")
   assert.deepEqual(stopped, ["spark-01", "spark-02"])
 })
 
@@ -335,17 +334,17 @@ test("cluster startup failure identifies the failed node and result", async () =
   }
 
   const result = await Effect.runPromise(
-    Effect.either(
+    Effect.result(
       runPreparedCluster("fixture", inventory, plan).pipe(
         Effect.provide(Layer.succeed(ProcessRunner, runner))
       )
     )
   )
 
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "cluster-node-failed")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "cluster-node-failed")
   assert.equal(
-    result.left.message,
+    result.failure.message,
     "Clustered inference startup failed: spark-02: oom-kill (loaded, failed/dead)"
   )
 })
@@ -364,7 +363,7 @@ test("cluster startup timeout reports the latest statuses and cleans up", async 
     foreground: () =>
       Effect.scoped(
         Effect.acquireRelease(Effect.sync(leaseStarted), () => Effect.void).pipe(
-          Effect.zipRight(Effect.never)
+          Effect.andThen(Effect.never)
         )
       ),
     probe: () => Effect.die("unexpected probe"),
@@ -393,24 +392,24 @@ test("cluster startup timeout reports the latest statuses and cleans up", async 
 
   const result = await Effect.runPromise(
     Effect.gen(function* () {
-      const fiber = yield* Effect.fork(
+      const fiber = yield* Effect.forkChild(
         runPreparedCluster("fixture", inventory, timedPlan)
       )
       yield* Effect.promise(() => leasePromise)
       yield* TestClock.adjust("100 millis")
       yield* Effect.promise(() => statusPromise)
       yield* TestClock.adjust("5 seconds")
-      return yield* Effect.either(Fiber.join(fiber))
+      return yield* Effect.result(Fiber.join(fiber))
     }).pipe(
       Effect.provide(Layer.succeed(ProcessRunner, runner)),
-      Effect.provide(TestContext.TestContext)
+      Effect.provide(TestClock.layer())
     )
   )
 
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "cluster-startup-timeout")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "cluster-startup-timeout")
   assert.deepEqual(stopped, ["spark-01", "spark-02"])
-  const statuses = result.left.details?.statuses
+  const statuses = result.failure.details?.statuses
   assert.ok(Array.isArray(statuses))
   assert.equal(statuses.length, 2)
 })

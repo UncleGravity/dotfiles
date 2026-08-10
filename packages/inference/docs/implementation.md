@@ -35,6 +35,7 @@ packages/inference/
 |   |-- workflows/     model, image, and instance workflows
 |   |   `-- model-store/ immutable artifact validation and publication
 |   |-- adapters/      contracts, processes, health probes, flock
+|   |-- observability/ versioned progress events, logs, and metrics
 |   `-- runtime/       CLI runtime wiring
 |-- nix/
 |   |-- lib/           internal normalization and contract helpers
@@ -88,14 +89,34 @@ It also installs internal `infer-instance`, `infer-cluster`, `infer-prepare`, an
 `infer-remote` entrypoints for systemd and restricted cluster coordination.
 There is no public imperative run command and no privileged general-purpose RPC.
 
-Effect usage stays shallow. Node filesystem and command execution are
-replaceable services; entrypoints assemble their production Layers once.
-Planners and argument builders remain ordinary functions. The package does not
-use Effect Cluster, Workflow, RPC, SQL, or a persistent Effect runtime.
+Effect v4 usage stays shallow. Node filesystem and child processes use Effect's
+platform services behind the package's narrow adapters; entrypoints assemble
+their production Layers once. Planners and argument builders remain ordinary
+functions. Command failures and readiness results are schema-backed,
+discriminated contracts. The package does not use Effect Cluster, Workflow,
+RPC, SQL, or a persistent Effect runtime.
 
-Use Node LTS and exact lock-file versions. A future OpenTUI client can be a
-separate Bun application that consumes the JSON contracts and systemd data;
-OpenTUI does not need to run on inference nodes.
+Use Node LTS and exact lock-file versions.
+
+### Observability
+
+Lifecycle reporting uses one versioned `ProgressEvent` contract. Events carry
+a stable scope, operation, lifecycle state, message, and optional instance,
+node, model, and attributes. The numeric progress variant additionally carries
+`current`, `total`, and `unit` fields.
+
+`ProgressEvents` is an Effect `Context.Reference`, so normal services need no
+extra runtime dependency. Its default implementation writes annotated Effect
+logs and increments `inference_progress_events_total`. Major preparation and
+inference lifecycles use native Effect spans. An OpenTelemetry exporter can be
+provided at the runtime boundary without changing workflows.
+
+`makeProgressHub` returns an injectable service and a replaying Effect
+`Stream<ProgressEvent>`. A live TUI can consume that stream directly; a web
+process can serialize the same stream over SSE or WebSocket. The package does
+not expose a network listener or persistent event store. A separate client can
+still combine these live events with the stable JSON contracts and systemd
+state, and does not need to run on inference nodes.
 
 ### Host Tools
 

@@ -1,26 +1,16 @@
 #!/usr/bin/env node
 
-import { NodeContext, NodeRuntime } from "@effect/platform-node"
-import { Effect, Layer } from "effect"
-import { LocalLockLive } from "../adapters/local-lock.js"
-import { ProcessRunnerLive } from "../adapters/process-runner.js"
-import { CommandError } from "../domain/errors.js"
+import { Effect } from "effect"
+import {
+  requireSingleArgument,
+  runInferenceMain
+} from "../runtime/system.js"
 import { prepareInstance } from "../workflows/instance.js"
 
-const name = process.argv[2]
-const program =
-  name === undefined || process.argv.length !== 3
-    ? Effect.fail(
-        new CommandError({
-          code: "invalid-prepare-command",
-          message: "infer-prepare requires exactly one instance name"
-        })
-      )
-    : prepareInstance(name).pipe(Effect.asVoid)
-
-program.pipe(
-  Effect.provide(
-    Layer.mergeAll(NodeContext.layer, ProcessRunnerLive, LocalLockLive)
-  ),
-  NodeRuntime.runMain
+runInferenceMain(
+  requireSingleArgument(
+    process.argv.slice(2),
+    "infer-prepare",
+    "invalid-prepare-command"
+  ).pipe(Effect.flatMap((name) => prepareInstance(name)), Effect.asVoid)
 )

@@ -1,6 +1,6 @@
-import { spawn, type ChildProcess } from "node:child_process"
-import { StringDecoder } from "node:string_decoder"
-import { Context, Effect, Layer } from "effect"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Context, Effect, Layer, Stream } from "effect"
+import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process"
 import { CommandError } from "../domain/errors.js"
 
 export interface ProcessRequest {
@@ -32,10 +32,10 @@ export interface ProcessRunnerService {
   ) => Effect.Effect<ProcessResult, CommandError>
 }
 
-export class ProcessRunner extends Context.Tag("inference/ProcessRunner")<
+export class ProcessRunner extends Context.Service<
   ProcessRunner,
   ProcessRunnerService
->() {}
+>()("inference/ProcessRunner") {}
 
 const outputLimit = 64 * 1024
 
@@ -44,150 +44,115 @@ const appendOutput = (current: string, chunk: string): string => {
   return next.length <= outputLimit ? next : next.slice(-outputLimit)
 }
 
-export const terminateProcess = (
-  child: ChildProcess,
-  forceAfterMilliseconds = 5_000
-): Effect.Effect<void> =>
-  Effect.async((resume) => {
-    if (child.exitCode !== null || child.signalCode !== null) {
-      resume(Effect.void)
-      return
-    }
-
-    const force = setTimeout(
-      () => child.kill("SIGKILL"),
-      forceAfterMilliseconds
-    )
-    child.once("close", () => {
-      clearTimeout(force)
-      resume(Effect.void)
-    })
-    child.kill("SIGTERM")
-
-    return Effect.sync(() => {
-      clearTimeout(force)
-      child.kill("SIGKILL")
-    })
+const startError = (request: ProcessRequest): CommandError =>
+  new CommandError({
+    code: "external-command-start-failed",
+    message: `Unable to start '${request.command}'`,
+    details: { command: request.command }
   })
 
-const foreground = (
-  request: ProcessRequest
-): Effect.Effect<void, CommandError> =>
-  Effect.async((resume) => {
-    let settled = false
-    const child = spawn(request.command, [...request.args], {
-      env: {
-        ...process.env,
-        ...request.environment
-      },
-      stdio: "inherit"
-    })
-    child.once("error", () => {
-      if (settled) return
-      settled = true
-      resume(
-        Effect.fail(
-          new CommandError({
-            code: "external-command-start-failed",
-            message: `Unable to start '${request.command}'`,
-            details: { command: request.command }
-          })
+const failedError = (
+  request: ProcessRequest,
+  outcome: Pick<ProcessOutcome, "exitCode" | "signal"> &
+    Partial<Pick<ProcessOutcome, "stderr">>
+): CommandError =>
+  new CommandError({
+    code: "external-command-failed",
+    message: `'${request.command}' exited unsuccessfully`,
+    details: {
+      command: request.command,
+      exitCode: outcome.exitCode,
+      signal: outcome.signal,
+      ...(outcome.stderr === undefined
+        ? {}
+        : { stderr: outcome.stderr.trim() })
+    }
+  })
+
+const command = (
+  request: ProcessRequest,
+  stdio: "capture" | "inherit"
+): ChildProcess.StandardCommand =>
+  ChildProcess.make(request.command, request.args, {
+    detached: false,
+    env: request.environment,
+    extendEnv: true,
+    forceKillAfter: "5 seconds",
+    stdin:
+      stdio === "inherit"
+        ? "inherit"
+        : request.input === undefined
+          ? "ignore"
+          : Stream.succeed(new TextEncoder().encode(request.input)),
+    stdout: stdio === "inherit" ? "inherit" : "pipe",
+    stderr: stdio === "inherit" ? "inherit" : "pipe"
+  })
+
+const collectOutput = (
+  stream: Stream.Stream<Uint8Array, unknown>
+): Effect.Effect<string, unknown> =>
+  stream.pipe(
+    Stream.decodeText,
+    Stream.runFold(() => "", (output, chunk) => appendOutput(output, chunk))
+  )
+
+const makeProcessRunner = Effect.gen(function* () {
+  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+
+  const probe = (
+    request: ProcessRequest
+  ): Effect.Effect<ProcessOutcome, CommandError> =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const handle = yield* spawner.spawn(command(request, "capture"))
+        const [stdout, stderr, exitCode] = yield* Effect.all(
+          [
+            collectOutput(handle.stdout),
+            collectOutput(handle.stderr),
+            handle.exitCode
+          ],
+          { concurrency: "unbounded" }
+        )
+        return {
+          stdout,
+          stderr,
+          exitCode: Number(exitCode),
+          signal: null
+        }
+      }).pipe(Effect.mapError(() => startError(request)))
+    )
+
+  return ProcessRunner.of({
+    foreground: (request) =>
+      spawner.exitCode(command(request, "inherit")).pipe(
+        Effect.mapError(() => startError(request)),
+        Effect.flatMap((exitCode) =>
+          Number(exitCode) === 0
+            ? Effect.void
+            : Effect.fail(
+                failedError(request, {
+                  exitCode: Number(exitCode),
+                  signal: null
+                })
+              )
+        )
+      ),
+    probe,
+    run: (request) =>
+      probe(request).pipe(
+        Effect.flatMap((outcome) =>
+          outcome.exitCode === 0
+            ? Effect.succeed({
+                stdout: outcome.stdout,
+                stderr: outcome.stderr
+              })
+            : Effect.fail(failedError(request, outcome))
         )
       )
-    })
-    child.once("close", (exitCode, signal) => {
-      if (settled) return
-      settled = true
-      resume(
-        exitCode === 0
-          ? Effect.void
-          : Effect.fail(
-              new CommandError({
-                code: "external-command-failed",
-                message: `'${request.command}' exited unsuccessfully`,
-                details: { command: request.command, exitCode, signal }
-              })
-            )
-      )
-    })
-    return settled ? undefined : terminateProcess(child)
   })
-
-const probe = (
-  request: ProcessRequest
-): Effect.Effect<ProcessOutcome, CommandError> =>
-  Effect.async((resume) => {
-    let stdout = ""
-    let stderr = ""
-    const stdoutDecoder = new StringDecoder("utf8")
-    const stderrDecoder = new StringDecoder("utf8")
-    let settled = false
-    const child = spawn(request.command, [...request.args], {
-      env: {
-        ...process.env,
-        ...request.environment
-      },
-      stdio: [request.input === undefined ? "ignore" : "pipe", "pipe", "pipe"]
-    })
-
-    if (request.input !== undefined) {
-      child.stdin?.on("error", () => {})
-      child.stdin?.end(request.input)
-    }
-
-    child.stdout?.on("data", (chunk: Uint8Array) => {
-      stdout = appendOutput(stdout, stdoutDecoder.write(chunk))
-    })
-    child.stderr?.on("data", (chunk: Uint8Array) => {
-      stderr = appendOutput(stderr, stderrDecoder.write(chunk))
-    })
-    child.once("error", () => {
-      if (settled) return
-      settled = true
-      resume(
-        Effect.fail(
-          new CommandError({
-            code: "external-command-start-failed",
-            message: `Unable to start '${request.command}'`,
-            details: { command: request.command }
-          })
-        )
-      )
-    })
-    child.once("close", (code, signal) => {
-      if (settled) return
-      settled = true
-      stdout = appendOutput(stdout, stdoutDecoder.end())
-      stderr = appendOutput(stderr, stderrDecoder.end())
-      resume(Effect.succeed({ stdout, stderr, exitCode: code, signal }))
-    })
-
-    return settled ? undefined : terminateProcess(child)
-  })
-
-export const ProcessRunnerLive = Layer.succeed(ProcessRunner, {
-  foreground,
-  probe,
-  run: (request) =>
-    probe(request).pipe(
-      Effect.flatMap((outcome) =>
-        outcome.exitCode === 0
-          ? Effect.succeed({
-              stdout: outcome.stdout,
-              stderr: outcome.stderr
-            })
-          : Effect.fail(
-              new CommandError({
-                code: "external-command-failed",
-                message: `'${request.command}' exited unsuccessfully`,
-                details: {
-                  command: request.command,
-                  exitCode: outcome.exitCode,
-                  signal: outcome.signal,
-                  stderr: outcome.stderr.trim()
-                }
-              })
-            )
-      )
-    )
 })
+
+export const ProcessRunnerLive = Layer.effect(
+  ProcessRunner,
+  makeProcessRunner
+).pipe(Layer.provide(NodeServices.layer))

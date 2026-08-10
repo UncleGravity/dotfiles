@@ -1,6 +1,6 @@
 import * as path from "node:path"
-import { FileSystem } from "@effect/platform"
-import { Console, Effect, Either, Schema } from "effect"
+import { FileSystem } from "effect"
+import { Effect, Result, Schema } from "effect"
 import { LocalLock } from "../adapters/local-lock.js"
 import {
   ProcessRunner,
@@ -17,6 +17,7 @@ import {
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
 import { formatParseError } from "../domain/json-contract.js"
+import { emitProgress } from "../observability/progress.js"
 import {
   acquireArchiveLock,
   buildManifest,
@@ -49,6 +50,24 @@ type ReplicaSource =
     }
 const rsyncDaemonPort = 873
 const rsyncModule = "models"
+
+const phase = (
+  artifact: ArtifactIdentity,
+  operation: string,
+  state: "started" | "completed" | "failed" | "warning",
+  message: string,
+  attributes?: Readonly<Record<string, unknown>>
+): Effect.Effect<void> =>
+  emitProgress({
+    kind: "lifecycle",
+    scope: "model",
+    operation,
+    state,
+    message,
+    model: `${artifact.repo}@${artifact.revision}`,
+    ...(attributes === undefined ? {} : { attributes })
+  })
+
 const hfArguments = (
   artifact: ArtifactIdentity,
   extra: ReadonlyArray<string>
@@ -76,20 +95,20 @@ export const validateHfDryRun = (
   output: string
 ): Effect.Effect<void, CommandError> =>
   Effect.gen(function* () {
-    const decoded = Schema.decodeUnknownEither(
-      Schema.parseJson(HfDryRunResponse),
+    const decoded = Schema.decodeUnknownResult(
+      Schema.fromJsonString(HfDryRunResponse),
       { errors: "all" }
     )(output)
-    if (Either.isLeft(decoded)) {
+    if (Result.isFailure(decoded)) {
       return yield* Effect.fail(
         new CommandError({
           code: "hf-dry-run-invalid",
           message: "Hugging Face returned an invalid dry-run response",
-          details: { issues: formatParseError(decoded.left) }
+          details: { issues: formatParseError(decoded.failure) }
         })
       )
     }
-    if (decoded.right.length === 0) {
+    if (decoded.success.length === 0) {
       return yield* Effect.fail(
         new CommandError({
           code: "empty-model-selection",
@@ -146,8 +165,11 @@ const resolveReplicaSource = (
 ): Effect.Effect<ReplicaSource, CommandError> =>
   sourceNode === undefined
     ? Effect.gen(function* () {
-        yield* Console.error(
-          `[models] Local artifact is ${localState}; checking archive for ${artifact.repo}@${artifact.revision}`
+        yield* phase(
+          artifact,
+          "locate-source",
+          "started",
+          `Local artifact is ${localState}; checking archive for ${artifact.repo}@${artifact.revision}`
         )
         const archive = yield* inspectLocation(
           fileSystem,
@@ -230,8 +252,11 @@ export const archiveModel = (
           ? undefined
           : yield* validateArchiveSeed(fileSystem, seed)
 
-      yield* Console.error(
-        `[models] Checking pinned revision ${artifact.repo}@${artifact.revision}`
+      yield* phase(
+        artifact,
+        "validate-revision",
+        "started",
+        `Checking pinned revision ${artifact.repo}@${artifact.revision}`
       )
       const preflight = yield* runner.run({
         command: "hf",
@@ -259,8 +284,11 @@ export const archiveModel = (
         filesPath
       )
       if (validatedSeed !== undefined) {
-        yield* Console.error(
-          `[models] Seeding archive staging for ${artifact.repo}@${artifact.revision}`
+        yield* phase(
+          artifact,
+          "seed-archive",
+          "started",
+          `Seeding archive staging for ${artifact.repo}@${artifact.revision}`
         )
         yield* runner.run({
           command: "rsync",
@@ -286,8 +314,11 @@ export const archiveModel = (
             )
           )
       }
-      yield* Console.error(
-        `[models] Reconciling ${artifact.repo}@${artifact.revision} with Hugging Face`
+      yield* phase(
+        artifact,
+        "download-archive",
+        "started",
+        `Reconciling ${artifact.repo}@${artifact.revision} with Hugging Face`
       )
       yield* runner.run({
         command: "hf",
@@ -305,8 +336,11 @@ export const archiveModel = (
           )
         )
 
-      yield* Console.error(
-        `[models] Hashing archive files for ${artifact.repo}@${artifact.revision}`
+      yield* phase(
+        artifact,
+        "hash-archive",
+        "started",
+        `Hashing archive files for ${artifact.repo}@${artifact.revision}`
       )
       const manifest = yield* buildManifest(
         fileSystem,
@@ -322,12 +356,25 @@ export const archiveModel = (
         artifact,
         "metadata"
       )
-      yield* Console.error(
-        `[models] Publishing archive artifact ${artifact.repo}@${artifact.revision}`
+      yield* phase(
+        artifact,
+        "publish-archive",
+        "started",
+        `Publishing archive artifact ${artifact.repo}@${artifact.revision}`
       )
       yield* syncTree(fileSystem, paths.staging)
       yield* publishStaging(fileSystem, paths)
+      yield* phase(
+        artifact,
+        "publish-archive",
+        "completed",
+        `Archive artifact ${artifact.repo}@${artifact.revision} is ready`
+      )
       return yield* modelStatus(inventory, artifact)
+    })
+  ).pipe(
+    Effect.withSpan("inference.archive-model", {
+      attributes: { "inference.model": `${artifact.repo}@${artifact.revision}` }
     })
   )
 
@@ -385,8 +432,12 @@ export const ensureLocalModel = (
         "create local staging directory",
         localPaths.staging
       )
-      yield* Console.error(
-        `[models] Copying ${artifact.repo}@${artifact.revision} from ${source.description} to local staging`
+      yield* phase(
+        artifact,
+        "copy-local",
+        "started",
+        `Copying ${artifact.repo}@${artifact.revision} from ${source.description} to local staging`,
+        { source: source.description }
       )
       yield* runner.run({
         command: "rsync",
@@ -414,8 +465,11 @@ export const ensureLocalModel = (
             fsError("remove rsync partial directory", localPaths.staging)
           )
         )
-      yield* Console.error(
-        `[models] Verifying local replica ${artifact.repo}@${artifact.revision}`
+      yield* phase(
+        artifact,
+        "verify-local",
+        "started",
+        `Verifying local replica ${artifact.repo}@${artifact.revision}`
       )
       yield* validateStaging(
         fileSystem,
@@ -424,8 +478,11 @@ export const ensureLocalModel = (
         artifact,
         "checksums"
       )
-      yield* Console.error(
-        `[models] Publishing local replica ${artifact.repo}@${artifact.revision}`
+      yield* phase(
+        artifact,
+        "publish-local",
+        "started",
+        `Publishing local replica ${artifact.repo}@${artifact.revision}`
       )
       yield* syncTree(fileSystem, localPaths.staging)
       yield* publishStaging(fileSystem, localPaths)
@@ -436,7 +493,18 @@ export const ensureLocalModel = (
         artifact,
         { kind: "local", verification: "metadata" }
       )
-      return yield* requireReadyLocation(published)
+      const ready = yield* requireReadyLocation(published)
+      yield* phase(
+        artifact,
+        "publish-local",
+        "completed",
+        `Local replica ${artifact.repo}@${artifact.revision} is ready`
+      )
+      return ready
+    })
+  ).pipe(
+    Effect.withSpan("inference.ensure-local-model", {
+      attributes: { "inference.model": `${artifact.repo}@${artifact.revision}` }
     })
   )
 

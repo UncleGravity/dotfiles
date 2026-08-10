@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { Either } from "effect"
+import { Result } from "effect"
 import type {
   ArtifactIdentity,
   ModelSelection
@@ -20,7 +20,7 @@ const compareAscii = (left: string, right: string): number =>
 const normalizePatterns = (
   values: ReadonlyArray<string>,
   kind: "include" | "exclude"
-): Either.Either<ReadonlyArray<string>, CommandError> => {
+): Result.Result<ReadonlyArray<string>, CommandError> => {
   const invalid = values.find(
     (value) =>
       value.length === 0 ||
@@ -28,7 +28,7 @@ const normalizePatterns = (
       value.split("/").includes("..")
   )
   if (invalid !== undefined) {
-    return Either.left(
+    return Result.fail(
       new CommandError({
         code: "invalid-model-selection",
         message: `The --${kind} pattern '${invalid}' is not a safe relative pattern`,
@@ -36,14 +36,14 @@ const normalizePatterns = (
       })
     )
   }
-  return Either.right([...new Set(values)].sort(compareAscii))
+  return Result.succeed([...new Set(values)].sort(compareAscii))
 }
 
 export const normalizeSelection = (
   include: ReadonlyArray<string>,
   exclude: ReadonlyArray<string>
-): Either.Either<ModelSelection, CommandError> =>
-  Either.gen(function* () {
+): Result.Result<ModelSelection, CommandError> =>
+  Result.gen(function* () {
     const normalizedInclude = yield* normalizePatterns(include, "include")
     const normalizedExclude = yield* normalizePatterns(exclude, "exclude")
     return {
@@ -78,15 +78,15 @@ export const artifactIdentity = (
 
 export const parseModelReference = (
   value: string
-): Either.Either<ModelReference, CommandError> => {
+): Result.Result<ModelReference, CommandError> => {
   const match = /^([^/\s]+\/[^/@\s]+)@([0-9a-f]{40})$/.exec(value)
   return match === null
-    ? Either.left(
+    ? Result.fail(
         new CommandError({
           code: "invalid-model-reference",
           message: `Model '${value}' must use ORG/REPO@COMMIT form with a lowercase 40-character commit`,
           details: { model: value }
         })
       )
-    : Either.right({ repo: match[1]!, revision: match[2]! })
+    : Result.succeed({ repo: match[1]!, revision: match[2]! })
 }

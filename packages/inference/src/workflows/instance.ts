@@ -1,5 +1,5 @@
-import { FileSystem } from "@effect/platform"
-import { Console, Duration, Effect, Fiber, Option } from "effect"
+import { FileSystem } from "effect"
+import { Duration, Effect, Fiber, Option } from "effect"
 import { loadContract } from "../adapters/contract-files.js"
 import { HealthProbe } from "../adapters/health-probe.js"
 import { LocalLock } from "../adapters/local-lock.js"
@@ -14,6 +14,7 @@ import {
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
 import { resolveInstancePlan } from "../domain/planner.js"
+import { emitProgress } from "../observability/progress.js"
 import { ensureImage } from "./image-store.js"
 import { ensureLocalModel } from "./model-store.js"
 
@@ -24,8 +25,28 @@ interface PreparedImage {
 
 const containerName = (instance: string): string => `infer-${instance}`
 
-const phase = (instance: string, message: string): Effect.Effect<void> =>
-  Console.error(`[infer:${instance}] ${message}`)
+const phase = (
+  instance: string,
+  operation: string,
+  state: "started" | "completed" | "failed" | "warning",
+  message: string,
+  options?: {
+    readonly model?: string
+    readonly attributes?: Readonly<Record<string, unknown>>
+  }
+): Effect.Effect<void> =>
+  emitProgress({
+    kind: "lifecycle",
+    scope: "instance",
+    operation,
+    state,
+    message,
+    instance,
+    ...(options?.model === undefined ? {} : { model: options.model }),
+    ...(options?.attributes === undefined
+      ? {}
+      : { attributes: options.attributes })
+  })
 
 export const containerArguments = (
   instance: InstanceDeclaration,
@@ -77,22 +98,16 @@ export const containerArguments = (
 const failIfExited = (
   container: Fiber.Fiber<void, CommandError>
 ): Effect.Effect<void, CommandError> =>
-  Fiber.poll(container).pipe(
-    Effect.flatMap(
-      Option.match({
-        onNone: () => Effect.void,
-        onSome: () =>
-          Fiber.await(container).pipe(
-            Effect.zipRight(
-              Effect.fail(
-                new CommandError({
-                  code: "container-exited",
-                  message: "The inference container exited unexpectedly"
-                })
-              )
-            )
+  Effect.sync(() => container.pollUnsafe()).pipe(
+    Effect.flatMap((exit) =>
+      exit === undefined
+        ? Effect.void
+        : Effect.fail(
+            new CommandError({
+              code: "container-exited",
+              message: "The inference container exited unexpectedly"
+            })
           )
-      })
     )
   )
 
@@ -112,14 +127,16 @@ export const waitUntilHealthy = (
       yield* Effect.sleep("2 seconds")
     }
   }).pipe(
-    Effect.timeoutFail({
+    Effect.timeoutOrElse({
       duration: Duration.seconds(plan.endpoint.startupTimeoutSeconds),
-      onTimeout: () =>
-        new CommandError({
-          code: "startup-timeout",
-          message: "Inference did not become healthy before its recipe timeout",
-          details: { timeoutSeconds: plan.endpoint.startupTimeoutSeconds }
-        })
+      orElse: () =>
+        Effect.fail(
+          new CommandError({
+            code: "startup-timeout",
+            message: "Inference did not become healthy before its recipe timeout",
+            details: { timeoutSeconds: plan.endpoint.startupTimeoutSeconds }
+          })
+        )
     })
   )
 
@@ -193,7 +210,12 @@ export const prepareInstance = (
   FileSystem.FileSystem | LocalLock | ProcessRunner
 > =>
   Effect.gen(function* () {
-    yield* phase(name, "Loading deployment contracts")
+    yield* phase(
+      name,
+      "load-contracts",
+      "started",
+      "Loading deployment contracts"
+    )
     const [catalog, inventory, instances] = yield* Effect.all([
       loadContract("/etc/infer/catalog.json", "Catalog", Catalog),
       loadContract("/etc/infer/inventory.json", "Inventory", Inventory),
@@ -203,15 +225,19 @@ export const prepareInstance = (
         InstanceCatalog
       )
     ])
-    const { declaration, plan } = yield* resolveInstancePlan(
-      catalog.value,
-      inventory.value,
-      inventory.raw,
-      instances.value,
-      name
+    const { declaration, plan } = yield* Effect.fromResult(
+      resolveInstancePlan(
+        catalog.value,
+        inventory.value,
+        inventory.raw,
+        instances.value,
+        name
+      )
     )
     yield* phase(
       name,
+      "resolve-plan",
+      "completed",
       `Prepared plan for recipe '${declaration.recipe}' on '${inventory.value.localNode}'`
     )
     const modelSource =
@@ -222,13 +248,33 @@ export const prepareInstance = (
       Effect.gen(function* () {
         yield* phase(
           name,
-          `Ensuring model '${model.name}' (${model.artifact.repo}@${model.artifact.revision})`
+          "ensure-model",
+          "started",
+          `Ensuring model '${model.name}' (${model.artifact.repo}@${model.artifact.revision})`,
+          {
+            model: `${model.artifact.repo}@${model.artifact.revision}`,
+            attributes: { modelName: model.name }
+          }
         )
         yield* ensureLocalModel(inventory.value, model.artifact, modelSource)
-        yield* phase(name, `Model '${model.name}' is ready`)
+        yield* phase(
+          name,
+          "ensure-model",
+          "completed",
+          `Model '${model.name}' is ready`,
+          {
+            model: `${model.artifact.repo}@${model.artifact.revision}`,
+            attributes: { modelName: model.name }
+          }
+        )
       })
     )
-    yield* phase(name, `Ensuring image for recipe '${declaration.recipe}'`)
+    yield* phase(
+      name,
+      "ensure-image",
+      "started",
+      `Ensuring image for recipe '${declaration.recipe}'`
+    )
     const imageStatus = yield* ensureImage(
       catalog.value,
       inventory.value,
@@ -238,9 +284,18 @@ export const prepareInstance = (
       reference: imageStatus.local.reference,
       digest: imageStatus.registry.digest
     }
-    yield* phase(name, `Image is ready at ${image.reference}`)
+    yield* phase(
+      name,
+      "ensure-image",
+      "completed",
+      `Image is ready at ${image.reference}`
+    )
     return { declaration, inventory: inventory.value, plan, image }
-  })
+  }).pipe(
+    Effect.withSpan("inference.prepare-instance", {
+      attributes: { "inference.instance": name }
+    })
+  )
 
 export const runInstance = (
   name: string
@@ -252,7 +307,11 @@ export const runInstance = (
   Effect.gen(function* () {
     const prepared = yield* prepareInstance(name)
     yield* runPreparedInstance(name, prepared, process.env.INVOCATION_ID)
-  })
+  }).pipe(
+    Effect.withSpan("inference.run-instance", {
+      attributes: { "inference.instance": name }
+    })
+  )
 
 export const runPreparedInstance = (
   name: string,
@@ -272,7 +331,12 @@ export const runPreparedInstance = (
 
     yield* Effect.scoped(
       Effect.gen(function* () {
-        yield* phase(name, `Launching container '${containerName(name)}'`)
+        yield* phase(
+          name,
+          "launch-container",
+          "started",
+          `Launching container '${containerName(name)}'`
+        )
         const runner = yield* ProcessRunner
         const container = yield* Effect.forkScoped(
           runner.foreground({ command: "podman", args })
@@ -284,16 +348,25 @@ export const runPreparedInstance = (
             command: "systemd-notify",
             args: ["--ready", "--status=Worker container is running"]
           })
-          yield* phase(name, "Monitoring worker container")
+          yield* phase(
+            name,
+            "monitor-worker",
+            "started",
+            "Monitoring worker container"
+          )
           yield* monitorContainer(container)
         } else {
           yield* phase(
             name,
+            "wait-for-health",
+            "started",
             `Waiting for ${plan.endpoint.healthUrl} to become healthy`
           )
           yield* waitUntilHealthy(plan, container)
           yield* phase(
             name,
+            "wait-for-health",
+            "completed",
             `Endpoint is healthy at ${plan.endpoint.healthUrl}`
           )
           yield* runner.run({
@@ -303,9 +376,18 @@ export const runPreparedInstance = (
               `--status=Healthy at ${plan.endpoint.healthUrl}`
             ]
           })
-          yield* phase(name, "Monitoring container and endpoint health")
+          yield* phase(
+            name,
+            "monitor-health",
+            "started",
+            "Monitoring container and endpoint health"
+          )
           yield* monitorHealth(plan, container)
         }
       })
     )
-  })
+  }).pipe(
+    Effect.withSpan("inference.run-prepared-instance", {
+      attributes: { "inference.instance": name }
+    })
+  )

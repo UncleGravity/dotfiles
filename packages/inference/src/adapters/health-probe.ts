@@ -4,14 +4,14 @@ export interface HealthProbeService {
   readonly reachable: (url: string) => Effect.Effect<boolean>
 }
 
-export class HealthProbe extends Context.Tag("inference/HealthProbe")<
+export class HealthProbe extends Context.Service<
   HealthProbe,
   HealthProbeService
->() {}
+>()("inference/HealthProbe") {}
 
 export const makeHealthProbe = (
   request: typeof globalThis.fetch = globalThis.fetch,
-  timeout: Duration.DurationInput = "2 seconds"
+  timeout: Duration.Input = "2 seconds"
 ): HealthProbeService => ({
   reachable: (url) =>
     Effect.tryPromise({

@@ -19,19 +19,15 @@
     "prebuild": "node --eval \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
     "coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=75 --test-coverage-functions=80 dist/tests/*.test.js",
-    "test": "npm run build && node --test dist/tests/cli.test.js dist/tests/cluster-runtime.test.js dist/tests/contracts.test.js dist/tests/health-probe.test.js dist/tests/image-store.test.js dist/tests/instance-runtime.test.js dist/tests/local-lock.test.js dist/tests/model-store.test.js dist/tests/process-runner.test.js dist/tests/remote.test.js",
+    "test": "npm run build && node --test dist/tests/cli.test.js dist/tests/cluster-runtime.test.js dist/tests/contracts.test.js dist/tests/health-probe.test.js dist/tests/image-store.test.js dist/tests/instance-runtime.test.js dist/tests/local-lock.test.js dist/tests/model-store.test.js dist/tests/process-runner.test.js dist/tests/progress.test.js dist/tests/remote.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
-    "@effect/cli": "0.77.0",
-    "@effect/platform": "0.97.1",
-    "@effect/platform-node": "0.108.1",
-    "@effect/printer": "0.51.0",
-    "@effect/printer-ansi": "0.51.0",
-    "effect": "3.22.1"
+    "@effect/platform-node": "4.0.0-beta.106",
+    "effect": "4.0.0-beta.106"
   },
   "devDependencies": {
     "@types/node": "26.1.2",

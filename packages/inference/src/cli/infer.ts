@@ -1,5 +1,5 @@
-import { Args, Command, Options } from "@effect/cli"
 import { Effect } from "effect"
+import { Argument, Command, Flag } from "effect/unstable/cli"
 import { loadContract } from "../adapters/contract-files.js"
 import {
   Catalog,
@@ -14,23 +14,23 @@ import {
 } from "../domain/planner.js"
 import { handleCommand, printOutput } from "./output.js"
 
-const catalogOption = Options.text("catalog").pipe(
-  Options.withDefault("/etc/infer/catalog.json"),
-  Options.withDescription("Path to the evaluated recipe catalog")
+const catalogOption = Flag.string("catalog").pipe(
+  Flag.withDefault("/etc/infer/catalog.json"),
+  Flag.withDescription("Path to the evaluated recipe catalog")
 )
 
-const inventoryOption = Options.text("inventory").pipe(
-  Options.withDefault("/etc/infer/inventory.json"),
-  Options.withDescription("Path to the evaluated deployment inventory")
+const inventoryOption = Flag.string("inventory").pipe(
+  Flag.withDefault("/etc/infer/inventory.json"),
+  Flag.withDescription("Path to the evaluated deployment inventory")
 )
 
-const instancesOption = Options.text("instances").pipe(
-  Options.withDefault("/etc/infer/instances.json"),
-  Options.withDescription("Path to the evaluated instance catalog")
+const instancesOption = Flag.string("instances").pipe(
+  Flag.withDefault("/etc/infer/instances.json"),
+  Flag.withDescription("Path to the evaluated instance catalog")
 )
 
-const jsonOption = Options.boolean("json").pipe(
-  Options.withDescription("Write one versioned JSON value")
+const jsonOption = Flag.boolean("json").pipe(
+  Flag.withDescription("Write one versioned JSON value")
 )
 
 const renderRecipeList = (value: ReturnType<typeof listRecipes>): string => {
@@ -93,8 +93,8 @@ const instances = Command.make("instances").pipe(
   Command.withSubcommands([instancesList])
 )
 
-const instanceArgument = Args.text({ name: "instance" }).pipe(
-  Args.withDescription("Declared inference instance name")
+const instanceArgument = Argument.string("instance").pipe(
+  Argument.withDescription("Declared inference instance name")
 )
 
 const renderPlan = (plan: RunPlan): string =>
@@ -127,12 +127,14 @@ const plan = Command.make(
             loadContract(inventory, "Inventory", Inventory),
             loadContract(instances, "InstanceCatalog", InstanceCatalog)
           ])
-        const value = yield* planInstance(
-          loadedCatalog.value,
-          loadedInventory.value,
-          loadedInventory.raw,
-          loadedInstances.value,
-          instance
+        const value = yield* Effect.fromResult(
+          planInstance(
+            loadedCatalog.value,
+            loadedInventory.value,
+            loadedInventory.raw,
+            loadedInstances.value,
+            instance
+          )
         )
         yield* printOutput(json, value, renderPlan(value))
       })

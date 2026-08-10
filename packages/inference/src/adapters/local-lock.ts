@@ -1,8 +1,8 @@
-import { spawn, type ChildProcess } from "node:child_process"
 import { fileURLToPath } from "node:url"
-import { Context, Effect, Layer, Scope } from "effect"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Context, Effect, Layer, Option, Scope, Stream } from "effect"
+import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process"
 import { CommandError } from "../domain/errors.js"
-import { terminateProcess } from "./process-runner.js"
 
 export interface LocalLockService {
   readonly acquire: (
@@ -11,79 +11,83 @@ export interface LocalLockService {
   ) => Effect.Effect<void, CommandError, Scope.Scope>
 }
 
-export class LocalLock extends Context.Tag("inference/LocalLock")<
-  LocalLock,
-  LocalLockService
->() {}
+export class LocalLock extends Context.Service<LocalLock, LocalLockService>()(
+  "inference/LocalLock"
+) {}
 
 const holder = fileURLToPath(
   new URL("../entrypoints/lock-holder.js", import.meta.url)
 )
 
-const startHolder = (
-  path: string,
-  nonBlocking: boolean
-): Effect.Effect<ChildProcess, CommandError> =>
-  Effect.async((resume) => {
-    let output = ""
-    let settled = false
-    const child = spawn(
-      "flock",
-      [
-        "--exclusive",
-        ...(nonBlocking ? ["--nonblock"] : []),
-        path,
-        process.execPath,
-        holder
-      ],
-      { stdio: ["pipe", "pipe", "pipe"] }
-    )
+const makeLocalLock = Effect.gen(function* () {
+  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
-    child.stdout?.on("data", (chunk: Uint8Array) => {
-      if (settled) return
-      output += Buffer.from(chunk).toString("utf8")
-      if (output.includes("ready\n")) {
-        settled = true
-        resume(Effect.succeed(child))
-      }
-    })
-    child.once("error", () => {
-      if (settled) return
-      settled = true
-      resume(
-        Effect.fail(
-          new CommandError({
-            code: "local-lock-failed",
-            message: `Unable to start flock for '${path}'`,
-            details: { path }
-          })
+  return LocalLock.of({
+    acquire: (path, options) =>
+      Effect.gen(function* () {
+        const command = ChildProcess.make(
+          "flock",
+          [
+            "--exclusive",
+            ...(options?.nonBlocking === true ? ["--nonblock"] : []),
+            path,
+            process.execPath,
+            holder
+          ],
+          {
+            detached: false,
+            forceKillAfter: "5 seconds",
+            stdin: "pipe",
+            stdout: "pipe",
+            stderr: "pipe"
+          }
         )
-      )
-    })
-    child.once("exit", (code, signal) => {
-      if (settled) return
-      settled = true
-      resume(
-        Effect.fail(
+        const handle = yield* spawner.spawn(command).pipe(
+          Effect.mapError(
+            () =>
+              new CommandError({
+                code: "local-lock-failed",
+                message: `Unable to start flock for '${path}'`,
+                details: { path }
+              })
+          )
+        )
+        const ready = yield* handle.stdout.pipe(
+          Stream.decodeText,
+          Stream.splitLines,
+          Stream.runHead,
+          Effect.mapError(
+            () =>
+              new CommandError({
+                code: "local-lock-failed",
+                message: `Unable to read flock handshake for '${path}'`,
+                details: { path }
+              })
+          )
+        )
+        if (Option.getOrUndefined(ready) === "ready") return
+
+        const exitCode = yield* handle.exitCode.pipe(
+          Effect.mapError(
+            () =>
+              new CommandError({
+                code: "local-lock-failed",
+                message: `Unable to inspect flock for '${path}'`,
+                details: { path }
+              })
+          )
+        )
+        return yield* Effect.fail(
           new CommandError({
             code: "local-lock-failed",
             message: `Unable to acquire local model lock '${path}'`,
-            details: { path, exitCode: code, signal }
+            details: { path, exitCode: Number(exitCode), signal: null }
           })
         )
-      )
-    })
-
-    return settled ? undefined : terminateProcess(child)
+      })
   })
-
-const stopHolder = (child: ChildProcess): Effect.Effect<void> =>
-  terminateProcess(child)
-
-export const LocalLockLive = Layer.succeed(LocalLock, {
-  acquire: (path, options) =>
-    Effect.acquireRelease(
-      startHolder(path, options?.nonBlocking ?? false),
-      stopHolder
-    ).pipe(Effect.asVoid)
 })
+
+export const LocalLockLive = Layer.effect(LocalLock, makeLocalLock).pipe(
+  Layer.provide(NodeServices.layer)
+)

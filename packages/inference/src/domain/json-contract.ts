@@ -1,14 +1,15 @@
-import { Either, ParseResult, Schema } from "effect"
-import type { Schema as SchemaType } from "effect/Schema"
+import { Result, Schema } from "effect"
 
-export const decodeStrictJson = <A, I>(
-  schema: SchemaType<A, I, never>,
+export const decodeStrictJson = <
+  S extends Schema.ConstraintDecoder<unknown, never>
+>(
+  schema: S,
   raw: string
-): Either.Either<A, ParseResult.ParseError> =>
-  Schema.decodeUnknownEither(Schema.parseJson(schema), {
+): Result.Result<S["Type"], Schema.SchemaError> =>
+  Schema.decodeUnknownResult(Schema.fromJsonString(schema), {
     errors: "all",
     onExcessProperty: "error"
   })(raw)
 
-export const formatParseError = (error: ParseResult.ParseError): string =>
-  ParseResult.TreeFormatter.formatErrorSync(error)
+export const formatParseError = (error: Schema.SchemaError): string =>
+  String(error.issue)

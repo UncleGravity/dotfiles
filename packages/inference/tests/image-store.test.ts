@@ -3,9 +3,9 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import test from "node:test"
-import { FileSystem } from "@effect/platform"
-import { NodeContext } from "@effect/platform-node"
-import { Effect, Either, Fiber, Layer, Schema } from "effect"
+import { FileSystem } from "effect"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Effect, Result, Fiber, Layer, Schema } from "effect"
 import { LocalLock, type LocalLockService } from "../src/adapters/local-lock.js"
 import {
   ProcessRunner,
@@ -89,7 +89,7 @@ test("image ensure builds once and restores the immutable digest", async () => {
           return Effect.sync(() => {
             requests.push(request)
             buildStarted()
-          }).pipe(Effect.zipRight(Effect.never))
+          }).pipe(Effect.andThen(Effect.never))
         }
         return Effect.sync(() => {
           requests.push(request)
@@ -131,7 +131,7 @@ test("image ensure builds once and restores the immutable digest", async () => {
         ).pipe(Effect.asVoid)
     }
     const layer = Layer.mergeAll(
-      NodeContext.layer,
+      NodeServices.layer,
       Layer.succeed(ProcessRunner, runner),
       Layer.succeed(LocalLock, localLock)
     )
@@ -145,7 +145,7 @@ test("image ensure builds once and restores the immutable digest", async () => {
 
     await run(
       Effect.gen(function* () {
-        const fiber = yield* Effect.fork(
+        const fiber = yield* Effect.forkChild(
           ensureImage(catalog, inventory, "fixture-vllm")
         )
         yield* Effect.promise(() => buildStartedPromise)
@@ -191,10 +191,10 @@ test("image ensure builds once and restores the immutable digest", async () => {
     registryDigest = undefined
     localReady = false
     const unpublished = await run(
-      Effect.either(ensureImage(catalog, workerInventory, "fixture-vllm"))
+      Effect.result(ensureImage(catalog, workerInventory, "fixture-vllm"))
     )
-    assert.ok(Either.isLeft(unpublished))
-    assert.equal(unpublished.left.code, "image-not-published")
+    assert.ok(Result.isFailure(unpublished))
+    assert.equal(unpublished.failure.code, "image-not-published")
     assert.equal(builds, 1)
     assert.equal(pushes, 1)
 
@@ -276,14 +276,14 @@ test("image status rejects invalid digests and local inspection failures", async
     run: () => Effect.die("status must not mutate images")
   }
   const failed = await Effect.runPromise(
-    Effect.either(
+    Effect.result(
       imageStatus(catalog, baseInventory, "fixture-vllm").pipe(
         Effect.provide(Layer.succeed(ProcessRunner, localFailure))
       )
     )
   )
-  assert.ok(Either.isLeft(failed))
-  assert.equal(failed.left.code, "image-status-failed")
+  assert.ok(Result.isFailure(failed))
+  assert.equal(failed.failure.code, "image-status-failed")
 })
 
 test("image ensure verifies publication and local retention", async () => {
@@ -310,7 +310,7 @@ test("image ensure verifies publication and local retention", async () => {
       effect.pipe(
         Effect.provide(
           Layer.mergeAll(
-            NodeContext.layer,
+            NodeServices.layer,
             Layer.succeed(LocalLock, localLock),
             Layer.succeed(ProcessRunner, runner)
           )
@@ -330,11 +330,11 @@ test("image ensure verifies publication and local retention", async () => {
       run: () => Effect.succeed({ stdout: "", stderr: "" })
     }
     const publication = await run(
-      Effect.either(ensureImage(catalog, inventory, "fixture-vllm")),
+      Effect.result(ensureImage(catalog, inventory, "fixture-vllm")),
       unpublished
     )
-    assert.ok(Either.isLeft(publication))
-    assert.equal(publication.left.code, "image-publication-failed")
+    assert.ok(Result.isFailure(publication))
+    assert.equal(publication.failure.code, "image-publication-failed")
 
     let pulls = 0
     const notRetained: ProcessRunnerService = {
@@ -354,11 +354,11 @@ test("image ensure verifies publication and local retention", async () => {
         })
     }
     const retention = await run(
-      Effect.either(ensureImage(catalog, inventory, "fixture-vllm")),
+      Effect.result(ensureImage(catalog, inventory, "fixture-vllm")),
       notRetained
     )
-    assert.ok(Either.isLeft(retention))
-    assert.equal(retention.left.code, "image-ensure-failed")
+    assert.ok(Result.isFailure(retention))
+    assert.equal(retention.failure.code, "image-ensure-failed")
     assert.equal(pulls, 1)
   } finally {
     rmSync(temporary, { recursive: true, force: true })

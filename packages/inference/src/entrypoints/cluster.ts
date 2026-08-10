@@ -1,26 +1,16 @@
 #!/usr/bin/env node
 
-import { NodeContext, NodeRuntime } from "@effect/platform-node"
-import { Effect, Layer } from "effect"
-import { LocalLockLive } from "../adapters/local-lock.js"
-import { ProcessRunnerLive } from "../adapters/process-runner.js"
-import { CommandError } from "../domain/errors.js"
+import { Effect } from "effect"
+import {
+  requireSingleArgument,
+  runInferenceMain
+} from "../runtime/system.js"
 import { runCluster } from "../workflows/cluster.js"
 
-const name = process.argv[2]
-const program =
-  name === undefined || process.argv.length !== 3
-    ? Effect.fail(
-        new CommandError({
-          code: "invalid-cluster-command",
-          message: "infer-cluster requires exactly one instance name"
-        })
-      )
-    : runCluster(name)
-
-program.pipe(
-  Effect.provide(
-    Layer.mergeAll(NodeContext.layer, ProcessRunnerLive, LocalLockLive)
-  ),
-  NodeRuntime.runMain
+runInferenceMain(
+  requireSingleArgument(
+    process.argv.slice(2),
+    "infer-cluster",
+    "invalid-cluster-command"
+  ).pipe(Effect.flatMap(runCluster))
 )

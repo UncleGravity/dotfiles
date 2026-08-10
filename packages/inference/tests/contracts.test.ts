@@ -8,8 +8,8 @@ import {
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import test from "node:test"
-import { NodeContext } from "@effect/platform-node"
-import { Effect, Either, Schema } from "effect"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Effect, Result, Schema } from "effect"
 import { loadContract } from "../src/adapters/contract-files.js"
 import {
   Catalog,
@@ -23,8 +23,11 @@ import { planInstance, planRun } from "../src/domain/planner.js"
 const fixture = (name: string): string =>
   readFileSync(`tests/fixtures/contracts/v1/${name}`, "utf8")
 
-const decode = <A, I>(schema: Schema.Schema<A, I, never>, json: string): A =>
-  Schema.decodeUnknownSync(Schema.parseJson(schema), {
+const decode = <S extends Schema.ConstraintDecoder<unknown, never>>(
+  schema: S,
+  json: string
+): S["Type"] =>
+  Schema.decodeUnknownSync(Schema.fromJsonString(schema), {
     errors: "all",
     onExcessProperty: "error"
   })(json)
@@ -62,12 +65,12 @@ test("planning is deterministic and matches the checked contract", () => {
     "fixture"
   )
 
-  assert.ok(Either.isRight(first))
-  assert.ok(Either.isRight(second))
-  assert.deepEqual(first.right, second.right)
+  assert.ok(Result.isSuccess(first))
+  assert.ok(Result.isSuccess(second))
+  assert.deepEqual(first.success, second.success)
 
   const expected = decode(RunPlan, fixture("run-plan.json"))
-  assert.deepEqual(first.right, expected)
+  assert.deepEqual(first.success, expected)
 })
 
 test("planning rejects undeclared instances", () => {
@@ -78,8 +81,8 @@ test("planning rejects undeclared instances", () => {
     instances,
     "missing"
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "instance-not-found")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "instance-not-found")
 })
 
 test("ordered nodes select the head and assign stable ranks", () => {
@@ -88,11 +91,11 @@ test("ordered nodes select the head and assign stable ranks", () => {
     nodes: ["spark-02", "spark-01"]
   })
 
-  assert.ok(Either.isRight(result))
-  assert.deepEqual(result.right.nodes, ["spark-02", "spark-01"])
-  assert.equal(result.right.head, "spark-02")
+  assert.ok(Result.isSuccess(result))
+  assert.deepEqual(result.success.nodes, ["spark-02", "spark-01"])
+  assert.equal(result.success.head, "spark-02")
   assert.deepEqual(
-    result.right.nodePlans.map(({ node, rank, role }) => ({ node, rank, role })),
+    result.success.nodePlans.map(({ node, rank, role }) => ({ node, rank, role })),
     [
       { node: "spark-02", rank: 0, role: "head" },
       { node: "spark-01", rank: 1, role: "worker" }
@@ -105,8 +108,8 @@ test("multi-node planning requires an explicit ordered node selection", () => {
     recipe: "fixture-vllm"
   })
 
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "node-selection-required")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "node-selection-required")
 })
 
 test("planning rejects duplicate nodes", () => {
@@ -115,8 +118,8 @@ test("planning rejects duplicate nodes", () => {
     nodes: ["spark-01", "spark-01"]
   })
 
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "duplicate-node")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "duplicate-node")
 })
 
 test("planning rejects invalid recipes, selections, and node capabilities", () => {
@@ -176,8 +179,8 @@ test("planning rejects invalid recipes, selections, and node capabilities", () =
         ...(testCase.nodes === undefined ? {} : { nodes: testCase.nodes })
       }
     )
-    assert.ok(Either.isLeft(result), testCase.expected)
-    assert.equal(result.left.code, testCase.expected)
+    assert.ok(Result.isFailure(result), testCase.expected)
+    assert.equal(result.failure.code, testCase.expected)
   }
 })
 
@@ -196,8 +199,8 @@ test("planning rejects structurally inconsistent inventories", () => {
       recipe: "fixture-vllm",
       nodes: [node0.name, node1.name]
     })
-    assert.ok(Either.isLeft(result))
-    assert.equal(result.left.code, "invalid-inventory")
+    assert.ok(Result.isFailure(result))
+    assert.equal(result.failure.code, "invalid-inventory")
   }
 })
 
@@ -211,8 +214,8 @@ test("contract files preserve raw input and classify read and schema errors", as
     JSON.stringify({ ...JSON.parse(inventoryJson), unexpected: true })
   )
 
-  const run = <A, E>(effect: Effect.Effect<A, E, NodeContext.NodeContext>) =>
-    Effect.runPromise(effect.pipe(Effect.provide(NodeContext.layer)))
+  const run = <A, E>(effect: Effect.Effect<A, E, NodeServices.NodeServices>) =>
+    Effect.runPromise(effect.pipe(Effect.provide(NodeServices.layer)))
 
   try {
     const loaded = await run(
@@ -222,19 +225,19 @@ test("contract files preserve raw input and classify read and schema errors", as
     assert.deepEqual(loaded.value, inventory)
 
     const invalid = await run(
-      Effect.either(loadContract(invalidPath, "Inventory", Inventory))
+      Effect.result(loadContract(invalidPath, "Inventory", Inventory))
     )
-    assert.ok(Either.isLeft(invalid))
-    assert.equal(invalid.left.code, "invalid-contract")
-    assert.equal(invalid.left.details?.path, invalidPath)
+    assert.ok(Result.isFailure(invalid))
+    assert.equal(invalid.failure.code, "invalid-contract")
+    assert.equal(invalid.failure.details?.path, invalidPath)
 
     const missingPath = path.join(temporary, "missing.json")
     const missing = await run(
-      Effect.either(loadContract(missingPath, "Inventory", Inventory))
+      Effect.result(loadContract(missingPath, "Inventory", Inventory))
     )
-    assert.ok(Either.isLeft(missing))
-    assert.equal(missing.left.code, "contract-read-failed")
-    assert.equal(missing.left.details?.path, missingPath)
+    assert.ok(Result.isFailure(missing))
+    assert.equal(missing.failure.code, "contract-read-failed")
+    assert.equal(missing.failure.details?.path, missingPath)
   } finally {
     rmSync(temporary, { recursive: true, force: true })
   }

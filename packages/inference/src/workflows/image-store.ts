@@ -1,4 +1,4 @@
-import { FileSystem } from "@effect/platform"
+import { FileSystem } from "effect"
 import { Effect } from "effect"
 import { LocalLock } from "../adapters/local-lock.js"
 import { ProcessRunner } from "../adapters/process-runner.js"
@@ -136,6 +136,17 @@ const statusFor = (
       registry.digest
     )
     const localReady = yield* localImageExists(immutableReference)
+    const local: ImageStatus["local"] = localReady
+      ? {
+          state: "ready",
+          reference: immutableReference,
+          issues: []
+        }
+      : {
+          state: "absent",
+          reference: immutableReference,
+          issues: []
+        }
     return {
       schemaVersion: 1 as const,
       recipe: {
@@ -149,11 +160,7 @@ const statusFor = (
         digest: registry.digest,
         issues: []
       },
-      local: {
-        state: localReady ? ("ready" as const) : ("absent" as const),
-        reference: immutableReference,
-        issues: []
-      }
+      local
     }
   })
 
@@ -163,7 +170,7 @@ export const imageStatus = (
   recipeName: string
 ): Effect.Effect<ImageStatus, CommandError, ProcessRunner> =>
   Effect.gen(function* () {
-    const recipe = yield* findRecipe(catalog, recipeName)
+    const recipe = yield* Effect.fromResult(findRecipe(catalog, recipeName))
     return yield* statusFor(inventory, recipe)
   })
 
@@ -208,7 +215,7 @@ export const ensureImage = (
   FileSystem.FileSystem | LocalLock | ProcessRunner
 > =>
   Effect.gen(function* () {
-    const recipe = yield* findRecipe(catalog, recipeName)
+    const recipe = yield* Effect.fromResult(findRecipe(catalog, recipeName))
     const reference = tagReference(inventory, recipe)
     const fs = yield* FileSystem.FileSystem
     const lock = yield* LocalLock
@@ -267,7 +274,7 @@ export const ensureImage = (
             )
           : inventory.localNode === inventory.controlNode
             ? yield* Effect.scoped(
-                lock.acquire(lockPath).pipe(Effect.zipRight(prepareRegistry))
+                lock.acquire(lockPath).pipe(Effect.andThen(prepareRegistry))
               )
             : yield* Effect.fail(
                 new CommandError({

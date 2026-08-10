@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import test from "node:test"
-import { Effect, Either } from "effect"
+import { Effect, Result } from "effect"
 import { LocalLock, LocalLockLive } from "../src/adapters/local-lock.js"
 
 const fakeFlock = (node: string) => `#!${node}
@@ -66,8 +66,8 @@ test("local locks reject contention, release, and classify spawn errors", async 
         const lock = yield* LocalLock
         return yield* Effect.scoped(
           lock.acquire(lockPath).pipe(
-            Effect.zipRight(
-              Effect.either(
+            Effect.andThen(
+              Effect.result(
                 Effect.scoped(
                   lock.acquire(lockPath, { nonBlocking: true })
                 )
@@ -77,8 +77,8 @@ test("local locks reject contention, release, and classify spawn errors", async 
         )
       }).pipe(Effect.provide(LocalLockLive))
     )
-    assert.ok(Either.isLeft(contention))
-    assert.equal(contention.left.code, "local-lock-failed")
+    assert.ok(Result.isFailure(contention))
+    assert.equal(contention.failure.code, "local-lock-failed")
 
     await Effect.runPromise(
       Effect.gen(function* () {
@@ -93,13 +93,13 @@ test("local locks reject contention, release, and classify spawn errors", async 
     const unavailable = await Effect.runPromise(
       Effect.gen(function* () {
         const lock = yield* LocalLock
-        return yield* Effect.either(
+        return yield* Effect.result(
           Effect.scoped(lock.acquire(path.join(temporary, "unavailable.lock")))
         )
       }).pipe(Effect.provide(LocalLockLive))
     )
-    assert.ok(Either.isLeft(unavailable))
-    assert.equal(unavailable.left.code, "local-lock-failed")
+    assert.ok(Result.isFailure(unavailable))
+    assert.equal(unavailable.failure.code, "local-lock-failed")
   } finally {
     if (originalPath === undefined) delete process.env.PATH
     else process.env.PATH = originalPath

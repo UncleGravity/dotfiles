@@ -34,7 +34,7 @@ in
     src = source;
 
     nodejs = nodejs_24;
-    npmDepsHash = "sha256-zhG3QhnkA1rwVs9zWE2GzeqCUiMXWumpqrcjqwx2MEs=";
+    npmDepsHash = "sha256-rzDaxG1jNEWorvhbKj8j7AhhGuer3P1EuiaGg2yDPZg=";
 
     nativeBuildInputs = [makeWrapper];
 

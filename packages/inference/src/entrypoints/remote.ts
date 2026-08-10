@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-import { NodeContext, NodeRuntime } from "@effect/platform-node"
-import { Effect, Layer } from "effect"
-import { ProcessRunnerLive } from "../adapters/process-runner.js"
+import { Effect } from "effect"
 import { CommandError } from "../domain/errors.js"
+import { runInferenceMain } from "../runtime/system.js"
 import { runRemoteCommand } from "../workflows/remote.js"
 
 const originalCommand = process.env.SSH_ORIGINAL_COMMAND
@@ -17,7 +16,4 @@ const program =
       )
     : runRemoteCommand(originalCommand)
 
-program.pipe(
-  Effect.provide(Layer.mergeAll(NodeContext.layer, ProcessRunnerLive)),
-  NodeRuntime.runMain
-)
+runInferenceMain(program)

@@ -1,9 +1,8 @@
-import { FileSystem } from "@effect/platform"
+import { FileSystem } from "effect"
 import {
-  Console,
   Duration,
   Effect,
-  Either,
+  Result,
   Fiber,
   Option,
   Scope
@@ -17,6 +16,7 @@ import {
 } from "../domain/contracts.js"
 import { CommandError } from "../domain/errors.js"
 import { decodeStrictJson, formatParseError } from "../domain/json-contract.js"
+import { emitProgress } from "../observability/progress.js"
 import { prepareInstance } from "./instance.js"
 import { readUnitStatus } from "./remote.js"
 
@@ -31,8 +31,22 @@ const sshIdentity = "/etc/ssh/ssh_host_ed25519_key"
 const sshKnownHosts = "/etc/ssh/ssh_known_hosts"
 const remotePreparationConcurrency = 3
 
-const phase = (instance: string, message: string): Effect.Effect<void> =>
-  Console.error(`[infer:${instance}:cluster] ${message}`)
+const phase = (
+  instance: string,
+  operation: string,
+  state: "started" | "completed" | "failed" | "warning",
+  message: string,
+  node?: string
+): Effect.Effect<void> =>
+  emitProgress({
+    kind: "lifecycle",
+    scope: "cluster",
+    operation,
+    state,
+    message,
+    instance,
+    ...(node === undefined ? {} : { node })
+  })
 
 const findNode = (inventory: Inventory, name: string) =>
   inventory.nodes.find((candidate) => candidate.name === name)
@@ -86,14 +100,22 @@ const remoteAction = (
     const runner = yield* ProcessRunner
     const args = yield* remoteArguments(inventory, node, action, instance)
     yield* runner.run({ command: "ssh", args })
-  })
+  }).pipe(
+    Effect.withSpan("inference.cluster.remote-action", {
+      attributes: {
+        "inference.action": action,
+        "inference.instance": instance,
+        "inference.node": node
+      }
+    })
+  )
 
 export const decodeRemoteStatus = (
   raw: string,
   node: string
-): Either.Either<RemoteUnitStatus, CommandError> =>
+): Result.Result<RemoteUnitStatus, CommandError> =>
   decodeStrictJson(RemoteUnitStatus, raw).pipe(
-    Either.mapLeft(
+    Result.mapError(
       (error) =>
         new CommandError({
           code: "cluster-status-invalid",
@@ -126,7 +148,9 @@ const statusNode = (
           instance
         )
         const result = yield* runner.run({ command: "ssh", args })
-        return yield* decodeRemoteStatus(result.stdout.trim(), node)
+        return yield* Effect.fromResult(
+          decodeRemoteStatus(result.stdout.trim(), node)
+        )
       })
 
 const checkLeases = (
@@ -135,13 +159,12 @@ const checkLeases = (
   Effect.forEach(
     leases,
     ({ node, fiber }) =>
-      Fiber.poll(fiber).pipe(
-        Effect.flatMap(
-          Option.match({
-            onNone: () => Effect.void,
-            onSome: () =>
-              Fiber.join(fiber).pipe(
-                Effect.either,
+      Effect.sync(() => fiber.pollUnsafe()).pipe(
+        Effect.flatMap((exit) =>
+          exit === undefined
+            ? Effect.void
+            : Fiber.join(fiber).pipe(
+                Effect.result,
                 Effect.flatMap((result) =>
                   Effect.fail(
                     new CommandError({
@@ -149,15 +172,14 @@ const checkLeases = (
                       message: `The controller lease to '${node}' ended`,
                       details: {
                         node,
-                        result: Either.isLeft(result)
-                          ? result.left.message
+                        result: Result.isFailure(result)
+                          ? result.failure.message
                           : "remote command exited"
                       }
                     })
                   )
                 )
               )
-          })
         )
       ),
     { discard: true }
@@ -262,14 +284,16 @@ const waitUntilReady = (
         yield* Effect.sleep("2 seconds")
       }
     }).pipe(
-      Effect.timeoutFail({
+      Effect.timeoutOrElse({
         duration: Duration.seconds(plan.endpoint.startupTimeoutSeconds),
-        onTimeout: () =>
-          new CommandError({
-            code: "cluster-startup-timeout",
-            message: "The clustered inference instance did not become ready",
-            details: { statuses: latest }
-          })
+        orElse: () =>
+          Effect.fail(
+            new CommandError({
+              code: "cluster-startup-timeout",
+              message: "The clustered inference instance did not become ready",
+              details: { statuses: latest }
+            })
+          )
       })
     )
   })
@@ -314,7 +338,11 @@ export const runCluster = (
   Effect.gen(function* () {
     const prepared = yield* prepareInstance(name)
     yield* runPreparedCluster(name, prepared.inventory, prepared.plan)
-  })
+  }).pipe(
+    Effect.withSpan("inference.run-cluster", {
+      attributes: { "inference.instance": name }
+    })
+  )
 
 export const runPreparedCluster = (
   name: string,
@@ -345,8 +373,11 @@ export const runPreparedCluster = (
     yield* Effect.forEach(
       remoteNodes,
       (node) =>
-        phase(name, `Preparing '${node}'`).pipe(
-          Effect.zipRight(remoteAction(inventory, node, "prepare", name))
+        phase(name, "prepare-node", "started", `Preparing '${node}'`, node).pipe(
+          Effect.andThen(remoteAction(inventory, node, "prepare", name)),
+          Effect.tap(() =>
+            phase(name, "prepare-node", "completed", `Prepared '${node}'`, node)
+          )
         ),
       { concurrency: remotePreparationConcurrency, discard: true }
     )
@@ -355,8 +386,14 @@ export const runPreparedCluster = (
       [...plan.nodes].reverse(),
       (node) =>
         stopNode(inventory, name, node).pipe(
-          Effect.catchAll((error) =>
-            phase(name, `Unable to stop '${node}': ${error.message}`)
+          Effect.catch((error) =>
+            phase(
+              name,
+              "stop-node",
+              "warning",
+              `Unable to stop '${node}': ${error.message}`,
+              node
+            )
           )
         ),
       { concurrency: 1, discard: true }
@@ -364,15 +401,30 @@ export const runPreparedCluster = (
 
     yield* Effect.scoped(
       Effect.acquireRelease(Effect.void, () => stopAll).pipe(
-        Effect.zipRight(
+        Effect.andThen(
           Effect.gen(function* () {
             let leases: ReadonlyArray<NodeLease> = []
             for (const group of clusterStartGroups(plan)) {
               const launched = yield* Effect.forEach(
                 group,
                 (node) =>
-                  phase(name, `Starting '${node}'`).pipe(
-                    Effect.zipRight(launchNode(inventory, name, node))
+                  phase(
+                    name,
+                    "start-node",
+                    "started",
+                    `Starting '${node}'`,
+                    node
+                  ).pipe(
+                    Effect.andThen(launchNode(inventory, name, node)),
+                    Effect.tap(() =>
+                      phase(
+                        name,
+                        "start-node",
+                        "completed",
+                        `Started '${node}'`,
+                        node
+                      )
+                    )
                   ),
                 { concurrency: "unbounded" }
               )
@@ -382,7 +434,12 @@ export const runPreparedCluster = (
               ]
               yield* checkLeases(leases)
             }
-            yield* phase(name, "Waiting for all node units")
+            yield* phase(
+              name,
+              "wait-for-nodes",
+              "started",
+              "Waiting for all node units"
+            )
             yield* waitUntilReady(inventory, plan, name, leases)
             const runner = yield* ProcessRunner
             yield* runner.run({
@@ -392,10 +449,22 @@ export const runPreparedCluster = (
                 `--status=Cluster is healthy at ${plan.endpoint.healthUrl}`
               ]
             })
-            yield* phase(name, `Cluster is healthy at ${plan.endpoint.healthUrl}`)
+            yield* phase(
+              name,
+              "wait-for-nodes",
+              "completed",
+              `Cluster is healthy at ${plan.endpoint.healthUrl}`
+            )
             yield* monitorCluster(inventory, plan, name, leases)
           })
         )
       )
     )
-  })
+  }).pipe(
+    Effect.withSpan("inference.run-prepared-cluster", {
+      attributes: {
+        "inference.instance": name,
+        "inference.node.count": plan.nodes.length
+      }
+    })
+  )

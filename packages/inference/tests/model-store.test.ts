@@ -12,9 +12,9 @@ import {
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import test from "node:test"
-import { FileSystem } from "@effect/platform"
-import { NodeContext } from "@effect/platform-node"
-import { Effect, Either, Fiber, Layer, Schema } from "effect"
+import { FileSystem } from "effect"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Effect, Result, Fiber, Layer, Schema } from "effect"
 import { LocalLock, type LocalLockService } from "../src/adapters/local-lock.js"
 import {
   ProcessRunner,
@@ -64,12 +64,12 @@ const makeArtifact = () => {
     "example/tiny-model@1111111111111111111111111111111111111111"
   )
   const selection = normalizeSelection([], [])
-  assert.ok(Either.isRight(reference))
-  assert.ok(Either.isRight(selection))
+  assert.ok(Result.isSuccess(reference))
+  assert.ok(Result.isSuccess(selection))
   return artifactIdentity(
-    reference.right.repo,
-    reference.right.revision,
-    selection.right
+    reference.success.repo,
+    reference.success.revision,
+    selection.success
   )
 }
 
@@ -88,8 +88,8 @@ test("model selections normalize to one stable artifact identity", () => {
     ["*.json", "weights/*", "*.json"],
     ["*.bin", "*.bin"]
   )
-  assert.ok(Either.isRight(selection))
-  assert.deepEqual(selection.right, {
+  assert.ok(Result.isSuccess(selection))
+  assert.deepEqual(selection.success, {
     include: ["*.json", "weights/*"],
     exclude: ["*.bin"]
   })
@@ -97,7 +97,7 @@ test("model selections normalize to one stable artifact identity", () => {
   const artifact = artifactIdentity(
     "example/model",
     "1111111111111111111111111111111111111111",
-    selection.right
+    selection.success
   )
   assert.match(
     artifact.relativePath,
@@ -112,17 +112,17 @@ test("Hugging Face dry-run output requires a non-empty safe file list", async ()
 
   for (const raw of ["not-json", '[{"file":"../weights.bin"}]']) {
     const invalid = await Effect.runPromise(
-      Effect.either(validateHfDryRun(raw))
+      Effect.result(validateHfDryRun(raw))
     )
-    assert.ok(Either.isLeft(invalid))
-    assert.equal(invalid.left.code, "hf-dry-run-invalid")
+    assert.ok(Result.isFailure(invalid))
+    assert.equal(invalid.failure.code, "hf-dry-run-invalid")
   }
 
   const empty = await Effect.runPromise(
-    Effect.either(validateHfDryRun("[]"))
+    Effect.result(validateHfDryRun("[]"))
   )
-  assert.ok(Either.isLeft(empty))
-  assert.equal(empty.left.code, "empty-model-selection")
+  assert.ok(Result.isFailure(empty))
+  assert.equal(empty.failure.code, "empty-model-selection")
 })
 
 test("model status rejects malformed published artifact layouts", async () => {
@@ -155,7 +155,7 @@ test("model status rejects malformed published artifact layouts", async () => {
         modelStatus(makeInventory(archiveRoot, localRoot), artifact).pipe(
           Effect.provide(
             Layer.mergeAll(
-              NodeContext.layer,
+              NodeServices.layer,
               Layer.succeed(ProcessRunner, runner)
             )
           )
@@ -211,10 +211,10 @@ test("local model replication validates its declared source node", async () => {
     }
     const runEnsure = (inventory: Inventory, source: string) =>
       Effect.runPromise(
-        Effect.either(ensureLocalModel(inventory, artifact, source)).pipe(
+        Effect.result(ensureLocalModel(inventory, artifact, source)).pipe(
           Effect.provide(
             Layer.mergeAll(
-              NodeContext.layer,
+              NodeServices.layer,
               Layer.succeed(LocalLock, localLock),
               Layer.succeed(ProcessRunner, runner)
             )
@@ -224,12 +224,12 @@ test("local model replication validates its declared source node", async () => {
     const inventory = makeInventory(archiveRoot, localRoot)
 
     const missing = await runEnsure(inventory, "missing-node")
-    assert.ok(Either.isLeft(missing))
-    assert.equal(missing.left.code, "model-source-node-not-found")
+    assert.ok(Result.isFailure(missing))
+    assert.equal(missing.failure.code, "model-source-node-not-found")
 
     const local = await runEnsure(inventory, inventory.localNode)
-    assert.ok(Either.isLeft(local))
-    assert.equal(local.left.code, "model-source-is-local")
+    assert.ok(Result.isFailure(local))
+    assert.equal(local.failure.code, "model-source-is-local")
 
     const nodes = inventory.nodes.map((node) =>
       node.name === "spark-02"
@@ -244,8 +244,8 @@ test("local model replication validates its declared source node", async () => {
       nodes: [nodes[0]!, ...nodes.slice(1)]
     }
     const unavailable = await runEnsure(withoutFabric, "spark-02")
-    assert.ok(Either.isLeft(unavailable))
-    assert.equal(unavailable.left.code, "model-source-fabric-unavailable")
+    assert.ok(Result.isFailure(unavailable))
+    assert.equal(unavailable.failure.code, "model-source-fabric-unavailable")
   } finally {
     rmSync(temporary, { recursive: true, force: true })
   }
@@ -324,7 +324,7 @@ test("archive can seed its resumable Hugging Face download", async () => {
         effect.pipe(
           Effect.provide(
             Layer.mergeAll(
-              NodeContext.layer,
+              NodeServices.layer,
               Layer.succeed(ProcessRunner, runner)
             )
           )
@@ -399,7 +399,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
               })
               writeFileSync(path.join(filesPath, "config.json"), "partial\n")
               downloadStarted()
-            }).pipe(Effect.zipRight(Effect.never))
+            }).pipe(Effect.andThen(Effect.never))
           }
           return Effect.sync(() => completeDownload(filesPath)).pipe(
             Effect.as(success)
@@ -435,7 +435,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
                 "partial"
               )
               copyStarted()
-            }).pipe(Effect.zipRight(Effect.never))
+            }).pipe(Effect.andThen(Effect.never))
           }
           return Effect.sync(() => {
             cpSync(source, destination, { recursive: true, force: true })
@@ -465,7 +465,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
     }
 
     const layer = Layer.mergeAll(
-      NodeContext.layer,
+      NodeServices.layer,
       Layer.succeed(ProcessRunner, runner),
       Layer.succeed(LocalLock, localLock)
     )
@@ -476,7 +476,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
 
     await run(
       Effect.gen(function* () {
-        const fiber = yield* Effect.fork(archiveModel(inventory, artifact))
+        const fiber = yield* Effect.forkChild(archiveModel(inventory, artifact))
         yield* Effect.promise(() => downloadStartedPromise)
         yield* Fiber.interrupt(fiber)
       })
@@ -515,7 +515,7 @@ test("archive and ensure resume after interruption and publish atomically", asyn
 
     await run(
       Effect.gen(function* () {
-        const fiber = yield* Effect.fork(ensureModel(inventory, artifact))
+        const fiber = yield* Effect.forkChild(ensureModel(inventory, artifact))
         yield* Effect.promise(() => copyStartedPromise)
         yield* Fiber.interrupt(fiber)
       })
@@ -581,10 +581,10 @@ test("archive and ensure resume after interruption and publish atomically", asyn
     const inexpensiveStatus = await run(modelStatus(inventory, artifact))
     assert.equal(inexpensiveStatus.local.state, "ready")
     const verification = await run(
-      Effect.either(verifyModel(inventory, artifact))
+      Effect.result(verifyModel(inventory, artifact))
     )
-    assert.ok(Either.isLeft(verification))
-    assert.equal(verification.left.code, "model-verification-failed")
+    assert.ok(Result.isFailure(verification))
+    assert.equal(verification.failure.code, "model-verification-failed")
   } finally {
     rmSync(temporary, { recursive: true, force: true })
   }

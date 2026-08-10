@@ -1,11 +1,11 @@
 import { Schema } from "effect"
 
 const nonEmpty = Schema.NonEmptyString
-const absolutePath = Schema.String.pipe(
-  Schema.pattern(/^\//, { description: "an absolute path" })
+const absolutePath = Schema.String.check(
+  Schema.isPattern(/^\//, { description: "an absolute path" })
 )
-export const RelativePath = Schema.String.pipe(
-  Schema.filter(
+export const RelativePath = Schema.String.check(
+  Schema.makeFilter(
     (value) =>
       value.length > 0 &&
       !value.startsWith("/") &&
@@ -13,8 +13,8 @@ export const RelativePath = Schema.String.pipe(
     { description: "a non-empty relative path without '..' segments" }
   )
 )
-export const SelectionPattern = Schema.String.pipe(
-  Schema.filter(
+export const SelectionPattern = Schema.String.check(
+  Schema.makeFilter(
     (value) =>
       value.length > 0 &&
       !value.startsWith("/") &&
@@ -22,47 +22,46 @@ export const SelectionPattern = Schema.String.pipe(
     { description: "a relative selection pattern without '..' segments" }
   )
 )
-const nodeName = Schema.String.pipe(
-  Schema.pattern(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, {
+const nodeName = Schema.String.check(
+  Schema.isPattern(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, {
     description: "a kebab-case node name"
   })
 )
-const recipeName = Schema.String.pipe(
-  Schema.pattern(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, {
+const recipeName = Schema.String.check(
+  Schema.isPattern(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, {
     description: "a kebab-case recipe name"
   })
 )
-export const Sha256 = Schema.String.pipe(
-  Schema.pattern(/^[0-9a-f]{64}$/, { description: "a lowercase SHA-256 hash" })
+export const Sha256 = Schema.String.check(
+  Schema.isPattern(/^[0-9a-f]{64}$/, {
+    description: "a lowercase SHA-256 hash"
+  })
 )
-export const OciDigest = Schema.String.pipe(
-  Schema.pattern(/^sha256:[0-9a-f]{64}$/, {
+export const OciDigest = Schema.String.check(
+  Schema.isPattern(/^sha256:[0-9a-f]{64}$/, {
     description: "a lowercase OCI SHA-256 digest"
   })
 )
-export const Commit = Schema.String.pipe(
-  Schema.pattern(/^[0-9a-f]{40}$/, {
+export const Commit = Schema.String.check(
+  Schema.isPattern(/^[0-9a-f]{40}$/, {
     description: "a lowercase Hugging Face commit SHA"
   })
 )
-export const Repository = Schema.String.pipe(
-  Schema.pattern(/^[^/\s]+\/[^/\s]+$/, {
+export const Repository = Schema.String.check(
+  Schema.isPattern(/^[^/\s]+\/[^/\s]+$/, {
     description: "a Hugging Face repository in ORG/REPO form"
   })
 )
-const positiveInt = Schema.Number.pipe(Schema.int(), Schema.greaterThan(0))
-const nonNegativeInt = Schema.Number.pipe(
-  Schema.int(),
-  Schema.greaterThanOrEqualTo(0)
-)
-const port = Schema.Number.pipe(Schema.int(), Schema.between(1, 65535))
-const stringMap = Schema.Record({ key: Schema.String, value: Schema.String })
-const rfc3339 = Schema.String.pipe(
-  Schema.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, {
+const positiveInt = Schema.Int.check(Schema.isGreaterThan(0))
+const nonNegativeInt = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))
+const port = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 65535 }))
+const stringMap = Schema.Record(Schema.String, Schema.String)
+const rfc3339 = Schema.String.check(
+  Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, {
     description: "a UTC RFC 3339 timestamp"
   })
 )
-export const Platform = Schema.Literal("linux/amd64", "linux/arm64")
+export const Platform = Schema.Literals(["linux/amd64", "linux/arm64"])
 export type Platform = typeof Platform.Type
 
 export const ModelSelection = Schema.Struct({
@@ -90,7 +89,7 @@ export type ImageSpec = typeof ImageSpec.Type
 
 export const TopologySpec = Schema.Struct({
   nodeCounts: Schema.Array(positiveInt),
-  startOrder: Schema.Literal("head-first", "workers-first", "parallel")
+  startOrder: Schema.Literals(["head-first", "workers-first", "parallel"])
 })
 export type TopologySpec = typeof TopologySpec.Type
 
@@ -207,28 +206,40 @@ export const ModelManifest = Schema.Struct({
 })
 export type ModelManifest = typeof ModelManifest.Type
 
-export const ArtifactLocationStatus = Schema.Struct({
-  state: Schema.Literal("absent", "staging", "locked", "ready", "invalid"),
+const ArtifactManifestSummary = Schema.Struct({
+  createdAt: rfc3339,
+  fileCount: positiveInt,
+  totalSize: nonNegativeInt
+})
+
+const artifactLocationFields = {
   path: absolutePath,
   stagingPath: absolutePath,
-  issues: Schema.Array(nonEmpty),
-  manifest: Schema.optional(
-    Schema.Struct({
-      createdAt: rfc3339,
-      fileCount: positiveInt,
-      totalSize: nonNegativeInt
-    })
-  )
-})
+  issues: Schema.Array(nonEmpty)
+}
+
+export const ArtifactLocationStatus = Schema.Union([
+  Schema.Struct({
+    ...artifactLocationFields,
+    state: Schema.Literals(["absent", "staging", "locked"])
+  }),
+  Schema.Struct({
+    ...artifactLocationFields,
+    state: Schema.Literal("invalid"),
+    manifest: Schema.optionalKey(ArtifactManifestSummary)
+  }),
+  Schema.Struct({
+    ...artifactLocationFields,
+    state: Schema.Literal("ready"),
+    manifest: ArtifactManifestSummary
+  })
+])
 export type ArtifactLocationStatus = typeof ArtifactLocationStatus.Type
 
-export type ReadyArtifactLocation = Omit<
+export type ReadyArtifactLocation = Extract<
   ArtifactLocationStatus,
-  "manifest" | "state"
-> & {
-  readonly state: "ready"
-  readonly manifest: NonNullable<ArtifactLocationStatus["manifest"]>
-}
+  { readonly state: "ready" }
+>
 
 export const ModelStatus = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -241,10 +252,10 @@ export type ModelStatus = typeof ModelStatus.Type
 export const ModelEnsureResult = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   artifact: ArtifactIdentity,
-  source: Schema.Union(
+  source: Schema.Union([
     Schema.Struct({ kind: Schema.Literal("archive") }),
     Schema.Struct({ kind: Schema.Literal("node"), node: nodeName })
-  ),
+  ]),
   local: ArtifactLocationStatus
 })
 export type ModelEnsureResult = typeof ModelEnsureResult.Type
@@ -253,6 +264,35 @@ export type ReadyModelEnsureResult = Omit<ModelEnsureResult, "local"> & {
   readonly local: ReadyArtifactLocation
 }
 
+export const ImageRegistryStatus = Schema.Union([
+  Schema.Struct({
+    state: Schema.Literals(["absent", "unavailable"]),
+    reference: nonEmpty,
+    issues: Schema.Array(nonEmpty)
+  }),
+  Schema.Struct({
+    state: Schema.Literal("ready"),
+    reference: nonEmpty,
+    digest: OciDigest,
+    issues: Schema.Array(nonEmpty)
+  })
+])
+export type ImageRegistryStatus = typeof ImageRegistryStatus.Type
+
+export const LocalImageStatus = Schema.Union([
+  Schema.Struct({
+    state: Schema.Literals(["absent", "unknown"]),
+    reference: Schema.optionalKey(nonEmpty),
+    issues: Schema.Array(nonEmpty)
+  }),
+  Schema.Struct({
+    state: Schema.Literal("ready"),
+    reference: nonEmpty,
+    issues: Schema.Array(nonEmpty)
+  })
+])
+export type LocalImageStatus = typeof LocalImageStatus.Type
+
 export const ImageStatus = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   recipe: Schema.Struct({
@@ -260,29 +300,14 @@ export const ImageStatus = Schema.Struct({
     buildHash: Sha256,
     platform: Platform
   }),
-  registry: Schema.Struct({
-    state: Schema.Literal("absent", "ready", "unavailable"),
-    reference: nonEmpty,
-    digest: Schema.optional(OciDigest),
-    issues: Schema.Array(nonEmpty)
-  }),
-  local: Schema.Struct({
-    state: Schema.Literal("absent", "ready", "unknown"),
-    reference: Schema.optional(nonEmpty),
-    issues: Schema.Array(nonEmpty)
-  })
+  registry: ImageRegistryStatus,
+  local: LocalImageStatus
 })
 export type ImageStatus = typeof ImageStatus.Type
 
-export type ReadyImageStatus = Omit<ImageStatus, "local" | "registry"> & {
-  readonly registry: Omit<ImageStatus["registry"], "digest" | "state"> & {
-    readonly state: "ready"
-    readonly digest: string
-  }
-  readonly local: Omit<ImageStatus["local"], "reference" | "state"> & {
-    readonly state: "ready"
-    readonly reference: string
-  }
+export type ReadyImageStatus = ImageStatus & {
+  readonly registry: Extract<ImageRegistryStatus, { readonly state: "ready" }>
+  readonly local: Extract<LocalImageStatus, { readonly state: "ready" }>
 }
 
 export const PlannedModel = Schema.Struct({
@@ -298,8 +323,8 @@ export type PlannedModel = typeof PlannedModel.Type
 
 export const NodePlan = Schema.Struct({
   node: nodeName,
-  role: Schema.Literal("single", "head", "worker"),
-  rank: Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0)),
+  role: Schema.Literals(["single", "head", "worker"]),
+  rank: nonNegativeInt,
   container: Schema.Struct({
     devices: Schema.Array(nonEmpty),
     network: Schema.Literal("host"),
@@ -318,7 +343,7 @@ export const RunPlan = Schema.Struct({
     hash: Sha256
   }),
   inventoryHash: Sha256,
-  startOrder: Schema.Literal("head-first", "workers-first", "parallel"),
+  startOrder: Schema.Literals(["head-first", "workers-first", "parallel"]),
   nodes: Schema.NonEmptyArray(nodeName),
   head: nodeName,
   models: Schema.NonEmptyArray(PlannedModel),
@@ -354,7 +379,7 @@ export const RecipeList = Schema.Struct({
       name: recipeName,
       recipeHash: Sha256,
       nodeCounts: Schema.Array(positiveInt),
-      startOrder: Schema.Literal("head-first", "workers-first", "parallel"),
+      startOrder: Schema.Literals(["head-first", "workers-first", "parallel"]),
       platform: Platform,
       models: Schema.Array(nonEmpty)
     })

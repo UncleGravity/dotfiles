@@ -1,4 +1,4 @@
-import { FileSystem } from "@effect/platform"
+import { FileSystem } from "effect"
 import { Console, Effect } from "effect"
 import { loadContract } from "../adapters/contract-files.js"
 import { ProcessRunner } from "../adapters/process-runner.js"
@@ -148,7 +148,7 @@ export const runRemoteCommand = (
             runner
               .run({ command: "systemctl", args: ["stop", unit] })
               .pipe(Effect.orElseSucceed(() => ({ stdout: "", stderr: "" })))
-        ).pipe(Effect.zipRight(Effect.never))
+        ).pipe(Effect.andThen(Effect.never))
       )
       return
     }

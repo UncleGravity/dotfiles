@@ -4,13 +4,12 @@ import test from "node:test"
 import {
   Duration,
   Effect,
-  Either,
+  Result,
   Fiber,
   Layer,
-  Schema,
-  TestClock,
-  TestContext
+  Schema
 } from "effect"
+import { TestClock } from "effect/testing"
 import {
   HealthProbe,
   type HealthProbeService
@@ -54,7 +53,7 @@ const runWithHealth = <A, E>(
   Effect.runPromise(
     effect.pipe(
       Effect.provide(Layer.succeed(HealthProbe, health)),
-      Effect.provide(TestContext.TestContext)
+      Effect.provide(TestClock.layer())
     )
   )
 
@@ -174,8 +173,8 @@ test("startup health requires consecutive successes", async () => {
 
   await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.never)
-      const startup = yield* Effect.fork(waitUntilHealthy(plan, container))
+      const container = yield* Effect.forkChild(Effect.never)
+      const startup = yield* Effect.forkChild(waitUntilHealthy(plan, container))
       yield* TestClock.adjust(Duration.seconds(6))
       yield* Fiber.join(startup)
     }),
@@ -195,17 +194,17 @@ test("startup timeout follows the Effect test clock", async () => {
 
   const result = await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.never)
-      const startup = yield* Effect.fork(
+      const container = yield* Effect.forkChild(Effect.never)
+      const startup = yield* Effect.forkChild(
         waitUntilHealthy(timedPlan, container)
       )
       yield* TestClock.adjust(Duration.seconds(5))
-      return yield* Effect.either(Fiber.join(startup))
+      return yield* Effect.result(Fiber.join(startup))
     }),
     health
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "startup-timeout")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "startup-timeout")
 })
 
 test("health monitoring fails after three consecutive misses", async () => {
@@ -220,15 +219,15 @@ test("health monitoring fails after three consecutive misses", async () => {
 
   const result = await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.never)
-      const monitor = yield* Effect.fork(monitorHealth(plan, container))
+      const container = yield* Effect.forkChild(Effect.never)
+      const monitor = yield* Effect.forkChild(monitorHealth(plan, container))
       yield* TestClock.adjust(Duration.seconds(30))
-      return yield* Effect.either(Fiber.join(monitor))
+      return yield* Effect.result(Fiber.join(monitor))
     }),
     health
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "endpoint-unhealthy")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "endpoint-unhealthy")
   assert.equal(probes, 3)
 })
 
@@ -241,15 +240,15 @@ test("health monitoring resets its failure count after recovery", async () => {
 
   const result = await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.never)
-      const monitor = yield* Effect.fork(monitorHealth(plan, container))
+      const container = yield* Effect.forkChild(Effect.never)
+      const monitor = yield* Effect.forkChild(monitorHealth(plan, container))
       yield* TestClock.adjust(Duration.seconds(60))
-      return yield* Effect.either(Fiber.join(monitor))
+      return yield* Effect.result(Fiber.join(monitor))
     }),
     health
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "endpoint-unhealthy")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "endpoint-unhealthy")
   assert.equal(probes, 6)
 })
 
@@ -264,27 +263,27 @@ test("container exits become one stable lifecycle error", async () => {
 
   const startup = await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.fail(sourceError))
+      const container = yield* Effect.forkChild(Effect.fail(sourceError))
       yield* Fiber.await(container)
-      return yield* Effect.either(waitUntilHealthy(plan, container))
+      return yield* Effect.result(waitUntilHealthy(plan, container))
     }),
     health
   )
-  assert.ok(Either.isLeft(startup))
-  assert.equal(startup.left.code, "container-exited")
+  assert.ok(Result.isFailure(startup))
+  assert.equal(startup.failure.code, "container-exited")
 
   const monitoring = await runWithHealth(
     Effect.gen(function* () {
-      const container = yield* Effect.fork(Effect.fail(sourceError))
+      const container = yield* Effect.forkChild(Effect.fail(sourceError))
       yield* Fiber.await(container)
-      const monitor = yield* Effect.fork(monitorHealth(plan, container))
+      const monitor = yield* Effect.forkChild(monitorHealth(plan, container))
       yield* TestClock.adjust("10 seconds")
-      return yield* Effect.either(Fiber.join(monitor))
+      return yield* Effect.result(Fiber.join(monitor))
     }),
     health
   )
-  assert.ok(Either.isLeft(monitoring))
-  assert.equal(monitoring.left.code, "container-exited")
+  assert.ok(Result.isFailure(monitoring))
+  assert.equal(monitoring.failure.code, "container-exited")
 })
 
 test("prepared instance notifies readiness and releases its container", async () => {
@@ -310,7 +309,7 @@ test("prepared instance notifies readiness and releases its container", async ()
             Effect.sync(() => {
               released = true
             })
-        ).pipe(Effect.zipRight(Effect.never))
+        ).pipe(Effect.andThen(Effect.never))
       ),
     probe: () => Effect.die("unexpected probe command"),
     run: (request) =>
@@ -340,7 +339,7 @@ test("prepared instance notifies readiness and releases its container", async ()
 
   await Effect.runPromise(
     Effect.gen(function* () {
-      const fiber = yield* Effect.fork(
+      const fiber = yield* Effect.forkChild(
         runPreparedInstance("fixture", prepared, "test-invocation")
       )
       yield* Effect.promise(() => firstProbePromise)
@@ -350,7 +349,7 @@ test("prepared instance notifies readiness and releases its container", async ()
     }).pipe(
       Effect.provide(Layer.succeed(HealthProbe, health)),
       Effect.provide(Layer.succeed(ProcessRunner, runner)),
-      Effect.provide(TestContext.TestContext)
+      Effect.provide(TestClock.layer())
     )
   )
 
@@ -379,7 +378,7 @@ test("worker notification failure releases its container", async () => {
             Effect.sync(() => {
               released = true
             })
-        ).pipe(Effect.zipRight(Effect.never))
+        ).pipe(Effect.andThen(Effect.never))
       ),
     probe: () => Effect.die("unexpected probe command"),
     run: () =>
@@ -402,12 +401,12 @@ test("worker notification failure releases its container", async () => {
 
   const result = await Effect.runPromise(
     Effect.gen(function* () {
-      const fiber = yield* Effect.fork(
+      const fiber = yield* Effect.forkChild(
         runPreparedInstance("fixture", prepared)
       )
       yield* Effect.promise(() => startedPromise)
       yield* TestClock.adjust("2 seconds")
-      return yield* Effect.either(Fiber.join(fiber))
+      return yield* Effect.result(Fiber.join(fiber))
     }).pipe(
       Effect.provide(
         Layer.succeed(HealthProbe, {
@@ -415,12 +414,12 @@ test("worker notification failure releases its container", async () => {
         })
       ),
       Effect.provide(Layer.succeed(ProcessRunner, runner)),
-      Effect.provide(TestContext.TestContext)
+      Effect.provide(TestClock.layer())
     )
   )
 
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "notify-failed")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "notify-failed")
   assert.equal(released, true)
 })
 

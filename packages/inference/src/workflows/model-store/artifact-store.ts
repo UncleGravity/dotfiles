@@ -1,7 +1,7 @@
 import { hostname } from "node:os"
 import * as path from "node:path"
-import { FileSystem } from "@effect/platform"
-import { Clock, Effect, Either } from "effect"
+import { FileSystem } from "effect"
+import { Clock, Effect, Result } from "effect"
 import {
   ProcessRunner,
   type ProcessRunnerService
@@ -86,11 +86,11 @@ const ensureRoot = (
 
 const decodeManifest = (
   raw: string
-): Either.Either<ModelManifest, ReadonlyArray<string>> => {
+): Result.Result<ModelManifest, ReadonlyArray<string>> => {
   const decoded = decodeStrictJson(ModelManifestSchema, raw)
-  return Either.isLeft(decoded)
-    ? Either.left([formatParseError(decoded.left)])
-    : Either.right(decoded.right)
+  return Result.isFailure(decoded)
+    ? Result.fail([formatParseError(decoded.failure)])
+    : Result.succeed(decoded.success)
 }
 
 const manifestIdentityIssues = (
@@ -192,37 +192,37 @@ const validateArtifactDirectory = (
 ): Effect.Effect<ValidatedArtifact, never> =>
   Effect.gen(function* () {
     const manifestPath = path.join(directory, "manifest.json")
-    const rawResult = yield* Effect.either(
+    const rawResult = yield* Effect.result(
       fileSystem.readFileString(manifestPath, "utf8")
     )
-    if (Either.isLeft(rawResult)) {
+    if (Result.isFailure(rawResult)) {
       return { issues: ["manifest.json is missing or unreadable"] }
     }
 
-    const decoded = decodeManifest(rawResult.right)
-    if (Either.isLeft(decoded)) return { issues: decoded.left }
+    const decoded = decodeManifest(rawResult.success)
+    if (Result.isFailure(decoded)) return { issues: decoded.failure }
 
-    const manifest = decoded.right
+    const manifest = decoded.success
     const issues = [...manifestIdentityIssues(manifest, artifact)]
-    const rootEntries = yield* Effect.either(fileSystem.readDirectory(directory))
+    const rootEntries = yield* Effect.result(fileSystem.readDirectory(directory))
     if (
-      Either.isLeft(rootEntries) ||
-      JSON.stringify(rootEntries.right.sort(compareAscii)) !==
+      Result.isFailure(rootEntries) ||
+      JSON.stringify(rootEntries.success.sort(compareAscii)) !==
         JSON.stringify(["files", "manifest.json"])
     ) {
       issues.push("artifact root contains unexpected entries")
     }
-    const filesResult = yield* Effect.either(
+    const filesResult = yield* Effect.result(
       listFiles(fileSystem, path.join(directory, "files"))
     )
-    if (Either.isLeft(filesResult)) {
+    if (Result.isFailure(filesResult)) {
       return {
         issues: [...issues, "files directory is missing or unreadable"],
         manifest
       }
     }
 
-    const actualFiles = filesResult.right
+    const actualFiles = filesResult.success
     const expectedPaths = manifest.files.map((file) => file.path)
     const actualPaths = actualFiles.map((file) => file.path)
     if (JSON.stringify(expectedPaths) !== JSON.stringify(actualPaths)) {
@@ -238,12 +238,12 @@ const validateArtifactDirectory = (
         continue
       }
       if (verification === "checksums") {
-        const digestResult = yield* Effect.either(
+        const digestResult = yield* Effect.result(
           fileDigest(runner, actual.absolutePath)
         )
-        if (Either.isLeft(digestResult)) {
+        if (Result.isFailure(digestResult)) {
           issues.push(`unable to hash '${expected.path}'`)
-        } else if (digestResult.right !== expected.sha256) {
+        } else if (digestResult.success !== expected.sha256) {
           issues.push(`checksum differs for '${expected.path}'`)
         }
       }
@@ -297,11 +297,32 @@ export const inspectLocation = (
       options.verification
     )
     const manifest = validation.manifest
-    return {
-      state: validation.issues.length === 0 ? "ready" : "invalid",
+    const base = {
       path: paths.final,
       stagingPath: paths.staging,
-      issues: validation.issues,
+      issues: validation.issues
+    }
+    if (validation.issues.length === 0 && manifest !== undefined) {
+      return {
+        ...base,
+        state: "ready" as const,
+        manifest: {
+          createdAt: manifest.createdAt,
+          fileCount: manifest.files.length,
+          totalSize: manifest.files.reduce(
+            (total, file) => total + file.size,
+            0
+          )
+        }
+      }
+    }
+    return {
+      ...base,
+      state: "invalid" as const,
+      issues:
+        validation.issues.length === 0
+          ? ["manifest is missing"]
+          : validation.issues,
       ...(manifest === undefined
         ? {}
         : {
@@ -401,8 +422,8 @@ export const acquireArchiveLock = (
 ): Effect.Effect<void, CommandError, import("effect").Scope.Scope> => {
   const acquire = Effect.gen(function* () {
     yield* makeParents(fileSystem, lockPath)
-    const created = yield* Effect.either(fileSystem.makeDirectory(lockPath))
-    if (Either.isLeft(created)) {
+    const created = yield* Effect.result(fileSystem.makeDirectory(lockPath))
+    if (Result.isFailure(created)) {
       const exists = yield* fileSystem.exists(lockPath).pipe(
         Effect.orElseSucceed(() => false)
       )

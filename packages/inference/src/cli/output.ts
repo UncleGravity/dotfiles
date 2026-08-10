@@ -23,13 +23,13 @@ export const handleCommand = <R>(
   effect: Effect.Effect<void, CommandError, R>
 ): Effect.Effect<void, never, R> =>
   effect.pipe(
-    Effect.catchAll((error) =>
+    Effect.catch((error) =>
       writeStderr(
         json
           ? JSON.stringify(commandErrorJson(error))
           : `${error.code}: ${error.message}`
       ).pipe(
-        Effect.zipRight(
+        Effect.andThen(
           Effect.sync(() => {
             process.exitCode = 1
           })

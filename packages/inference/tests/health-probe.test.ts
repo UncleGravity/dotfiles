@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { Effect, Fiber, TestClock, TestContext } from "effect"
+import { Effect, Fiber } from "effect"
+import { TestClock } from "effect/testing"
 import { makeHealthProbe } from "../src/adapters/health-probe.js"
 
 const request = (
@@ -63,12 +64,12 @@ test("health probe timeout aborts the pending request", async () => {
 
   const reachable = await Effect.runPromise(
     Effect.gen(function* () {
-      const fiber = yield* Effect.fork(
+      const fiber = yield* Effect.forkChild(
         probe.reachable("http://service.test/hangs")
       )
       yield* TestClock.adjust("50 millis")
       return yield* Fiber.join(fiber)
-    }).pipe(Effect.provide(TestContext.TestContext))
+    }).pipe(Effect.provide(TestClock.layer()))
   )
 
   assert.equal(reachable, false)

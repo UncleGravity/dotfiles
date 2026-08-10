@@ -9,6 +9,7 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
+    "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "declaration": true,
     "sourceMap": true,

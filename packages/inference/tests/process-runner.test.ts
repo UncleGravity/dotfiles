@@ -1,15 +1,12 @@
 import assert from "node:assert/strict"
-import { EventEmitter } from "node:events"
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import test from "node:test"
-import type { ChildProcess } from "node:child_process"
-import { Effect, Either, Fiber } from "effect"
+import { Effect, Result, Fiber } from "effect"
 import {
   ProcessRunner,
-  ProcessRunnerLive,
-  terminateProcess
+  ProcessRunnerLive
 } from "../src/adapters/process-runner.js"
 
 const node = (source: string) => ({
@@ -39,14 +36,14 @@ test("process runner captures output and reports nonzero exits", async () => {
   const failure = await run(
     Effect.gen(function* () {
       const runner = yield* ProcessRunner
-      return yield* Effect.either(
+      return yield* Effect.result(
         runner.run(node('process.stderr.write("bad"); process.exit(7)'))
       )
     })
   )
-  assert.ok(Either.isLeft(failure))
-  assert.equal(failure.left.code, "external-command-failed")
-  assert.deepEqual(failure.left.details, {
+  assert.ok(Result.isFailure(failure))
+  assert.equal(failure.failure.code, "external-command-failed")
+  assert.deepEqual(failure.failure.details, {
     command: process.execPath,
     exitCode: 7,
     signal: null,
@@ -58,7 +55,7 @@ test("process runner reports spawn failures", async () => {
   const result = await run(
     Effect.gen(function* () {
       const runner = yield* ProcessRunner
-      return yield* Effect.either(
+      return yield* Effect.result(
         runner.run({
           command: "/definitely/not/an/inference-command",
           args: []
@@ -66,22 +63,22 @@ test("process runner reports spawn failures", async () => {
       )
     })
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "external-command-start-failed")
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "external-command-start-failed")
 })
 
 test("foreground process reports unsuccessful exits", async () => {
   const result = await run(
     Effect.gen(function* () {
       const runner = yield* ProcessRunner
-      return yield* Effect.either(
+      return yield* Effect.result(
         runner.foreground(node("process.exit(9)"))
       )
     })
   )
-  assert.ok(Either.isLeft(result))
-  assert.equal(result.left.code, "external-command-failed")
-  assert.deepEqual(result.left.details, {
+  assert.ok(Result.isFailure(result))
+  assert.equal(result.failure.code, "external-command-failed")
+  assert.deepEqual(result.failure.details, {
     command: process.execPath,
     exitCode: 9,
     signal: null
@@ -123,7 +120,7 @@ test("interrupting a foreground process terminates the child", async () => {
     await run(
       Effect.gen(function* () {
         const runner = yield* ProcessRunner
-        const fiber = yield* Effect.fork(
+        const fiber = yield* Effect.forkChild(
           runner.foreground(
             node(`
               const fs = require("node:fs")
@@ -144,21 +141,4 @@ test("interrupting a foreground process terminates the child", async () => {
   } finally {
     rmSync(temporary, { recursive: true, force: true })
   }
-})
-
-test("process termination escalates after its grace period", async () => {
-  const signals: Array<NodeJS.Signals> = []
-  const events = new EventEmitter()
-  const child = Object.assign(events, {
-    exitCode: null,
-    signalCode: null,
-    kill: (signal: NodeJS.Signals) => {
-      signals.push(signal)
-      if (signal === "SIGKILL") events.emit("close")
-      return true
-    }
-  }) as unknown as ChildProcess
-
-  await Effect.runPromise(terminateProcess(child, 10))
-  assert.deepEqual(signals, ["SIGTERM", "SIGKILL"])
 })

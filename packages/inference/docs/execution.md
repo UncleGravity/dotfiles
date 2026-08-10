@@ -99,13 +99,15 @@ Starting `infer-qwen.service` performs one foreground workflow:
 8. Three consecutive failures, or an unexpected container exit, fail the
    service and let systemd apply `Restart=on-failure`.
 
-The runtime writes sparse phase transitions to journald while it loads
-contracts, ensures each model, prepares the image, launches the container, and
-waits for readiness. Model preparation additionally reports copy, verification,
-and atomic publication phases. It does not emit per-byte transfer or checksum
-progress. Startup health checks run every two seconds; after readiness,
-monitoring runs every ten seconds, so three failed checks represent roughly
-thirty seconds of sustained endpoint failure.
+The runtime emits versioned lifecycle events while it loads contracts, ensures
+each model, prepares the image, launches the container, and waits for readiness.
+The default event service writes annotated Effect logs to journald and records
+an Effect metric. Model preparation additionally reports copy, verification,
+and atomic publication phases. The event contract supports numeric progress,
+but the current command adapters do not yet parse per-byte transfer or checksum
+progress from their tools. Startup health checks run every two seconds; after
+readiness, monitoring runs every ten seconds, so three failed checks represent
+roughly thirty seconds of sustained endpoint failure.
 
 The service uses the stable container name `infer-<instance>`. OCI labels
 record instance, recipe hash, image digest, role, and systemd

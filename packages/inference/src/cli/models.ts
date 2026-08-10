@@ -1,5 +1,5 @@
-import { Args, Command, Options } from "@effect/cli"
 import { Effect, Option } from "effect"
+import { Argument, Command, Flag } from "effect/unstable/cli"
 import { loadContract } from "../adapters/contract-files.js"
 import {
   Inventory,
@@ -20,39 +20,39 @@ import {
 } from "../workflows/model-store.js"
 import { handleCommand, printOutput } from "./output.js"
 
-const modelArgument = Args.text({ name: "model" }).pipe(
-  Args.withDescription("Pinned model in ORG/REPO@COMMIT form")
+const modelArgument = Argument.string("model").pipe(
+  Argument.withDescription("Pinned model in ORG/REPO@COMMIT form")
 )
 
-const inventoryOption = Options.text("inventory").pipe(
-  Options.withDefault("/etc/infer/inventory.json"),
-  Options.withDescription("Path to the evaluated deployment inventory")
+const inventoryOption = Flag.string("inventory").pipe(
+  Flag.withDefault("/etc/infer/inventory.json"),
+  Flag.withDescription("Path to the evaluated deployment inventory")
 )
 
-const includeOption = Options.text("include").pipe(
-  Options.repeated,
-  Options.withDescription("Relative Hugging Face include pattern")
+const includeOption = Flag.string("include").pipe(
+  Flag.atLeast(0),
+  Flag.withDescription("Relative Hugging Face include pattern")
 )
 
-const excludeOption = Options.text("exclude").pipe(
-  Options.repeated,
-  Options.withDescription("Relative Hugging Face exclude pattern")
+const excludeOption = Flag.string("exclude").pipe(
+  Flag.atLeast(0),
+  Flag.withDescription("Relative Hugging Face exclude pattern")
 )
 
-const jsonOption = Options.boolean("json").pipe(
-  Options.withDescription("Write one versioned JSON value")
+const jsonOption = Flag.boolean("json").pipe(
+  Flag.withDescription("Write one versioned JSON value")
 )
 
-const seedOption = Options.text("seed").pipe(
-  Options.optional,
-  Options.withDescription(
+const seedOption = Flag.string("seed").pipe(
+  Flag.optional,
+  Flag.withDescription(
     "Seed archive staging from an existing Hugging Face local directory"
   )
 )
 
-const sourceOption = Options.text("source").pipe(
-  Options.optional,
-  Options.withDescription(
+const sourceOption = Flag.string("source").pipe(
+  Flag.optional,
+  Flag.withDescription(
     "Pull from a declared node's read-only model store over fabric0"
   )
 )
@@ -71,8 +71,10 @@ const resolve = (
   exclude: ReadonlyArray<string>
 ) =>
   Effect.gen(function* () {
-    const reference = yield* parseModelReference(model)
-    const selection = yield* normalizeSelection(include, exclude)
+    const reference = yield* Effect.fromResult(parseModelReference(model))
+    const selection = yield* Effect.fromResult(
+      normalizeSelection(include, exclude)
+    )
     return artifactIdentity(reference.repo, reference.revision, selection)
   })
 

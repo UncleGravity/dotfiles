@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 import * as path from "node:path"
-import { Either } from "effect"
+import { Result } from "effect"
 import type {
   Catalog,
   InstanceCatalog,
@@ -24,8 +24,8 @@ const fail = (
   code: string,
   message: string,
   details?: Readonly<Record<string, unknown>>
-): Either.Either<never, CommandError> =>
-  Either.left(
+): Result.Result<never, CommandError> =>
+  Result.fail(
     new CommandError({
       code,
       message,
@@ -36,7 +36,7 @@ const fail = (
 export const findInstance = (
   instances: InstanceCatalog,
   name: string
-): Either.Either<InstanceDeclaration, CommandError> => {
+): Result.Result<InstanceDeclaration, CommandError> => {
   const instance = instances.instances.find(
     (candidate) => candidate.name === name
   )
@@ -46,7 +46,7 @@ export const findInstance = (
         `Instance '${name}' is not declared in this deployment`,
         { instance: name }
       )
-    : Either.right(instance)
+    : Result.succeed(instance)
 }
 
 const hash = (value: string): string =>
@@ -55,18 +55,18 @@ const hash = (value: string): string =>
 export const findRecipe = (
   catalog: Catalog,
   name: string
-): Either.Either<Recipe, CommandError> => {
+): Result.Result<Recipe, CommandError> => {
   const recipe = catalog.recipes.find((candidate) => candidate.name === name)
   return recipe === undefined
     ? fail("recipe-not-found", `Recipe '${name}' is not in this catalog`, {
         recipe: name
       })
-    : Either.right(recipe)
+    : Result.succeed(recipe)
 }
 
 const validateInventory = (
   inventory: Inventory
-): Either.Either<ReadonlyMap<string, InventoryNode>, CommandError> => {
+): Result.Result<ReadonlyMap<string, InventoryNode>, CommandError> => {
   const names = inventory.nodes.map((node) => node.name)
   const expectedOrder = [...names].sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0
@@ -92,7 +92,7 @@ const validateInventory = (
       controlNode: inventory.controlNode
     })
   }
-  return Either.right(nodes)
+  return Result.succeed(nodes)
 }
 
 const selectNodes = (
@@ -100,7 +100,7 @@ const selectNodes = (
   inventory: Inventory,
   nodeMap: ReadonlyMap<string, InventoryNode>,
   requested: ReadonlyArray<string> | undefined
-): Either.Either<ReadonlyArray<InventoryNode>, CommandError> => {
+): Result.Result<ReadonlyArray<InventoryNode>, CommandError> => {
   if (requested !== undefined && new Set(requested).size !== requested.length) {
     return fail("duplicate-node", "The explicit node list contains duplicates", {
       nodes: requested
@@ -166,7 +166,7 @@ const selectNodes = (
     }
   }
 
-  return Either.right(selected)
+  return Result.succeed(selected)
 }
 
 const planModels = (
@@ -200,8 +200,8 @@ export const planRun = (
   inventory: Inventory,
   inventoryJson: string,
   request: PlanRequest
-): Either.Either<RunPlan, CommandError> =>
-  Either.gen(function* () {
+): Result.Result<RunPlan, CommandError> =>
+  Result.gen(function* () {
     const recipe = yield* findRecipe(catalog, request.recipe)
     const nodeMap = yield* validateInventory(inventory)
     const selected = yield* selectNodes(
@@ -291,8 +291,8 @@ export const resolveInstancePlan = (
   inventoryJson: string,
   instances: InstanceCatalog,
   name: string
-): Either.Either<ResolvedInstancePlan, CommandError> =>
-  Either.gen(function* () {
+): Result.Result<ResolvedInstancePlan, CommandError> =>
+  Result.gen(function* () {
     const declaration = yield* findInstance(instances, name)
     const plan = yield* planRun(catalog, inventory, inventoryJson, {
       recipe: declaration.recipe,
@@ -307,14 +307,14 @@ export const planInstance = (
   inventoryJson: string,
   instances: InstanceCatalog,
   name: string
-): Either.Either<RunPlan, CommandError> =>
+): Result.Result<RunPlan, CommandError> =>
   resolveInstancePlan(
     catalog,
     inventory,
     inventoryJson,
     instances,
     name
-  ).pipe(Either.map(({ plan }) => plan))
+  ).pipe(Result.map(({ plan }) => plan))
 
 export const listRecipes = (catalog: Catalog) => ({
   schemaVersion: 1 as const,

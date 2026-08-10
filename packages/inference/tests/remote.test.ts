@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { Effect, Either, Layer } from "effect"
+import { Effect, Result, Layer } from "effect"
 import {
   ProcessRunner,
   type ProcessRequest,
@@ -28,10 +28,10 @@ test("remote commands accept only one fixed action and declared-name shape", asy
     ""
   ]) {
     const result = await Effect.runPromise(
-      Effect.either(parseRemoteRequest(command))
+      Effect.result(parseRemoteRequest(command))
     )
-    assert.ok(Either.isLeft(result), command)
-    assert.equal(result.left.code, "invalid-remote-command")
+    assert.ok(Result.isFailure(result), command)
+    assert.equal(result.failure.code, "invalid-remote-command")
   }
 })
 
