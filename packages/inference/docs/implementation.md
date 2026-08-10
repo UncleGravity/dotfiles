@@ -83,7 +83,8 @@ state. Those are mutable runtime artifacts.
 The package installs two public commands:
 
 - `models` manages model archive, local replicas, status, and verification.
-- `infer` lists recipes and instances and displays deterministic plans.
+- `infer` lists recipes and instances, displays deterministic plans, and watches
+  pipeline state.
 
 It also installs internal `infer-instance`, `infer-cluster`, `infer-prepare`, and
 `infer-remote` entrypoints for systemd and restricted cluster coordination.
@@ -106,17 +107,24 @@ node, model, and attributes. The numeric progress variant additionally carries
 `current`, `total`, and `unit` fields.
 
 `ProgressEvents` is an Effect `Context.Reference`, so normal services need no
-extra runtime dependency. Its default implementation writes annotated Effect
-logs and increments `inference_progress_events_total`. Major preparation and
-inference lifecycles use native Effect spans. An OpenTelemetry exporter can be
-provided at the runtime boundary without changing workflows.
+extra runtime dependency. The system runtime writes annotated Effect logs, one
+prefixed JSON journal record per event, and
+`inference_progress_events_total`. Major preparation and inference lifecycles
+use native Effect spans. An OpenTelemetry exporter can be provided at the
+runtime boundary without changing workflows.
 
-`makeProgressHub` returns an injectable service and a replaying Effect
-`Stream<ProgressEvent>`. A live TUI can consume that stream directly; a web
-process can serialize the same stream over SSE or WebSocket. The package does
-not expose a network listener or persistent event store. A separate client can
-still combine these live events with the stable JSON contracts and systemd
-state, and does not need to run on inference nodes.
+`infer watch` is a separate process. Its journal adapter replays and follows the
+structured records, enriches them with systemd invocation and cursor metadata,
+and polls controller unit state. A pure reducer creates a bounded pipeline
+snapshot, including node-scoped launch, systemd-readiness, and cleanup
+transitions; the initial ANSI view is isolated in the CLI layer. OpenTUI, SSE,
+or a web UI can replace that renderer while reusing the adapter and reducer.
+
+`makeProgressHub` remains useful for in-process tests or an embedded consumer,
+but it is not the detached transport and does not replace journald history. The
+package exposes no network listener or persistent run database. Remote worker
+journal aggregation is a separate permission and transport concern; the first
+watch view reports only controller-visible cluster phases.
 
 ### Host Tools
 

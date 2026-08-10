@@ -21,6 +21,11 @@ import {
 } from "../src/domain/contracts.js"
 import { CommandError } from "../src/domain/errors.js"
 import {
+  ProgressEvents,
+  type ProgressEventInput,
+  type ProgressEventsService
+} from "../src/observability/progress.js"
+import {
   decodeRemoteStatus,
   runPreparedCluster
 } from "../src/workflows/cluster.js"
@@ -56,8 +61,21 @@ const systemdStatus = (activeState = "active") => ({
 const remoteAction = (request: ProcessRequest): string | undefined =>
   request.command === "ssh" ? request.args.at(-1) : undefined
 
+const captureProgress = (
+  events: Array<ProgressEventInput>
+): ProgressEventsService => ({
+  emit: (event) =>
+    Effect.sync(() => {
+      events.push(event)
+    })
+})
+
 test("remote status decoding is strict and identifies the source node", () => {
-  const valid = decodeRemoteStatus(JSON.stringify(status("spark-02")), "spark-02")
+  const valid = decodeRemoteStatus(
+    JSON.stringify(status("spark-02")),
+    "spark-02",
+    "fixture"
+  )
   assert.ok(Result.isSuccess(valid))
   assert.equal(valid.success.node, "spark-02")
 
@@ -65,15 +83,29 @@ test("remote status decoding is strict and identifies the source node", () => {
     "not-json",
     JSON.stringify({ ...status("spark-02"), unexpected: true })
   ]) {
-    const invalid = decodeRemoteStatus(raw, "spark-02")
+    const invalid = decodeRemoteStatus(raw, "spark-02", "fixture")
     assert.ok(Result.isFailure(invalid))
     assert.equal(invalid.failure.code, "cluster-status-invalid")
     assert.equal(invalid.failure.details?.node, "spark-02")
+  }
+
+  for (const mismatched of [
+    { ...status("spark-03") },
+    { ...status("spark-02"), instance: "other" }
+  ]) {
+    const invalid = decodeRemoteStatus(
+      JSON.stringify(mismatched),
+      "spark-02",
+      "fixture"
+    )
+    assert.ok(Result.isFailure(invalid))
+    assert.equal(invalid.failure.code, "cluster-status-identity-mismatch")
   }
 })
 
 test("prepared cluster reaches readiness and cleans up every node", async () => {
   const events: Array<string> = []
+  const progressEvents: Array<ProgressEventInput> = []
   let ready!: () => void
   let leaseStarted!: () => void
   const readyPromise = new Promise<void>((resolve) => {
@@ -148,7 +180,10 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
     yield* Effect.sleep("150 millis")
     yield* Effect.promise(() => readyPromise)
     yield* Fiber.interrupt(fiber)
-  }).pipe(Effect.provide(Layer.succeed(ProcessRunner, runner)))
+  }).pipe(
+    Effect.provide(Layer.succeed(ProcessRunner, runner)),
+    Effect.provideService(ProgressEvents, captureProgress(progressEvents))
+  )
 
   await Effect.runPromise(program)
   assert.ok(events.indexOf("ssh:prepare fixture") < events.indexOf("lease:lease fixture"))
@@ -158,6 +193,41 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
   assert.deepEqual(
     events.filter((event) => event.includes("stop")),
     ["systemctl:stop:infer-node-fixture.service", "ssh:stop fixture"]
+  )
+  assert.deepEqual(
+    progressEvents
+      .filter((event) => event.operation === "node-readiness")
+      .map((event) => ({
+        node: event.node,
+        state: event.kind === "lifecycle" ? event.state : event.kind,
+        activeState: event.attributes?.activeState,
+        subState: event.attributes?.subState
+      })),
+    [
+      {
+        node: "spark-02",
+        state: "completed",
+        activeState: "active",
+        subState: "running"
+      },
+      {
+        node: "spark-01",
+        state: "completed",
+        activeState: "active",
+        subState: "running"
+      }
+    ]
+  )
+  assert.deepEqual(
+    progressEvents
+      .filter(
+        (event) =>
+          event.kind === "lifecycle" &&
+          event.operation === "stop-node" &&
+          event.state === "completed"
+      )
+      .map((event) => event.node),
+    ["spark-01", "spark-02"]
   )
 })
 
@@ -315,6 +385,7 @@ test("lost cluster lease fails startup and still stops every node", async () => 
 })
 
 test("cluster startup failure identifies the failed node and result", async () => {
+  const progressEvents: Array<ProgressEventInput> = []
   const runner: ProcessRunnerService = {
     foreground: () => Effect.never,
     probe: () => Effect.die("unexpected probe"),
@@ -336,7 +407,8 @@ test("cluster startup failure identifies the failed node and result", async () =
   const result = await Effect.runPromise(
     Effect.result(
       runPreparedCluster("fixture", inventory, plan).pipe(
-        Effect.provide(Layer.succeed(ProcessRunner, runner))
+        Effect.provide(Layer.succeed(ProcessRunner, runner)),
+        Effect.provideService(ProgressEvents, captureProgress(progressEvents))
       )
     )
   )
@@ -347,6 +419,23 @@ test("cluster startup failure identifies the failed node and result", async () =
     result.failure.message,
     "Clustered inference startup failed: spark-02: oom-kill (loaded, failed/dead)"
   )
+  const failedReadiness = progressEvents.findIndex(
+    (event) =>
+      event.kind === "lifecycle" &&
+      event.operation === "node-readiness" &&
+      event.node === "spark-02" &&
+      event.state === "failed"
+  )
+  const failedWait = progressEvents.findIndex(
+    (event) =>
+      event.kind === "lifecycle" &&
+      event.operation === "wait-for-nodes" &&
+      event.state === "failed"
+  )
+  assert.notEqual(failedReadiness, -1)
+  assert.equal(progressEvents[failedReadiness]?.attributes?.role, "head")
+  assert.equal(progressEvents[failedReadiness]?.attributes?.result, "oom-kill")
+  assert.equal(failedReadiness < failedWait, true)
 })
 
 test("cluster startup timeout reports the latest statuses and cleans up", async () => {
@@ -359,6 +448,7 @@ test("cluster startup timeout reports the latest statuses and cleans up", async 
     statusChecked = resolve
   })
   const stopped: Array<string> = []
+  const progressEvents: Array<ProgressEventInput> = []
   const runner: ProcessRunnerService = {
     foreground: () =>
       Effect.scoped(
@@ -402,6 +492,7 @@ test("cluster startup timeout reports the latest statuses and cleans up", async 
       return yield* Effect.result(Fiber.join(fiber))
     }).pipe(
       Effect.provide(Layer.succeed(ProcessRunner, runner)),
+      Effect.provideService(ProgressEvents, captureProgress(progressEvents)),
       Effect.provide(TestClock.layer())
     )
   )
@@ -412,4 +503,31 @@ test("cluster startup timeout reports the latest statuses and cleans up", async 
   const statuses = result.failure.details?.statuses
   assert.ok(Array.isArray(statuses))
   assert.equal(statuses.length, 2)
+  assert.deepEqual(
+    progressEvents
+      .filter((event) => event.operation === "node-readiness")
+      .map((event) => ({
+        node: event.node,
+        state: event.kind === "lifecycle" ? event.state : event.kind,
+        activeState: event.attributes?.activeState,
+        subState: event.attributes?.subState,
+        result: event.attributes?.result
+      })),
+    [
+      {
+        node: "spark-02",
+        state: "started",
+        activeState: "inactive",
+        subState: "dead",
+        result: "success"
+      },
+      {
+        node: "spark-01",
+        state: "started",
+        activeState: "inactive",
+        subState: "dead",
+        result: "success"
+      }
+    ]
+  )
 })

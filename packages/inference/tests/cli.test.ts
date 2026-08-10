@@ -1,10 +1,12 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
 import {
+  chmodSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync
 } from "node:fs"
 import { tmpdir } from "node:os"
@@ -96,6 +98,93 @@ test("instances list emits the Nix-declared service catalog", () => {
   assert.deepEqual(output.instances.map((instance: { name: string }) => instance.name), [
     "fixture"
   ])
+})
+
+test("watch once renders structured journal progress and systemd state", () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "inference-watch-cli-"))
+  try {
+    const bin = path.join(temporary, "bin")
+    mkdirSync(bin)
+    const node = path.join(bin, "node-runtime")
+    symlinkSync(process.execPath, node)
+    const systemctl = path.join(bin, "systemctl")
+    writeFileSync(
+      systemctl,
+      `#!${node}
+process.stdout.write(${JSON.stringify(
+        [
+          "LoadState=loaded",
+          "ActiveState=active",
+          "SubState=running",
+          "Result=success",
+          "InvocationID=invocation-a",
+          "StatusText=Cluster is healthy"
+        ].join("\n") + "\n"
+      )})
+`
+    )
+    chmodSync(systemctl, 0o755)
+
+    const startedEvent = {
+      schemaVersion: 1,
+      timestamp: "2026-08-09T20:00:00.000Z",
+      kind: "lifecycle",
+      scope: "instance",
+      operation: "ensure-image",
+      state: "started",
+      message: "Ensuring image",
+      instance: "fixture"
+    }
+    const completedEvent = {
+      ...startedEvent,
+      timestamp: "2026-08-09T20:01:00.000Z",
+      state: "completed",
+      message: "Image is ready"
+    }
+    const record = (event: typeof startedEvent, cursor: string, timestamp: string) =>
+      `\u001e${JSON.stringify({
+        __CURSOR: cursor,
+        __REALTIME_TIMESTAMP: timestamp,
+        _HOSTNAME: "spark-01",
+        _SYSTEMD_INVOCATION_ID: "invocation-a",
+        MESSAGE: `@infer-progress ${JSON.stringify(event)}`
+      })}\n`
+    const records =
+      record(completedEvent, "cursor-b", "200") +
+      record(startedEvent, "cursor-a", "100")
+    const journalctl = path.join(bin, "journalctl")
+    writeFileSync(
+      journalctl,
+      `#!${node}
+process.stdout.write(${JSON.stringify(records)})
+`
+    )
+    chmodSync(journalctl, 0o755)
+
+    const result = run(
+      inferEntrypoint,
+      [
+        "watch",
+        "fixture",
+        "--inventory",
+        inventory,
+        "--instances",
+        instances,
+        "--once"
+      ],
+      {
+        ...process.env,
+        PATH: `${bin}:${process.env.PATH ?? ""}`
+      }
+    )
+    assert.equal(result.status, 0, result.stderr)
+    assert.match(result.stdout, /INFER fixture  READY/)
+    assert.match(result.stdout, /\[ok\] ensure-image/)
+    assert.match(result.stdout, /Image is ready/)
+    assert.match(result.stdout, /Cluster is healthy/)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
 })
 
 test("command-line failures are structured in JSON mode", () => {

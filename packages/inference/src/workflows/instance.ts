@@ -225,6 +225,18 @@ export const prepareInstance = (
         InstanceCatalog
       )
     ])
+    yield* phase(
+      name,
+      "load-contracts",
+      "completed",
+      "Deployment contracts are loaded"
+    )
+    yield* phase(
+      name,
+      "resolve-plan",
+      "started",
+      `Resolving deployment plan for '${name}'`
+    )
     const { declaration, plan } = yield* Effect.fromResult(
       resolveInstancePlan(
         catalog.value,
@@ -244,17 +256,18 @@ export const prepareInstance = (
       inventory.value.localNode === inventory.value.controlNode
         ? undefined
         : inventory.value.controlNode
-    yield* Effect.forEach(plan.models, (model) =>
-      Effect.gen(function* () {
+    yield* Effect.forEach(plan.models, (model) => {
+      const details = {
+        model: `${model.artifact.repo}@${model.artifact.revision}`,
+        attributes: { modelName: model.name }
+      }
+      return Effect.gen(function* () {
         yield* phase(
           name,
           "ensure-model",
           "started",
           `Ensuring model '${model.name}' (${model.artifact.repo}@${model.artifact.revision})`,
-          {
-            model: `${model.artifact.repo}@${model.artifact.revision}`,
-            attributes: { modelName: model.name }
-          }
+          details
         )
         yield* ensureLocalModel(inventory.value, model.artifact, modelSource)
         yield* phase(
@@ -262,13 +275,20 @@ export const prepareInstance = (
           "ensure-model",
           "completed",
           `Model '${model.name}' is ready`,
-          {
-            model: `${model.artifact.repo}@${model.artifact.revision}`,
-            attributes: { modelName: model.name }
-          }
+          details
         )
-      })
-    )
+      }).pipe(
+        Effect.tapError((error) =>
+          phase(
+            name,
+            "ensure-model",
+            "failed",
+            `Unable to prepare model '${model.name}': ${error.message}`,
+            details
+          )
+        )
+      )
+    })
     yield* phase(
       name,
       "ensure-image",
@@ -279,6 +299,15 @@ export const prepareInstance = (
       catalog.value,
       inventory.value,
       declaration.recipe
+    ).pipe(
+      Effect.tapError((error) =>
+        phase(
+          name,
+          "ensure-image",
+          "failed",
+          `Unable to prepare image: ${error.message}`
+        )
+      )
     )
     const image = {
       reference: imageStatus.local.reference,
@@ -308,6 +337,9 @@ export const runInstance = (
     const prepared = yield* prepareInstance(name)
     yield* runPreparedInstance(name, prepared, process.env.INVOCATION_ID)
   }).pipe(
+    Effect.tapError((error) =>
+      phase(name, "pipeline", "failed", error.message)
+    ),
     Effect.withSpan("inference.run-instance", {
       attributes: { "inference.instance": name }
     })

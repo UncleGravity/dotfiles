@@ -5,6 +5,7 @@ import { HealthProbe, HealthProbeLive } from "../adapters/health-probe.js"
 import { LocalLock, LocalLockLive } from "../adapters/local-lock.js"
 import { ProcessRunner, ProcessRunnerLive } from "../adapters/process-runner.js"
 import { CommandError } from "../domain/errors.js"
+import { ProgressJournalLive } from "../observability/progress-journal.js"
 
 export const InferenceToolsLive = Layer.mergeAll(
   ProcessRunnerLive,
@@ -14,7 +15,8 @@ export const InferenceToolsLive = Layer.mergeAll(
 const InferenceRuntimeLive = Layer.mergeAll(
   NodeServices.layer,
   HealthProbeLive,
-  InferenceToolsLive
+  InferenceToolsLive,
+  ProgressJournalLive
 )
 
 type InferenceRuntimeServices =

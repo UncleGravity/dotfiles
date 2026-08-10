@@ -12,7 +12,9 @@ import {
   listRecipes,
   planInstance
 } from "../domain/planner.js"
+import { watchInstance } from "../workflows/watch.js"
 import { handleCommand, printOutput } from "./output.js"
+import { runWatchView } from "./watch-view.js"
 
 const catalogOption = Flag.string("catalog").pipe(
   Flag.withDefault("/etc/infer/catalog.json"),
@@ -141,7 +143,34 @@ const plan = Command.make(
     )
 ).pipe(Command.withDescription("Show a declared instance's deterministic plan"))
 
+const onceOption = Flag.boolean("once").pipe(
+  Flag.withDescription("Render the latest pipeline snapshot and exit")
+)
+
+const watch = Command.make(
+  "watch",
+  {
+    instance: instanceArgument,
+    inventory: inventoryOption,
+    instances: instancesOption,
+    once: onceOption
+  },
+  ({ instance, inventory, instances, once }) =>
+    handleCommand(
+      false,
+      runWatchView(
+        watchInstance({
+          instance,
+          inventoryPath: inventory,
+          instancesPath: instances,
+          follow: !once
+        }),
+        !once
+      )
+    )
+).pipe(Command.withDescription("Watch an inference pipeline and systemd state"))
+
 export const inferCommand = Command.make("infer").pipe(
   Command.withDescription("Inspect declarative inference services"),
-  Command.withSubcommands([recipes, instances, plan])
+  Command.withSubcommands([recipes, instances, plan, watch])
 )

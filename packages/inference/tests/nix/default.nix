@@ -23,6 +23,7 @@ in
         infer instances list \
           --instances ${fixture.instancesFile} \
           --json > instances.json
+        infer watch --help > /dev/null
         test -x ${inferencePackage}/bin/infer-instance
         test -x ${inferencePackage}/bin/infer-cluster
         test -x ${inferencePackage}/bin/infer-prepare

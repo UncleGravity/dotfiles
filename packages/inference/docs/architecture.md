@@ -21,7 +21,7 @@ has served OpenAI-compatible requests across `spark-01` and `spark-02`.
 - Block clustered service readiness until every participant is ready.
 - Let Sisyphus operate without any Spark dependency.
 - Keep recipes declarative without turning runtime flags into NixOS options.
-- Expose stable JSON contracts for scripts and a future TUI.
+- Expose stable JSON contracts and a read-only pipeline view for operators.
 
 ## Non-goals
 
@@ -63,6 +63,8 @@ contracts:
 7. **Instance runtime** prepares a plan and runs its foreground container.
 8. **systemd** owns service lifetime, desired state, restart policy, and boot.
 9. **journald** owns logs and service history.
+10. **Pipeline observer** reduces structured journal events and unit state into a
+    replaceable terminal view.
 
 The composition is deliberately small:
 
@@ -75,6 +77,13 @@ Nix instance declaration       -> systemd service
 There is no custom run database, UUID lifecycle, reconciliation daemon, or
 privileged JSON RPC. The declaration is durable state; systemd is observed
 state.
+
+The observer is not part of the inference service and has no control channel to
+it. Journald is the replay transport, `_SYSTEMD_INVOCATION_ID` identifies a
+systemd run, a pure reducer owns the current pipeline snapshot, and the ANSI
+renderer is only one consumer. A later OpenTUI or web renderer can consume the
+same snapshots without changing workflow instrumentation or introducing another
+source of truth.
 
 ## Invariants
 

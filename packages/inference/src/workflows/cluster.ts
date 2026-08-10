@@ -112,9 +112,10 @@ const remoteAction = (
 
 export const decodeRemoteStatus = (
   raw: string,
-  node: string
-): Result.Result<RemoteUnitStatus, CommandError> =>
-  decodeStrictJson(RemoteUnitStatus, raw).pipe(
+  node: string,
+  instance: string
+): Result.Result<RemoteUnitStatus, CommandError> => {
+  const decoded = decodeStrictJson(RemoteUnitStatus, raw).pipe(
     Result.mapError(
       (error) =>
         new CommandError({
@@ -127,6 +128,24 @@ export const decodeRemoteStatus = (
         })
     )
   )
+  if (Result.isFailure(decoded)) return decoded
+  if (decoded.success.node !== node || decoded.success.instance !== instance) {
+    return Result.fail(
+      new CommandError({
+        code: "cluster-status-identity-mismatch",
+        message: `Node '${node}' returned status for a different cluster unit`,
+        details: {
+          expected: { node, instance },
+          actual: {
+            node: decoded.success.node,
+            instance: decoded.success.instance
+          }
+        }
+      })
+    )
+  }
+  return decoded
+}
 
 const statusNode = (
   inventory: Inventory,
@@ -149,7 +168,7 @@ const statusNode = (
         )
         const result = yield* runner.run({ command: "ssh", args })
         return yield* Effect.fromResult(
-          decodeRemoteStatus(result.stdout.trim(), node)
+          decodeRemoteStatus(result.stdout.trim(), node, instance)
         )
       })
 
@@ -244,6 +263,85 @@ export const clusterStartGroups = (
 const failedStatus = (status: RemoteUnitStatus): boolean =>
   status.loadState !== "loaded" || status.activeState === "failed"
 
+const statusSignature = (status: RemoteUnitStatus): string =>
+  [
+    status.loadState,
+    status.activeState,
+    status.subState,
+    status.result
+  ].join("\u0000")
+
+const nodeRole = (
+  plan: RunPlan,
+  status: RemoteUnitStatus
+): "head" | "worker" => (status.node === plan.head ? "head" : "worker")
+
+const readinessMessage = (
+  plan: RunPlan,
+  status: RemoteUnitStatus,
+  unavailable: boolean
+): string => {
+  const role = nodeRole(plan, status)
+  const label = role === "head" ? "Head" : "Worker"
+  if (unavailable && !failedStatus(status)) {
+    return `${label} became unavailable (${status.activeState}/${status.subState})`
+  }
+  if (status.loadState !== "loaded") {
+    return `${label} unit load state is '${status.loadState}'`
+  }
+  if (status.activeState === "failed") {
+    return `${label} unit failed with result '${status.result}'`
+  }
+  if (status.activeState === "active") return `${label} is ready`
+  if (status.activeState === "activating") {
+    return role === "head"
+      ? "Waiting for head API health"
+      : "Waiting for worker readiness"
+  }
+  return `${label} unit has not reached readiness`
+}
+
+const emitNodeReadiness = (
+  plan: RunPlan,
+  instance: string,
+  status: RemoteUnitStatus,
+  unavailable = false
+): Effect.Effect<void> =>
+  emitProgress({
+    kind: "lifecycle",
+    scope: "cluster",
+    operation: "node-readiness",
+    state: unavailable || failedStatus(status)
+      ? "failed"
+      : status.activeState === "active"
+        ? "completed"
+        : "started",
+    message: readinessMessage(plan, status, unavailable),
+    instance,
+    node: status.node,
+    attributes: {
+      role: nodeRole(plan, status),
+      loadState: status.loadState,
+      activeState: status.activeState,
+      subState: status.subState,
+      result: status.result
+    }
+  })
+
+const waitingMessage = (
+  statuses: ReadonlyArray<RemoteUnitStatus>
+): string => {
+  const waiting = statuses.filter((status) => status.activeState !== "active")
+  return waiting.length === 0
+    ? "All node units are ready"
+    : `Waiting for ${waiting
+        .map(
+          (status) =>
+            `${status.node} (${status.activeState}/${status.subState})`
+        )
+        .join(", ")}`
+}
+
 const formatStatuses = (
   statuses: ReadonlyArray<RemoteUnitStatus>
 ): string =>
@@ -262,14 +360,46 @@ const waitUntilReady = (
 ): Effect.Effect<void, CommandError, ProcessRunner> =>
   Effect.suspend(() => {
     let latest: ReadonlyArray<RemoteUnitStatus> = []
+    let previousStatuses = new Map<string, string>()
     return Effect.gen(function* () {
       while (true) {
         yield* checkLeases(leases)
-        latest = yield* Effect.forEach(
+        const polled = yield* Effect.forEach(
           plan.nodes,
           (node) => statusNode(inventory, instance, node),
           { concurrency: "unbounded" }
         )
+        latest = [...polled].sort(
+          (left, right) =>
+            plan.nodes.indexOf(left.node) - plan.nodes.indexOf(right.node)
+        )
+        const ready = latest.filter(
+          (status) => status.activeState === "active"
+        ).length
+        const changed = latest.filter(
+          (status) =>
+            previousStatuses.get(status.node) !== statusSignature(status)
+        )
+        if (changed.length > 0) {
+          yield* Effect.forEach(
+            changed,
+            (status) => emitNodeReadiness(plan, instance, status),
+            { concurrency: 1, discard: true }
+          )
+          previousStatuses = new Map(
+            latest.map((status) => [status.node, statusSignature(status)])
+          )
+          yield* emitProgress({
+            kind: "progress",
+            scope: "cluster",
+            operation: "wait-for-nodes",
+            message: waitingMessage(latest),
+            instance,
+            current: ready,
+            total: plan.nodes.length,
+            unit: "nodes"
+          })
+        }
         const failed = latest.filter(failedStatus)
         if (failed.length > 0) {
           return yield* Effect.fail(
@@ -317,6 +447,11 @@ const monitorCluster = (
         (status) => status.activeState !== "active"
       )
       if (unavailable.length > 0) {
+        yield* Effect.forEach(
+          unavailable,
+          (status) => emitNodeReadiness(plan, instance, status, true),
+          { concurrency: 1, discard: true }
+        )
         return yield* Effect.fail(
           new CommandError({
             code: "cluster-node-unavailable",
@@ -339,6 +474,9 @@ export const runCluster = (
     const prepared = yield* prepareInstance(name)
     yield* runPreparedCluster(name, prepared.inventory, prepared.plan)
   }).pipe(
+    Effect.tapError((error) =>
+      phase(name, "pipeline", "failed", error.message)
+    ),
     Effect.withSpan("inference.run-cluster", {
       attributes: { "inference.instance": name }
     })
@@ -377,6 +515,15 @@ export const runPreparedCluster = (
           Effect.andThen(remoteAction(inventory, node, "prepare", name)),
           Effect.tap(() =>
             phase(name, "prepare-node", "completed", `Prepared '${node}'`, node)
+          ),
+          Effect.tapError((error) =>
+            phase(
+              name,
+              "prepare-node",
+              "failed",
+              `Unable to prepare '${node}': ${error.message}`,
+              node
+            )
           )
         ),
       { concurrency: remotePreparationConcurrency, discard: true }
@@ -385,7 +532,11 @@ export const runPreparedCluster = (
     const stopAll = Effect.forEach(
       [...plan.nodes].reverse(),
       (node) =>
-        stopNode(inventory, name, node).pipe(
+        phase(name, "stop-node", "started", `Stopping '${node}'`, node).pipe(
+          Effect.andThen(stopNode(inventory, name, node)),
+          Effect.tap(() =>
+            phase(name, "stop-node", "completed", `Stopped '${node}'`, node)
+          ),
           Effect.catch((error) =>
             phase(
               name,
@@ -412,7 +563,7 @@ export const runPreparedCluster = (
                     name,
                     "start-node",
                     "started",
-                    `Starting '${node}'`,
+                    `Requesting launch for '${node}'`,
                     node
                   ).pipe(
                     Effect.andThen(launchNode(inventory, name, node)),
@@ -421,7 +572,16 @@ export const runPreparedCluster = (
                         name,
                         "start-node",
                         "completed",
-                        `Started '${node}'`,
+                        `Launch accepted for '${node}'`,
+                        node
+                      )
+                    ),
+                    Effect.tapError((error) =>
+                      phase(
+                        name,
+                        "start-node",
+                        "failed",
+                        `Unable to start '${node}': ${error.message}`,
                         node
                       )
                     )
@@ -440,7 +600,16 @@ export const runPreparedCluster = (
               "started",
               "Waiting for all node units"
             )
-            yield* waitUntilReady(inventory, plan, name, leases)
+            yield* waitUntilReady(inventory, plan, name, leases).pipe(
+              Effect.tapError((error) =>
+                phase(
+                  name,
+                  "wait-for-nodes",
+                  "failed",
+                  error.message
+                )
+              )
+            )
             const runner = yield* ProcessRunner
             yield* runner.run({
               command: "systemd-notify",

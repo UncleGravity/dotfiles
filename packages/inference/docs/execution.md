@@ -45,7 +45,19 @@ The `infer` CLI is read-only:
 infer recipes list
 infer instances list
 infer plan qwen
+infer watch qwen
+infer watch qwen --once
 ```
+
+`infer watch` is a detachable, read-only terminal view. Run it on the instance's
+control node; it replays the current controller invocation, follows new pipeline
+events, polls the controller unit state, and exits on Ctrl-C without affecting
+the service. `--once` prints one plain snapshot and works without a TTY. For a
+cluster, the first view is intentionally controller-scoped: it shows controller
+model/image work and per-node prepare/start/readiness events, but not the inner
+journal of every remote preparation unit. Existing invocations from before the
+structured event transport was deployed still show systemd state, but have no
+typed stage history to replay.
 
 Use native systemd commands for lifecycle and journald for logs:
 
@@ -63,8 +75,8 @@ systemd already stores enabled state, restores boot services, monitors the
 process, and applies restart policy.
 
 Structured clients should read `/etc/infer/*.json`, `models status --json`,
-systemd properties, and journald JSON. They do not need a second run-state
-database.
+systemd properties, and the schema-backed `@infer-progress ` records in journald.
+They do not need a second run-state database.
 
 ## Planning
 
@@ -101,13 +113,16 @@ Starting `infer-qwen.service` performs one foreground workflow:
 
 The runtime emits versioned lifecycle events while it loads contracts, ensures
 each model, prepares the image, launches the container, and waits for readiness.
-The default event service writes annotated Effect logs to journald and records
-an Effect metric. Model preparation additionally reports copy, verification,
-and atomic publication phases. The event contract supports numeric progress,
-but the current command adapters do not yet parse per-byte transfer or checksum
-progress from their tools. Startup health checks run every two seconds; after
-readiness, monitoring runs every ten seconds, so three failed checks represent
-roughly thirty seconds of sustained endpoint failure.
+The system runtime writes both normal annotated Effect logs and one single-line,
+schema-backed journal record per event, and records an Effect metric. Model
+preparation additionally reports copy, verification, and atomic publication
+phases. Cluster readiness reports each node's role and exact systemd state when
+it changes, plus ready node units out of the declared total. The event contract
+also supports other numeric progress, but command adapters do not yet parse
+per-byte transfer or checksum progress from their tools. Startup health checks
+run every two seconds; after readiness, monitoring runs every ten seconds, so
+three failed checks represent roughly thirty seconds of sustained endpoint
+failure.
 
 The service uses the stable container name `infer-<instance>`. OCI labels
 record instance, recipe hash, image digest, role, and systemd
