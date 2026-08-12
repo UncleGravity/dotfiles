@@ -70,7 +70,7 @@
       URL_TITLE=""
       TIMESTAMP=""
       DEVICE=""
-      HTML_ENABLED=0
+      HTML_ARGS=()
 
       # Parse short options
       while getopts "m:i:t:u:T:S:d:Hh" opt; do
@@ -82,7 +82,7 @@
           T) URL_TITLE=$OPTARG    ;;
           S) TIMESTAMP=$OPTARG    ;;
           d) DEVICE=$OPTARG       ;;
-          H) HTML_ENABLED=1       ;;
+          H) HTML_ARGS=(-F "html=1") ;;
           h) usage; exit 0        ;;
           *) usage; exit 1        ;;
         esac
@@ -132,7 +132,7 @@
         ''${TIMESTAMP:+-F "timestamp=''${TIMESTAMP}"} \
         ''${IMAGE:+-F "attachment=@''${IMAGE}"} \
         ''${DEVICE:+-F "device=''${DEVICE}"} \
-        ''${HTML_ENABLED:+-F "html=1"}
+        "''${HTML_ARGS[@]}"
 
       exit $?
     '';
@@ -160,6 +160,7 @@
         '--url-title[Title for the URL]:url_title:' \
         '--timestamp[Unix timestamp]:timestamp:_integer' \
         '--device[Target device]:device:_push_devices' \
+        '--html[Enable HTML formatting]' \
         '--help[Show help]' \
         '*:message:'
     '';
