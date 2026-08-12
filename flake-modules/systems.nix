@@ -1,6 +1,4 @@
-{inputs, ...}: let
-  overlays = import ../overlays {inherit inputs;};
-in {
+{inputs, ...}: {
   systems = [
     "aarch64-linux"
     "x86_64-linux"
@@ -9,7 +7,7 @@ in {
 
   perSystem = {system, ...}: {
     _module.args.pkgs = import inputs.nixpkgs {
-      inherit system overlays;
+      inherit system;
       config.allowUnfree = true;
     };
   };

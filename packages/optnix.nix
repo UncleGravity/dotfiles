@@ -1,6 +1,6 @@
 {
   pkgs,
-  inputs,
+  self,
   lib,
   ...
 }: let
@@ -74,9 +74,9 @@
     '';
   };
 
-  nixosConfigurations = inputs.self.nixosConfigurations or {};
-  darwinConfigurations = inputs.self.darwinConfigurations or {};
-  standaloneConfigurations = inputs.self.homeConfigurations or {};
+  nixosConfigurations = self.nixosConfigurations or {};
+  darwinConfigurations = self.darwinConfigurations or {};
+  standaloneConfigurations = self.homeConfigurations or {};
 
   nixosNames = builtins.attrNames nixosConfigurations;
   darwinNames = builtins.attrNames darwinConfigurations;

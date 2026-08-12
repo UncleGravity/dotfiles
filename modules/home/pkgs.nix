@@ -5,6 +5,8 @@
   inputs,
   ...
 }: let
+  localPackages = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
+
   ###########################################################################
   # 1. Platform-agnostic user packages                                      #
   ###########################################################################
@@ -153,12 +155,20 @@
   ###########################################################################
   # 3. Custom packages from this flake                                      #
   ###########################################################################
-  custom = [
-    # inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.scripts
-    # inputs.self.packages.${pkgs.system}.wrapped.hello
-    pkgs.my.scripts
-    pkgs.my.packages
-  ];
+  custom =
+    [
+      localPackages.optnix
+      localPackages.optnix-fzf
+      localPackages.nix-search-fzf
+      localPackages.push
+      localPackages.t
+      localPackages.nvim
+      localPackages.helix
+    ]
+    ++ lib.optionals pkgs.stdenv.isDarwin [
+      localPackages.decrypt
+      localPackages.encrypt
+    ];
 
   ###########################################################################
   # 4. Assemble the final list                                              #

@@ -6,7 +6,6 @@
   # These constructors preserve the existing outputs until Clan owns the machines.
   inherit (inputs.nixpkgs) lib;
 
-  overlays = import ../overlays {inherit inputs;};
   sparkNodes = import ../machines/nixos/spark/nodes.nix;
 
   systems = {
@@ -72,7 +71,6 @@
         ++ [
           {
             nixpkgs = {
-              inherit overlays;
               hostPlatform = system;
               config.allowUnfree = true;
             };
@@ -118,7 +116,6 @@
           };
 
           nixpkgs = {
-            inherit overlays;
             hostPlatform = system;
             config.allowUnfree = true;
           };

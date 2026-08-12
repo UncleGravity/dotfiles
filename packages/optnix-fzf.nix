@@ -1,10 +1,8 @@
 {
   pkgs,
-  inputs,
-  lib,
+  optnix,
   ...
 }: let
-  optnix = pkgs.callPackage ./optnix.nix {inherit inputs pkgs lib;};
   inherit (optnix) scopeList;
 in
   pkgs.writeShellApplication {
