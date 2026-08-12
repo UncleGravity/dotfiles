@@ -261,34 +261,6 @@
         ];
       };
 
-    mkHomeManagerSystem = {
-      system,
-      pkgs,
-      username,
-      homeStateVersion,
-    }:
-      inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = {
-          inherit inputs username homeStateVersion;
-        };
-        modules = [
-          ./modules/home # My Home Modules
-          ./machines/hm/${username}/home.nix # Home Manager Config
-          # -- Global Home-Manager Config -----------------------------------
-          {
-            # Nixpkgs Config
-            nixpkgs = {
-              inherit overlays;
-              # hostPlatform = system;
-              config.allowUnfree = true; # 歹勢 歹勢
-            };
-            home.stateVersion = homeStateVersion; # no toques wey
-          }
-          # -----------------------------------------------------------------
-        ];
-      };
-
     mkMicrovm = {
       system,
       username,
@@ -396,19 +368,6 @@
         };
       }
       // sparkConfigurations;
-
-    # --------------------------------------------------------------------------
-    # Home Manager ONLY Configurations
-    # --------------------------------------------------------------------------
-    homeConfigurations = {
-      # Raspberry Pi
-      pi = mkHomeManagerSystem {
-        system = systems.aarch64-linux;
-        pkgs = nixpkgs.legacyPackages.${systems.aarch64-linux};
-        username = "pi";
-        homeStateVersion = "24.05";
-      };
-    };
 
     # --------------------------------------------------------------------------
     # Packages

@@ -23,15 +23,6 @@ nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
 
 sudo nixos-rebuild switch --flake ".?submodules=1#target-hostname" -v
 
-## For the Raspberry Pi
-
-1. Install Nix (Determinate Installer)
-2. Git clone this repo
-3. cd into repo
-4. Build new systsem:
-   - run `nix run home-manager/master -- switch --flake .#pi`
-   - Subsequent runs: `home-manager switch --flake .#pi`
-
 ## For Darwin (macOS)
 Requirement: configure iCloud for clipboard sharing.
 
