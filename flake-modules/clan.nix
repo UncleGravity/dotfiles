@@ -18,7 +18,7 @@
       username = "angel";
     };
 
-    inventory.machines.portal.deploy.targetHost = "portal";
+    inventory.machines.portal.deploy.targetHost = "angel@portal";
 
     machines.portal = {
       _module.args.hostname = "portal";
