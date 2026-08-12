@@ -16,8 +16,8 @@
   mac = macFromName hostname;
 in {
   imports = [
-    ../../modules/common/caches.nix
-    ../../modules/common/ssh-keys.nix
+    ../modules/common/caches.nix
+    ../modules/common/ssh-keys.nix
   ];
 
   boot.initrd.systemd.enable = true;
@@ -62,8 +62,8 @@ in {
     # Without this, microvm.nix masks nix-daemon (system.nix:48-52),
     # which forces `nix` into single-user mode and breaks for non-root.
     # Absolute path keeps the image in a fixed location regardless of the
-    # host cwd from which `vm` is launched; the parent dir is created by
-    # packages/vm.nix's `mkdir -p "$HOME/.cache/vm/<name>"`.
+    # host cwd from which `vm` is launched; the parent directory is created by
+    # the vm CLI at `$HOME/.cache/vm/<name>`.
     writableStoreOverlay = "/nix/.rw-store";
     volumes = [
       {
@@ -89,7 +89,7 @@ in {
   # ---------------------------------------
 
   # Sync host cwd → guest path so the login shell lands in the matching
-  # directory under /host/home (cwd file written by packages/vm.nix).
+  # directory under /host/home (cwd file written by the vm CLI).
   programs.bash.loginShellInit = ''
     if [ "$(id -un)" = "${username}" ]; then
       vm_pwd_file="/host/home/.cache/vm/${hostname}/pwd"

@@ -19,14 +19,6 @@
     nvim = pkgs.callPackage ./nvim {inherit pkgs;};
     helix = pkgs.callPackage ./helix {};
     inference = pkgs.callPackage ./inference/nix/package.nix {};
-  } // lib.optionalAttrs (system == "aarch64-darwin") {
-    vm = pkgs.callPackage ./vm.nix {
-      inherit lib pkgs;
-      vms = {
-        dev = {runner = inputs.self.nixosConfigurations.dev.config.microvm.declaredRunner;};
-        small = {runner = inputs.self.nixosConfigurations.small.config.microvm.declaredRunner;};
-      };
-    };
   };
 
   # Halt. Everything below this line is boilerplate.

@@ -127,32 +127,6 @@
         }
       ];
     };
-
-  mkMicrovm = {
-    system,
-    username,
-    hostname,
-    systemStateVersion,
-    hostSystem ? systems.aarch64-darwin,
-  }:
-    lib.nixosSystem {
-      specialArgs = {
-        inherit inputs username hostname;
-      };
-      modules = [
-        inputs.microvm.nixosModules.microvm
-        ../machines/microvm/${hostname}.nix
-        {
-          nixpkgs = {
-            hostPlatform = system;
-            config.allowUnfree = true;
-          };
-
-          microvm.vmHostPackages = inputs.nixpkgs.legacyPackages.${hostSystem};
-          system.stateVersion = systemStateVersion;
-        }
-      ];
-    };
 in {
   flake = {
     darwinConfigurations.banana = mkDarwin {
@@ -188,20 +162,6 @@ in {
           hostname = "portal";
           systemStateVersion = "26.05";
           homeStateVersion = "26.05";
-        };
-
-        dev = mkMicrovm {
-          system = systems.aarch64-linux;
-          username = "angel";
-          hostname = "dev";
-          systemStateVersion = "25.05";
-        };
-
-        small = mkMicrovm {
-          system = systems.aarch64-linux;
-          username = "angel";
-          hostname = "small";
-          systemStateVersion = "25.05";
         };
       }
       // lib.mapAttrs (
