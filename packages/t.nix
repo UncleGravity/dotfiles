@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  nvim,
   ...
 }: let
   tScript = pkgs.writeShellApplication {
@@ -9,6 +10,7 @@
       tmux
       coreutils
       gnugrep
+      nvim
     ];
     text = ''
       # Tmux Utilities

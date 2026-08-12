@@ -5,16 +5,17 @@
   inherit (pkgs) lib;
 
   optnix = pkgs.callPackage ./optnix.nix {inherit self;};
+  nvim = pkgs.callPackage ./nvim {};
+
   common = {
     bootstrap = pkgs.callPackage ./bootstrap.nix {};
     optnix-fzf = pkgs.callPackage ./optnix-fzf.nix {inherit optnix;};
     nix-search-fzf = pkgs.callPackage ./nix-search-fzf.nix {};
     push = pkgs.callPackage ./push.nix {};
-    t = pkgs.callPackage ./t.nix {};
-    nvim = pkgs.callPackage ./nvim {};
+    t = pkgs.callPackage ./t.nix {inherit nvim;};
     helix = pkgs.callPackage ./helix {};
     inference = pkgs.callPackage ./inference/nix/package.nix {};
-    inherit optnix;
+    inherit nvim optnix;
   };
 in
   common
