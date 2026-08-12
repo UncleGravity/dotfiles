@@ -109,6 +109,7 @@
     }; # ----------------- Defaults end
 
     # Use the Git hash as nix generation revision
-    configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or null);
+    # Fall back to the source hash when flake evaluation loses Git metadata.
+    configurationRevision = lib.mkDefault (inputs.self.rev or inputs.self.dirtyRev or inputs.self.narHash);
   }; # ----------------- System end
 }

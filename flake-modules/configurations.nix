@@ -76,7 +76,7 @@
             };
             system = {
               stateVersion = systemStateVersion;
-              configurationRevision = self.rev or self.dirtyRev or "unknown";
+              configurationRevision = self.rev or self.dirtyRev or self.narHash;
             };
           }
         ];
