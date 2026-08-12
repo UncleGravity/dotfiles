@@ -152,14 +152,6 @@ in {
           homeStateVersion = "25.05";
           extraModules = [inputs.copyparty.nixosModules.default];
         };
-
-        portal = mkNixos {
-          system = systems.x86_64-linux;
-          username = "angel";
-          hostname = "portal";
-          systemStateVersion = "26.05";
-          homeStateVersion = "26.05";
-        };
       }
       // lib.mapAttrs (
         hostname: node:
