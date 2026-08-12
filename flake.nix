@@ -46,18 +46,7 @@
 
     # Installs homebrew with nix.
     # Does not manage formulae, just installs homebrew.
-    nix-homebrew = {
-      url = "github:zhaofengli/nix-homebrew";
-      inputs.brew-src.follows = "brew-src";
-    };
-
-    # ====================================================
-    # TEMPORARY. WAITING FOR https://github.com/zhaofengli/nix-homebrew/pull/164
-    brew-src = {
-      url = "github:homebrew/brew";
-      flake = false;
-    };
-    # ====================================================
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
