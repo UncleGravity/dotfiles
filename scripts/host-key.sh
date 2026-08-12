@@ -13,7 +13,8 @@ Usage:
 
 Commands:
   create  Generate and escrow a new ED25519 host identity.
-  import  Escrow an existing ED25519 private key. Use - to read from stdin.
+  import  Escrow an existing ED25519 private key. Completes a matching public-only bundle.
+          Use - to read from stdin.
   check   Verify key pairs, Age recipients, and the SOPS recipient policy.
   stage   Install a checked key pair under <root>/etc/ssh for provisioning.
 
@@ -201,6 +202,31 @@ publish_bundle() {
 	fi
 }
 
+publish_import() {
+	local host=$1
+	local private_key_file=$2
+	local derived_public_key_file=$3
+	local encrypted_output=$scratch_dir/$host.key.sops
+
+	set_bundle_paths "$host"
+	if [[ -e $encrypted_key || -L $encrypted_key ]]; then
+		die "encrypted host key for '$host' already exists; refusing to overwrite it"
+	fi
+
+	if [[ -e $public_key || -L $public_key ]]; then
+		[[ -f $public_key && ! -L $public_key ]] ||
+			die "public host key for '$host' is not a regular file"
+		validate_key_pair "$private_key_file" "$public_key"
+		encrypt_private_key "$host" "$private_key_file" "$encrypted_output"
+		[[ ! -e $encrypted_key && ! -L $encrypted_key ]] ||
+			die "encrypted host key for '$host' appeared during import; refusing to overwrite it"
+		install -m 0644 "$encrypted_output" "$encrypted_key"
+		return
+	fi
+
+	publish_bundle "$host" "$private_key_file" "$derived_public_key_file"
+}
+
 print_enrollment_steps() {
 	local host=$1
 	local recipient
@@ -259,7 +285,10 @@ import_host() {
 	local unused
 
 	validate_host "$host"
-	ensure_bundle_absent "$host"
+	set_bundle_paths "$host"
+	if [[ -e $encrypted_key || -L $encrypted_key ]]; then
+		die "encrypted host key for '$host' already exists; refusing to overwrite it"
+	fi
 	ensure_scratch_dir
 	private_key_file=$scratch_dir/$host.key
 	public_key_file=$private_key_file.pub
@@ -277,7 +306,7 @@ import_host() {
 	IFS=" " read -r derived_key_type derived_key_data unused <<<"$derived_public_key"
 	printf "%s %s %s\n" "$derived_key_type" "$derived_key_data" "$host" >"$public_key_file"
 
-	publish_bundle "$host" "$private_key_file" "$public_key_file"
+	publish_import "$host" "$private_key_file" "$public_key_file"
 	print_enrollment_steps "$host"
 }
 
