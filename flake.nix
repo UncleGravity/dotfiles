@@ -13,6 +13,18 @@
 
     import-tree.url = "github:denful/import-tree";
 
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        nix-darwin.follows = "darwin";
+        disko.follows = "disko";
+        sops-nix.follows = "sops-nix";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+    };
+
     darwin = {
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";

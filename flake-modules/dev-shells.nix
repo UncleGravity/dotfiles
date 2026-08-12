@@ -1,5 +1,9 @@
 {
-  perSystem = {pkgs, ...}: {
+  perSystem = {
+    inputs',
+    pkgs,
+    ...
+  }: {
     devShells = {
       default = pkgs.mkShell {
         name = "dotfiles";
@@ -14,6 +18,7 @@
           omnix
           cachix
           shellcheck
+          inputs'.clan-core.packages.clan-cli
         ];
       };
 

@@ -17,6 +17,42 @@
         "type": "github"
       }
     },
+    "clan-core": {
+      "inputs": {
+        "data-mesher": "data-mesher",
+        "disko": [
+          "disko"
+        ],
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nix-darwin": [
+          "darwin"
+        ],
+        "nix-select": "nix-select",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "sops-nix": [
+          "sops-nix"
+        ],
+        "systems": "systems",
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786565939,
+        "narHash": "sha256-3/HM6fPsLNqUEsqHtPItGAzhNPd1KQIzjhh2+7fjG/M=",
+        "rev": "22227d3403ffe97b18a34c272f4636d80718d82a",
+        "type": "tarball",
+        "url": "https://git.clan.lol/api/v1/repos/clan/clan-core/archive/22227d3403ffe97b18a34c272f4636d80718d82a.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://git.clan.lol/clan/clan-core/archive/26.05.tar.gz"
+      }
+    },
     "copyparty": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -57,6 +93,33 @@
         "ref": "master",
         "repo": "nix-darwin",
         "type": "github"
+      }
+    },
+    "data-mesher": {
+      "inputs": {
+        "flake-parts": [
+          "clan-core",
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "clan-core",
+          "nixpkgs"
+        ],
+        "treefmt-nix": [
+          "clan-core",
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786547560,
+        "narHash": "sha256-3vfGieICQDXyxhvalPV2DMZltfzyG2C3/pU3xgFofJw=",
+        "rev": "eac46008c7aef99547fe9c05aa650f4a479ce8de",
+        "type": "tarball",
+        "url": "https://git.clan.lol/api/v1/repos/clan/data-mesher/archive/eac46008c7aef99547fe9c05aa650f4a479ce8de.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://git.clan.lol/clan/data-mesher/archive/main.tar.gz"
       }
     },
     "dgx-spark": {
@@ -419,6 +482,19 @@
         "type": "github"
       }
     },
+    "nix-select": {
+      "locked": {
+        "lastModified": 1763303120,
+        "narHash": "sha256-yxcNOha7Cfv2nhVpz9ZXSNKk0R7wt4AiBklJ8D24rVg=",
+        "rev": "3d1e3860bef36857a01a2ddecba7cdb0a14c35a9",
+        "type": "tarball",
+        "url": "https://git.clan.lol/api/v1/repos/clan/nix-select/archive/3d1e3860bef36857a01a2ddecba7cdb0a14c35a9.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://git.clan.lol/clan/nix-select/archive/main.tar.gz"
+      }
+    },
     "nixified-ai": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -513,6 +589,7 @@
     },
     "root": {
       "inputs": {
+        "clan-core": "clan-core",
         "copyparty": "copyparty",
         "darwin": "darwin",
         "dgx-spark": "dgx-spark",
@@ -570,6 +647,22 @@
       }
     },
     "systems": {
+      "locked": {
+        "lastModified": 1774449309,
+        "narHash": "sha256-brhZ8DmuGtzkCYHJg4HEd602amKm89Y9ytsFZ5uWD1w=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "c29398b59d2048c4ab79345812849c9bd15e9150",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "ref": "future-26.11",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_2": {
       "flake": false,
       "locked": {
         "lastModified": 1681028828,
@@ -649,7 +742,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems"
+        "systems": "systems_2"
       },
       "locked": {
         "lastModified": 1785027212,
