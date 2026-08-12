@@ -1,6 +1,6 @@
 # Config
 
-NOTE: Incomplete readme, please refer to the flake.nix for now to understand how this all works.
+NOTE: Incomplete readme. Flake output composition lives in `flake-modules/`.
 
 ## Nixos Rebuild
 
