@@ -365,6 +365,21 @@
         "type": "github"
       }
     },
+    "multiverse": {
+      "locked": {
+        "lastModified": 1786515265,
+        "narHash": "sha256-/gfA7hQX+H2DU5YWv0fxJnotnAK6Ugq2/8f9xqmOBso=",
+        "owner": "fzakaria",
+        "repo": "nixpkgs-multiverse",
+        "rev": "8aa920761a852eaddd21184a851686dcf00ee476",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fzakaria",
+        "repo": "nixpkgs-multiverse",
+        "type": "github"
+      }
+    },
     "nix-gl-host": {
       "inputs": {
         "nixpkgs": [
@@ -508,6 +523,7 @@
         "homebrew-core": "homebrew-core",
         "import-tree": "import-tree",
         "microvm": "microvm",
+        "multiverse": "multiverse",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",

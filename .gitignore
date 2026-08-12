@@ -25,6 +25,7 @@ ignore/
 
 # AI
 .claude/
+.pi/
 
 # Nix
 .direnv/

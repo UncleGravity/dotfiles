@@ -11,6 +11,7 @@
     ./lazygit
     ./nushell
     ./opencode.nix
+    ./pi
     ./pkgs.nix
     ./ssh.nix
     ./tmux
