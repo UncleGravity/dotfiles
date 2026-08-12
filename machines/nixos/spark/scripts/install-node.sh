@@ -35,6 +35,7 @@ fi
 nixos-anywhere --flake "$repo_root#$node" --target-host "root@$ip" \
   --extra-files "$extra_files" \
   --build-on remote \
+  --option builders "" \
   --option extra-substituters "$cache_url" \
   --option extra-trusted-public-keys "$cache_key" \
   --phases disko,install,reboot

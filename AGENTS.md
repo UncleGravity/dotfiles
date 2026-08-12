@@ -1,6 +1,6 @@
 ## Build/Test Commands
 - `just sync` - Rebuild system configuration (auto-detects NixOS/Darwin/Home Manager)
-- `nix flake check` - Validate flake configuration
+- `nix flake check --builders ""` - Validate the flake without ambient remote builders
 - `statix check .` - Lint Nix files for best practices
 
 ## Tools
@@ -51,8 +51,9 @@
 
 ## Testing
 - Test configurations with `just sync` before committing
-- Use `nix build` to test package builds without installing
-- Validate flake with `nix flake check` before pushing changes
+- Use `nix build --builders ""` to test package builds without installing
+- Validate flake with `nix flake check --builders ""` before pushing changes
+- Never inherit configured remote builders during repository validation. Spark builds use the target Spark as `--build-host` and still pass `--builders ""`.
 
 Never use `path:`/`builtins.path`; they copy (sometimes large) untracked files to the store.
 Instead ask to stage the relevant files.

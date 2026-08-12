@@ -16,6 +16,7 @@ nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
   --flake .#kiwi \
   --build-host <user>@<hostname> \
   --target-host <user>@<hostname> \
+  --builders "" \
   --use-remote-sudo \
   --fast
 

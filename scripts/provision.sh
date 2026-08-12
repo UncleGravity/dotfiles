@@ -26,7 +26,8 @@ extra_files=$(mktemp -d)
 trap 'rm -rf "$extra_files"' EXIT
 "$repo_root/scripts/host-key.sh" stage "$host" "$extra_files"
 
-nix develop -c nixos-anywhere --flake "$repo_root#$host" \
+nix develop --builders "" -c nixos-anywhere --flake "$repo_root#$host" \
 	--target-host "$target" \
 	--extra-files "$extra_files" \
-	--build-on remote
+	--build-on remote \
+	--option builders ""

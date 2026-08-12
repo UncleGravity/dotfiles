@@ -42,14 +42,16 @@ just deploy spark-01
 just spark-deploy-all
 ```
 
-`nh os switch` builds through the configured remote builders, copies the
-closure to the target, and activates it over SSH. For a networking change,
-activate without changing the boot default first:
+`nh os switch` builds on each Spark itself, copies the closure to the target,
+and activates it over SSH. Ambient remote builders are disabled explicitly.
+For a networking change, activate without changing the boot default first:
 
 ```bash
 nixos-rebuild test \
   --flake .#spark-01 \
   --target-host angel@spark-01.local \
+  --build-host angel@spark-01.local \
+  --builders "" \
   --use-remote-sudo
 ```
 

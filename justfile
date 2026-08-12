@@ -27,7 +27,7 @@ sync: nixpkgs-status
     case "{{ system_type }}" in
         "nixos")
             HOSTNAME=$(hostname -s)
-            nh os switch . -H "$HOSTNAME"
+            nh os switch . -H "$HOSTNAME" --builders ""
             ;;
         "darwin")
             HOSTNAME=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
@@ -38,11 +38,11 @@ sync: nixpkgs-status
                 echo ""
             fi
 
-            nh darwin switch . -H "$HOSTNAME"
+            nh darwin switch . -H "$HOSTNAME" --builders ""
             ;;
         "home-manager")
             USERNAME=$(whoami)
-            nh home switch . -c "$USERNAME"
+            nh home switch . -c "$USERNAME" --builders ""
             ;;
         *)
             echo "❌ Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
@@ -63,11 +63,11 @@ update-sync: update sync
 
 # Format repository files
 fmt:
-    nix fmt .
+    nix fmt --builders "" .
 
 # Validate the flake
 check:
-    nix flake check
+    nix flake check --builders ""
 
 # Lint Nix files
 lint:
@@ -134,10 +134,10 @@ disko hostname:
     fi
 
     echo "Running Disko with config: $DISKO_CONFIG"
-    sudo nix --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
+    sudo nix --builders "" --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
     echo "Disko command completed successfully!"
 
-# Build a NixOS host through the configured builders and deploy over SSH.
+# Build a NixOS host on the target machine and deploy over SSH.
 # Usage: just deploy <hostname>
 # Example: just deploy kiwi
 deploy host:
@@ -145,13 +145,13 @@ deploy host:
     set -euo pipefail
 
     echo "Deploying NixOS configuration to {{ host }}..."
-    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --elevation-strategy passwordless --ask
+    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --builders "" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
 # Manage cloud resources (infra/) with OpenTofu.
 # Usage: just infra init | plan | apply | output
 infra *args="plan":
-    sops exec-env infra/secrets.env "nix develop -c tofu -chdir=infra {{ args }}"
+    sops exec-env infra/secrets.env "nix develop --builders '' -c tofu -chdir=infra {{ args }}"
 
 # Synchronize every tracked SOPS file with the recipient policy in .sops.yaml.
 sops-update-keys:
@@ -180,7 +180,7 @@ provision host target:
 # Partition the NVMe, install NixOS with its escrowed identity, and reboot.
 # The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
-    nix develop -c ./machines/nixos/spark/scripts/install-node.sh "{{ node }}"
+    nix develop --builders "" -c ./machines/nixos/spark/scripts/install-node.sh "{{ node }}"
 
 # Deploy all four Sparks concurrently.
 spark-deploy-all:
@@ -204,6 +204,7 @@ spark-deploy-all:
                 -H "$node" \
                 --target-host "$node" \
                 --build-host "$node" \
+                --builders "" \
                 --elevation-strategy passwordless
         ) >"$log_dir/$node.log" 2>&1 &
         node_by_pid[$!]="$node"
