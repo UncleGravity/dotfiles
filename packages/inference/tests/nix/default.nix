@@ -93,11 +93,11 @@
       };
     })
     sparkNames;
-  rejects = module:
-    !builtins.tryEval
-    (
-      (sparkConfiguration.extendModules {modules = [module];}).config.system.build.toplevel.drvPath
-    ).success;
+  rejects = module: let
+    evaluation = (sparkConfiguration.extendModules {modules = [module];}).config.system.build.toplevel.drvPath;
+    result = builtins.tryEval evaluation;
+  in
+    !result.success;
   moduleContract = assert lib.hasInfix "inference-configured" controller.systemd.services.infer-glm52.serviceConfig.ExecStart;
   assert controller.systemd.services.infer-glm52.environment.HF_TOKEN_PATH
   == "/run/secrets/vars/spark-huggingface-spark/token";
