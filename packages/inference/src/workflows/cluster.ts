@@ -27,9 +27,22 @@ interface NodeLease {
   readonly fiber: Fiber.Fiber<void, CommandError>
 }
 
-const sshIdentity = "/etc/ssh/ssh_host_ed25519_key"
+const coordinationIdentityVariable = "INFER_COORDINATION_IDENTITY_FILE"
 const sshKnownHosts = "/etc/ssh/ssh_known_hosts"
 const remotePreparationConcurrency = 3
+
+export const resolveCoordinationIdentity = (
+  path: string | undefined
+): Effect.Effect<string, CommandError> => {
+  return path !== undefined && path.startsWith("/")
+    ? Effect.succeed(path)
+    : Effect.fail(
+        new CommandError({
+          code: "coordination-identity-missing",
+          message: `${coordinationIdentityVariable} must name an absolute path`
+        })
+      )
+}
 
 const phase = (
   instance: string,
@@ -56,18 +69,23 @@ const remoteArguments = (
   nodeName: string,
   action: NodeAction,
   instance: string
-): Effect.Effect<ReadonlyArray<string>, CommandError> => {
-  const node = findNode(inventory, nodeName)
-  const address = node?.fabric.fabric0
-  return address === undefined
-    ? Effect.fail(
+): Effect.Effect<ReadonlyArray<string>, CommandError> =>
+  Effect.gen(function* () {
+    const identity = yield* resolveCoordinationIdentity(
+      process.env[coordinationIdentityVariable]
+    )
+    const node = findNode(inventory, nodeName)
+    const address = node?.fabric.fabric0
+    if (address === undefined) {
+      return yield* Effect.fail(
         new CommandError({
           code: "cluster-node-unreachable",
           message: `Node '${nodeName}' has no fabric0 address`,
           details: { node: nodeName }
         })
       )
-    : Effect.succeed([
+    }
+    return [
         "-T",
         "-o",
         "BatchMode=yes",
@@ -84,11 +102,11 @@ const remoteArguments = (
         "-o",
         "ServerAliveCountMax=3",
         "-i",
-        sshIdentity,
+        identity,
         `infer-remote@${address}`,
         `${action} ${instance}`
-      ])
-}
+      ]
+  })
 
 const remoteAction = (
   inventory: Inventory,

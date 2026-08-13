@@ -7,6 +7,12 @@
   ...
 }: let
   home = config.users.users.${username}.home;
+  hubEnvironment = {
+    HF_HUB_ENABLE_HF_TRANSFER = "1";
+    HF_HUB_DISABLE_TELEMETRY = "1";
+    HF_HUB_DISABLE_XET = "1";
+  };
+  tokenPath = config.clan.core.vars.generators.spark-huggingface-spark.files.token.path;
 in {
   # Downloads happen on the controller; workers receive replicas over the
   # fabric as described in docs/spark/stage-models.md.
@@ -20,29 +26,17 @@ in {
       ]))
   ];
 
-  environment.variables = {
-    HF_HUB_ENABLE_HF_TRANSFER = "1"; # parallel chunked downloads
-    HF_HUB_DISABLE_TELEMETRY = "1";
-    HF_HUB_DISABLE_XET = "1"; # Might improve download speed. Test.
-  };
-
-  # The hf CLI and huggingface_hub read ~/.cache/huggingface/token natively.
-  # `hf auth login` cannot overwrite it; rotate with:
-  #   sops secrets/spark/controller.yaml
-  # Workers are not recipients of controller.yaml.
-  sops.secrets = lib.mkIf node.controller {
-    "hf/token" = {
-      sopsFile = ../../../../../secrets/spark/controller.yaml;
-      owner = username;
-      mode = "0400";
-      path = "${home}/.cache/huggingface/token";
+  environment.variables =
+    hubEnvironment
+    // lib.optionalAttrs node.controller {
+      HF_TOKEN_PATH = tokenPath;
     };
-  };
 
-  # sops-nix creates missing parent directories as root
-  # pre-create them user-owned
-  systemd.tmpfiles.rules = [
-    "d ${home}/.cache 0700 ${username} users -"
-    "d ${home}/.cache/huggingface 0700 ${username} users -"
-  ];
+  my.inference.serviceEnvironment =
+    hubEnvironment
+    // lib.optionalAttrs node.controller {
+      HF_TOKEN_PATH = tokenPath;
+    };
+
+  systemd.tmpfiles.rules = lib.optional node.controller "r ${home}/.cache/huggingface/token - - - - -";
 }

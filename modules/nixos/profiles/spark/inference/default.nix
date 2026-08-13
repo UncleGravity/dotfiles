@@ -1,10 +1,14 @@
 {
+  config,
   lib,
   node,
   sparkNodes,
   username,
   ...
 }: let
+  coordinationPublicKey = builtins.replaceStrings ["\n" "\r"] ["" ""] (
+    builtins.readFile ../../../../../vars/per-machine/spark-01/spark-coordination-spark/id_ed25519.pub/value
+  );
   inferenceNodes =
     lib.mapAttrs (_: peer: {
       platform = "linux/arm64";
@@ -18,6 +22,7 @@
     sparkNodes;
 in {
   imports = [
+    ./coordination.nix
     ./huggingface.nix
     ./recipes
     # ./open-webui.nix
@@ -31,6 +36,17 @@ in {
     memoryMaxPercent = 95;
     controlNode = "spark-01";
     nodes = inferenceNodes;
+    coordination =
+      {
+        authorizedKeys = [
+          coordinationPublicKey
+          # TODO: Remove after every Spark node passes the dedicated-key rollout.
+          sparkNodes.spark-01.sshHostKey
+        ];
+      }
+      // lib.optionalAttrs node.controller {
+        identityFile = config.clan.core.vars.generators.spark-coordination-spark.files.id_ed25519.path;
+      };
 
     instances.laguna = {
       recipe = "laguna-vllm";

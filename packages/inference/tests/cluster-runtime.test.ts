@@ -27,10 +27,14 @@ import {
 } from "../src/observability/progress.js"
 import {
   decodeRemoteStatus,
+  resolveCoordinationIdentity,
   runPreparedCluster
 } from "../src/workflows/cluster.js"
 
 const contracts = "tests/fixtures/contracts/v1"
+const coordinationIdentity =
+  "/run/secrets/vars/test-coordination/id_ed25519"
+process.env.INFER_COORDINATION_IDENTITY_FILE = coordinationIdentity
 const inventory = Schema.decodeUnknownSync(Inventory)(
   JSON.parse(readFileSync(`${contracts}/inventory.json`, "utf8"))
 )
@@ -61,6 +65,13 @@ const systemdStatus = (activeState = "active") => ({
 const remoteAction = (request: ProcessRequest): string | undefined =>
   request.command === "ssh" ? request.args.at(-1) : undefined
 
+const assertCoordinationIdentity = (request: ProcessRequest): void => {
+  if (request.command !== "ssh") return
+  const identityFlag = request.args.indexOf("-i")
+  assert.notEqual(identityFlag, -1)
+  assert.equal(request.args.at(identityFlag + 1), coordinationIdentity)
+}
+
 const captureProgress = (
   events: Array<ProgressEventInput>
 ): ProgressEventsService => ({
@@ -68,6 +79,21 @@ const captureProgress = (
     Effect.sync(() => {
       events.push(event)
     })
+})
+
+test("cluster coordination requires an absolute identity path", async () => {
+  for (const path of [undefined, "relative/id_ed25519"]) {
+    const result = await Effect.runPromise(
+      Effect.result(resolveCoordinationIdentity(path))
+    )
+    assert.ok(Result.isFailure(result))
+    assert.equal(result.failure.code, "coordination-identity-missing")
+  }
+
+  assert.equal(
+    await Effect.runPromise(resolveCoordinationIdentity(coordinationIdentity)),
+    coordinationIdentity
+  )
 })
 
 test("remote status decoding is strict and identifies the source node", () => {
@@ -120,6 +146,7 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
       Effect.scoped(
         Effect.acquireRelease(
           Effect.sync(() => {
+            assertCoordinationIdentity(request)
             events.push(`lease:${remoteAction(request)}`)
             leaseStarted()
           }),
@@ -138,6 +165,7 @@ test("prepared cluster reaches readiness and cleans up every node", async () => 
       ),
     run: (request) =>
       Effect.sync(() => {
+        assertCoordinationIdentity(request)
         const action = remoteAction(request)
         if (action !== undefined) {
           events.push(`ssh:${action}`)

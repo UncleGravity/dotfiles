@@ -6,7 +6,20 @@
 }: let
   cfg = config.my.inference;
   inferenceLib = import ../lib {inherit lib;};
-  package = pkgs.callPackage ../package.nix {};
+  unconfiguredPackage = pkgs.callPackage ../package.nix {};
+  package =
+    if cfg.coordination.identityFile == null
+    then unconfiguredPackage
+    else
+      pkgs.symlinkJoin {
+        name = "inference-configured";
+        paths = [unconfiguredPackage];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram "$out/bin/infer-cluster" \
+            --set INFER_COORDINATION_IDENTITY_FILE ${lib.escapeShellArg cfg.coordination.identityFile}
+        '';
+      };
   localNode = config.networking.hostName;
   absolutePath = lib.types.addCheck lib.types.nonEmptyStr (lib.hasPrefix "/");
   localPlatform =
@@ -62,16 +75,12 @@
   clusteredInstances = builtins.filter (instance: builtins.length instance.nodes > 1) instanceCatalog.instances;
   hasClusteredInstances = clusteredInstances != [];
   nodesWithSshHostKeys = lib.filterAttrs (_: node: (node.sshHostKey or null) != null) nodes;
-  coordinationEnabled = nodesWithSshHostKeys != {};
+  coordinationEnabled = hasClusteredInstances;
   localSingleInstances = builtins.filter (instance: builtins.elem localNode instance.nodes) singleInstances;
   localClusteredInstances = builtins.filter (instance: builtins.elem localNode instance.nodes) clusteredInstances;
   clusteredNodes = lib.unique (builtins.concatMap (instance: instance.nodes) clusteredInstances);
   requiredSshNodes = lib.unique ([cfg.controlNode] ++ clusteredNodes);
   missingSshHostKeys = builtins.filter (nodeName: (nodes.${nodeName}.sshHostKey or null) == null) requiredSshNodes;
-  controlPublicKey =
-    if controlNodeConfig == null
-    then null
-    else controlNodeConfig.sshHostKey or null;
 
   mkNodeService = {
     instance,
@@ -88,6 +97,7 @@
       if clustered
       then "Inference node for ${instance.name}"
       else "Inference instance ${instance.name}";
+    environment = cfg.serviceEnvironment;
     after =
       ["network-online.target"]
       ++ lib.optional (!clustered && isRegistryHost) "docker-registry.service"
@@ -146,6 +156,7 @@
   clusterPrepareServices = builtins.listToAttrs (map (instance:
     lib.nameValuePair "infer-prepare-${instance.name}" {
       description = "Prepare local artifacts for ${instance.name}";
+      environment = cfg.serviceEnvironment;
       after = ["network-online.target"];
       wants = ["network-online.target"];
       restartTriggers = [catalogFile inventoryFile instancesFile];
@@ -164,6 +175,7 @@
       builtins.listToAttrs (map (instance:
         lib.nameValuePair "infer-${instance.name}" {
           description = "Inference cluster ${instance.name}";
+          environment = cfg.serviceEnvironment;
           after = ["network-online.target" "docker-registry.service"];
           wants = ["network-online.target" "docker-registry.service"];
           restartIfChanged = false;
@@ -244,6 +256,23 @@ in {
       default = localNode;
       description = "Node that prepares shared artifacts and hosts the local registry";
     };
+    coordination = {
+      identityFile = lib.mkOption {
+        type = lib.types.nullOr absolutePath;
+        default = null;
+        description = "Private SSH identity used by the control node for cluster coordination";
+      };
+      authorizedKeys = lib.mkOption {
+        type = lib.types.listOf lib.types.nonEmptyStr;
+        default = [];
+        description = "SSH public keys authorized for restricted cluster coordination";
+      };
+    };
+    serviceEnvironment = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = {};
+      description = "Environment variables supplied to inference systemd services";
+    };
     nodes = lib.mkOption {
       type = lib.types.attrsOf nodeType;
       default = {};
@@ -290,12 +319,16 @@ in {
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = !coordinationEnabled || controlPublicKey != null;
-        message = "my.inference.nodes.${cfg.controlNode}.sshHostKey must be configured when coordination is enabled";
+        assertion = !coordinationEnabled || cfg.coordination.authorizedKeys != [];
+        message = "my.inference.coordination.authorizedKeys must not be empty for clustered instances";
       }
       {
         assertion = !hasClusteredInstances || missingSshHostKeys == [];
         message = "my.inference.nodes is missing SSH host keys for clustered nodes: ${lib.concatStringsSep ", " missingSshHostKeys}";
+      }
+      {
+        assertion = !coordinationEnabled || !isRegistryHost || cfg.coordination.identityFile != null;
+        message = "my.inference.coordination.identityFile must be configured on the control node";
       }
     ];
 
@@ -316,14 +349,16 @@ in {
         lib.genAttrs cfg.operators (_: {
           extraGroups = ["infer" "systemd-journal"];
         })
-        // lib.optionalAttrs (coordinationEnabled && controlPublicKey != null) {
+        // lib.optionalAttrs coordinationEnabled {
           infer-remote = {
             isSystemUser = true;
             group = "infer-remote";
             shell = pkgs.bashInteractive;
-            openssh.authorizedKeys.keys = [
-              ''restrict,command="${package}/bin/infer-remote" ${controlPublicKey}''
-            ];
+            openssh.authorizedKeys.keys =
+              map (
+                key: ''restrict,command="${package}/bin/infer-remote" ${key}''
+              )
+              cfg.coordination.authorizedKeys;
           };
         };
     };
