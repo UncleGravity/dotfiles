@@ -16,7 +16,6 @@
       self.nixosModules.inference
       inputs.dgx-spark.nixosModules.dgx-spark
       inputs.home-manager.nixosModules.home-manager
-      ../modules/nixos/profiles/spark
     ];
 
     clan.core.enableRecommendedDefaults = false;
@@ -55,8 +54,6 @@ in {
   flake.sparkNodes = sparkNodes;
 
   clan = {
-    # Keep explicit imports authoritative until root autoinclusion is enabled.
-    directory = "${inputs.self}/flake-modules";
     meta = {
       name = "angelnet";
       domain = "angel.pizza";
@@ -91,7 +88,6 @@ in {
             ../modules/darwin
             inputs.home-manager.darwinModules.home-manager
             inputs.nix-homebrew.darwinModules.nix-homebrew
-            ../machines/banana/configuration.nix
           ];
 
           clan.core = {
@@ -140,7 +136,6 @@ in {
             self.nixosModules.inference
             inputs.copyparty.nixosModules.default
             inputs.home-manager.nixosModules.home-manager
-            ../machines/kiwi/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
@@ -180,7 +175,6 @@ in {
             ../modules/nixos
             self.nixosModules.inference
             inputs.home-manager.nixosModules.home-manager
-            ../machines/portal/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
@@ -221,7 +215,6 @@ in {
             ../modules/nixos
             self.nixosModules.inference
             inputs.home-manager.nixosModules.home-manager
-            ../machines/sisyphus/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
