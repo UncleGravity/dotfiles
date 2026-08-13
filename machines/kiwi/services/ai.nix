@@ -19,7 +19,7 @@ in {
   # SECRETS
   sops = {
     secrets = {
-      "litellm/master-key".sopsFile = ../../../../secrets/secrets.yaml;
+      "litellm/master-key".sopsFile = ../../../secrets/secrets.yaml;
       "searx/secret-key".sopsFile = ../secrets/secrets.yaml;
     };
 

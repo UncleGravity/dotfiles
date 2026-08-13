@@ -52,7 +52,7 @@ just deploy portal
 Edit Portal-specific secrets with:
 
 ```sh
-sops edit machines/nixos/portal/secrets/secrets.yaml
+sops edit machines/portal/secrets/secrets.yaml
 ```
 
 ## Replace

@@ -11,7 +11,7 @@
   prometheusPort = 9090;
   nodeExporterPort = 9100;
   gpuExporterPort = 9835;
-  sparkNodes = import ../../../spark/nodes.nix;
+  sparkNodes = import ../../../../modules/nixos/profiles/spark/nodes.nix;
   mkSparkStaticConfigs = port:
     lib.mapAttrsToList (hostname: peer: {
       targets = ["${peer.managementAddress}:${toString port}"];

@@ -16,11 +16,11 @@ keys:
 
 creation_rules:
   # Secrets only needed by the Spark controller.
-  - path_regex: ^machines/nixos/spark/secrets/controller\.(yaml|json|env|ini|sops)$
+  - path_regex: ^secrets/spark/controller\.(yaml|json|env|ini|sops)$
     age: [*angel, *spark-01]
 
   # Secrets shared by every Spark node.
-  - path_regex: ^machines/nixos/spark/secrets/shared\.(yaml|json|env|ini|sops)$
+  - path_regex: ^secrets/spark/shared\.(yaml|json|env|ini|sops)$
     age: [*angel, *spark-01, *spark-02, *spark-03, *spark-04]
 
   # Pre-generated host identities are operator-only.
@@ -40,16 +40,16 @@ creation_rules:
     age: *all-recipients
 
   # Host-local secrets.
-  - path_regex: ^machines/darwin/banana/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: ^machines/banana/.*\.(yaml|json|env|ini|sops)$
     age: [*angel, *banana]
 
-  - path_regex: ^machines/nixos/kiwi/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: ^machines/kiwi/.*\.(yaml|json|env|ini|sops)$
     age: [*angel, *kiwi]
 
-  - path_regex: ^machines/nixos/sisyphus/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: ^machines/sisyphus/.*\.(yaml|json|env|ini|sops)$
     age: [*angel, *sisyphus]
 
-  - path_regex: ^machines/nixos/portal/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: ^machines/portal/.*\.(yaml|json|env|ini|sops)$
     age: [*angel, *portal]
 
   # Existing internal shared-secret bundle.

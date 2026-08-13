@@ -7,8 +7,8 @@ selects its participant nodes and assigns their roles. The configuration uses
 
 ## Inventory
 
-`nodes.nix` is the single source of truth for flake configuration generation,
-installation, and per-node networking.
+`modules/nixos/profiles/spark/nodes.nix` is the single source of truth for
+flake configuration generation, installation, and per-node networking.
 
 | Node | Management | Fabric rail 0 | Fabric rail 1 | Role |
 | --- | --- | --- | --- | --- |
@@ -20,20 +20,22 @@ installation, and per-node networking.
 The management NIC (`enP7s7`, Realtek RTL8127) uses DHCP reservations. Normal
 access uses `<node>.local` through Avahi. Both ConnectX-7 rails are untagged
 switch access ports on VLAN 100 with MTU 9000 and no default route. The switch
-configuration is under `networking/mikrotik-crs804/`.
+configuration is under `infra/mikrotik-crs804/`.
 
 ## Layout
 
-- `hardware/` storage, kernel, and device policy shared by every node.
-- `inference/` model acquisition and serving workloads.
-- `networking/` node networking and the CRS804 switch config.
-- `scripts/` cluster tooling.
-- `secrets/` SOPS secrets.
-- `docs/`
+- `machines/spark-0N/configuration.nix` identifies each managed machine and
+  imports the shared profile.
+- `modules/nixos/profiles/spark/` contains hardware, networking, monitoring,
+  inference, and user policy shared by every node.
+- `modules/home/profiles/spark.nix` contains the shared Home Manager profile.
+- `secrets/spark/` contains controller-only and cluster-wide SOPS secrets.
+- `scripts/install-spark-node.sh` installs a node from the NixOS USB image.
+- `infra/mikrotik-crs804/` contains the external switch config and runbook.
 
-The flake maps every entry in `nodes.nix` through the shared
-`configuration.nix`. Per-node behavior is selected through the `node` module
-argument rather than separate host directories.
+Clan registers each Spark as an individual machine. The shared profile remains
+single-source; per-node values are selected from `nodes.nix` through the
+transitional `node` module argument.
 
 ## Deploy
 
@@ -55,19 +57,20 @@ nixos-rebuild test \
   --use-remote-sudo
 ```
 
-Rollback is a reboot into the previous systemd-boot generation.
+Rollback with `sudo nixos-rebuild switch --rollback` and verify the services
+before rebooting.
 
 ## Documentation
 
-- [Install a node](docs/install-node.md)
-- [Inference architecture](../../../packages/inference/docs/architecture.md)
-- [Inference implementation](../../../packages/inference/docs/implementation.md)
-- [Stage models across the fabric](docs/stage-models.md)
-- [Serve models](docs/serve-models.md)
+- [Install a node](install-node.md)
+- [Inference architecture](../../packages/inference/docs/architecture.md)
+- [Inference implementation](../../packages/inference/docs/implementation.md)
+- [Stage models across the fabric](stage-models.md)
+- [Serve models](serve-models.md)
 
 ## Secrets
 
-- `spark-01` receives controller-only secrets from `secrets/controller.yaml`.
-- Every Spark receives shared secrets from `secrets/shared.yaml`.
+- `spark-01` receives controller-only secrets from `secrets/spark/controller.yaml`.
+- Every Spark receives shared secrets from `secrets/spark/shared.yaml`.
 - Each permanent host identity must be registered before installation.
 - Spark nodes must not be added to the repository-wide secret recipient rule.

@@ -47,7 +47,7 @@ packages/inference/
 |-- tests/
 `-- docs/
 
-machines/nixos/sisyphus/inference/
+machines/sisyphus/inference/
 |-- default.nix
 `-- recipes/<recipe>/
     |-- default.nix

@@ -4,7 +4,7 @@
   self,
   ...
 }: let
-  sparkNodes = import ../machines/nixos/spark/nodes.nix;
+  sparkNodes = import ../modules/nixos/profiles/spark/nodes.nix;
 
   mkSparkMachine = hostname: node: {
     _module.args = {
@@ -16,7 +16,7 @@
       self.nixosModules.inference
       inputs.dgx-spark.nixosModules.dgx-spark
       inputs.home-manager.nixosModules.home-manager
-      ../machines/nixos/spark/configuration.nix
+      ../modules/nixos/profiles/spark
     ];
 
     clan.core.enableRecommendedDefaults = false;
@@ -44,7 +44,7 @@
       useGlobalPkgs = true;
       useUserPackages = true;
       users.angel = {
-        imports = [../machines/nixos/spark/home.nix];
+        imports = [../modules/home/profiles/spark.nix];
         home.stateVersion = "26.05";
       };
     };
@@ -55,7 +55,7 @@ in {
   flake.sparkNodes = sparkNodes;
 
   clan = {
-    # Avoid autoincluding the current machines/{nixos,darwin} grouping directories.
+    # Keep explicit imports authoritative until root autoinclusion is enabled.
     directory = "${inputs.self}/flake-modules";
     meta = {
       name = "angelnet";
@@ -91,7 +91,7 @@ in {
             ../modules/darwin
             inputs.home-manager.darwinModules.home-manager
             inputs.nix-homebrew.darwinModules.nix-homebrew
-            ../machines/darwin/banana/configuration.nix
+            ../machines/banana/configuration.nix
           ];
 
           clan.core = {
@@ -126,7 +126,7 @@ in {
             useGlobalPkgs = true;
             useUserPackages = true;
             users.angel = {
-              imports = [../machines/darwin/banana/home.nix];
+              imports = [../machines/banana/home.nix];
               home.stateVersion = "25.05";
             };
           };
@@ -140,7 +140,7 @@ in {
             self.nixosModules.inference
             inputs.copyparty.nixosModules.default
             inputs.home-manager.nixosModules.home-manager
-            ../machines/nixos/kiwi/configuration.nix
+            ../machines/kiwi/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
@@ -167,7 +167,7 @@ in {
             useGlobalPkgs = true;
             useUserPackages = true;
             users.angel = {
-              imports = [../machines/nixos/kiwi/home.nix];
+              imports = [../machines/kiwi/home.nix];
               home.stateVersion = "25.05";
             };
           };
@@ -180,7 +180,7 @@ in {
             ../modules/nixos
             self.nixosModules.inference
             inputs.home-manager.nixosModules.home-manager
-            ../machines/nixos/portal/configuration.nix
+            ../machines/portal/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
@@ -208,7 +208,7 @@ in {
             useGlobalPkgs = true;
             useUserPackages = true;
             users.angel = {
-              imports = [../machines/nixos/portal/home.nix];
+              imports = [../machines/portal/home.nix];
               home.stateVersion = "26.05";
             };
           };
@@ -221,7 +221,7 @@ in {
             ../modules/nixos
             self.nixosModules.inference
             inputs.home-manager.nixosModules.home-manager
-            ../machines/nixos/sisyphus/configuration.nix
+            ../machines/sisyphus/configuration.nix
           ];
 
           clan.core.enableRecommendedDefaults = false;
@@ -249,7 +249,7 @@ in {
             useGlobalPkgs = true;
             useUserPackages = true;
             users.angel = {
-              imports = [../machines/nixos/sisyphus/home.nix];
+              imports = [../machines/sisyphus/home.nix];
               home.stateVersion = "26.05";
             };
           };

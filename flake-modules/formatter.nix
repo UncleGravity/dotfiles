@@ -10,7 +10,14 @@
         taplo.enable = true;
         yamlfmt = {
           enable = true;
-          excludes = ["**/secrets.yaml" ".sops.yaml" "**/.sops.yaml" "**/secrets/*.yaml"];
+          excludes = [
+            "**/secrets.yaml"
+            ".sops.yaml"
+            "**/.sops.yaml"
+            "**/secrets/*.yaml"
+            "secrets/*.yaml"
+            "secrets/**/*.yaml"
+          ];
         };
         prettier = {
           enable = true;

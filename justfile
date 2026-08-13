@@ -126,7 +126,7 @@ disko hostname:
         exit 1
     fi
 
-    DISKO_CONFIG="./machines/nixos/{{ hostname }}/hardware/disko.nix"
+    DISKO_CONFIG="./machines/{{ hostname }}/hardware/disko.nix"
 
     if [ ! -f "$DISKO_CONFIG" ]; then
         echo "❌ Disko configuration file not found: $DISKO_CONFIG"
@@ -180,7 +180,7 @@ provision host target:
 # Partition the NVMe, install NixOS with its escrowed identity, and reboot.
 # The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
-    nix develop --builders "" -c ./machines/nixos/spark/scripts/install-node.sh "{{ node }}"
+    nix develop --builders "" -c ./scripts/install-spark-node.sh "{{ node }}"
 
 # Deploy all four Sparks concurrently.
 spark-deploy-all:

@@ -9,7 +9,7 @@
   home = config.users.users.${username}.home;
 in {
   # Downloads happen on the controller; workers receive replicas over the
-  # fabric as described in ../docs/stage-models.md.
+  # fabric as described in docs/spark/stage-models.md.
 
   environment.systemPackages = [
     # `hf` CLI plus python3 with huggingface_hub for scripting.
@@ -28,11 +28,11 @@ in {
 
   # The hf CLI and huggingface_hub read ~/.cache/huggingface/token natively.
   # `hf auth login` cannot overwrite it; rotate with:
-  #   sops machines/nixos/spark/secrets/controller.yaml
+  #   sops secrets/spark/controller.yaml
   # Workers are not recipients of controller.yaml.
   sops.secrets = lib.mkIf node.controller {
     "hf/token" = {
-      sopsFile = ../secrets/controller.yaml;
+      sopsFile = ../../../../../secrets/spark/controller.yaml;
       owner = username;
       mode = "0400";
       path = "${home}/.cache/huggingface/token";

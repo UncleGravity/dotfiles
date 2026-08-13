@@ -1,7 +1,7 @@
 let
   readHostKey = name:
     builtins.replaceStrings ["\n" "\r"] ["" ""] (
-      builtins.readFile ../../../secrets/host-keys/${name}.pub
+      builtins.readFile ../../../../secrets/host-keys/${name}.pub
     );
 in {
   spark-01 = {

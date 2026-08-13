@@ -6,7 +6,7 @@ umask 077
 usage() {
   echo "Usage: $0 <spark-01|spark-02|spark-03|spark-04>" >&2
   echo "Run against a node booted into the NixOS USB installer." >&2
-	echo "See machines/nixos/spark/docs/install-node.md." >&2
+  echo "See docs/spark/install-node.md." >&2
   exit 2
 }
 

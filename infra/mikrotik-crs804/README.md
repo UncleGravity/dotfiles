@@ -12,6 +12,6 @@ ssh admin@crs804.localdomain '/system health settings print'
 ## Apply configuration
 
 ```bash
-scp configuration.rsc admin@crs804.localdomain:configuration.rsc
+scp infra/mikrotik-crs804/configuration.rsc admin@crs804.localdomain:configuration.rsc
 ssh admin@crs804.localdomain '/import file-name=configuration.rsc verbose=yes'
 ```

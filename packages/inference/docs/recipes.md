@@ -27,12 +27,12 @@ does not recreate vLLM or llama.cpp configuration as a large option hierarchy.
 Recipes belong to the deployment that currently owns them:
 
 ```text
-machines/nixos/spark/inference/recipes/
+modules/nixos/profiles/spark/inference/recipes/
 `-- laguna-vllm/
     |-- default.nix
     `-- Containerfile
 
-machines/nixos/sisyphus/inference/recipes/
+machines/sisyphus/inference/recipes/
 `-- qwen3-6-heretic-27b/
     |-- default.nix
     `-- Containerfile
@@ -65,7 +65,7 @@ llama.cpp recipe declares its model, secret, image context, and server command
 together:
 
 ```nix
-# machines/nixos/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix
+# machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix
 let
   modelFile = "Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf";
   modelPath = "/models/primary/${modelFile}";

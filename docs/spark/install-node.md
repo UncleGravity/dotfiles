@@ -30,7 +30,7 @@ system.
 
 2. Disable Secure Boot in the BIOS.
 3. Record the `enP7s7` MAC address, add its DHCP reservation, add the node to
-   `machines/nixos/spark/nodes.nix`, and enable its fabric switch port.
+   `modules/nixos/profiles/spark/nodes.nix`, and enable its fabric switch port.
 4. Create the permanent host identity:
 
    ```bash

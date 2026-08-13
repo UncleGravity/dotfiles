@@ -5,7 +5,7 @@
 }: {
   # Console login only (SSH is key-only, sudo is passwordless).
   sops.secrets."users/password-hash" = {
-    sopsFile = ./secrets/shared.yaml;
+    sopsFile = ../../../../secrets/spark/shared.yaml;
     neededForUsers = true;
   };
 
