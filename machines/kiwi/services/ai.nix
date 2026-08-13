@@ -17,6 +17,34 @@
   });
 in {
   # SECRETS
+  clan.core.vars.generators.searx = {
+    prompts.secret-key = {
+      description = "SearxNG secret key";
+      type = "hidden";
+      persist = true;
+    };
+    files = {
+      "secret-key".deploy = false;
+      environment.mode = "0400";
+    };
+    runtimeInputs = [pkgs.coreutils];
+    script = ''
+      if [[ ! -s "$out/secret-key" ]]; then
+        echo "SearxNG secret key must not be empty" >&2
+        exit 1
+      fi
+      originalSize="$(wc -c < "$out/secret-key")"
+      singleLineSize="$(tr -d '\n' < "$out/secret-key" | wc -c)"
+      if [[ "$originalSize" -ne "$singleLineSize" ]]; then
+        echo "SearxNG secret key must be a single line" >&2
+        exit 1
+      fi
+
+      secretKey="$(cat "$out/secret-key")"
+      printf 'SEARXNG_SECRET_KEY=%s\n' "$secretKey" > "$out/environment"
+    '';
+  };
+
   sops = {
     secrets = {
       "litellm/master-key".sopsFile = ../../../secrets/secrets.yaml;
