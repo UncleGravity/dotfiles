@@ -14,6 +14,10 @@ Thumbs.db
 *.pem
 secrets.sh
 
+# Clan stores encrypted machine Age identities in directories ending in .key.
+!sops/secrets/*-age.key/
+!sops/secrets/*-age.key/**
+
 # Temporary files
 *.log
 *.tmp

@@ -79,6 +79,10 @@ in {
       })
       sparkNodes;
 
+    inventory.instances.sshd = {
+      roles.server.machines.portal.settings.certificate.enable = false;
+    };
+
     machines =
       {
         banana = {
@@ -177,7 +181,10 @@ in {
             inputs.home-manager.nixosModules.home-manager
           ];
 
-          clan.core.enableRecommendedDefaults = false;
+          clan.core = {
+            enableRecommendedDefaults = false;
+            sops.defaultGroups = ["admins"];
+          };
 
           # Preserve the pre-Clan values against unconditional Clan ZFS defaults.
           networking.hostId = null;
