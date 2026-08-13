@@ -2,14 +2,21 @@
 
 NOTE: Incomplete readme. Flake output composition lives in `flake-modules/`.
 
-## Nixos Rebuild
+## NixOS
 
-### First time:
-just disko <hostname>
-sudo nixos-install --flake .#<hostname>
+Reinstall through the repository entrypoints so both transitional machine
+identities are present before first boot. See [docs/reinstall.md](docs/reinstall.md).
 
-### To rebuild:
-sudo nixos-rebuild switch --flake ".#<hostname>" -v
+```sh
+just provision portal root@<installer-ip>
+just spark-install spark-04
+```
+
+### To rebuild
+
+```sh
+just deploy <hostname>
+```
 
 ### Send rebuild command to remote host:
 nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \

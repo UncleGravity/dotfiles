@@ -31,9 +31,10 @@ PORTAL_IPV4=$(just infra "output -raw portal_ipv4") # retrieve server IP
 just provision portal "root@$PORTAL_IPV4" # install NixOS
 ```
 
-Provisioning erases the target disk. It injects the stored key from
-`secrets/host-keys/`, preserving the host's SSH and SOPS identity across
-reinstalls.
+Provisioning erases the target disk. It injects the Clan machine Age identity
+and the retained SSH/SOPS identity described in
+[`docs/reinstall.md`](../../docs/reinstall.md). The SSH fingerprint therefore
+survives replacement.
 
 ## Bootstrap
 

@@ -172,12 +172,12 @@ sops-update-keys:
 host-key *args:
     ./scripts/host-key.sh "$@"
 
-# Wipe a machine and install NixOS on it, injecting its stored host key.
+# Wipe a machine and install NixOS with both transitional machine identities.
 # Usage: just provision portal root@<ip>   (IP: just infra "output portal_ipv4")
 provision host target:
-    ./scripts/provision.sh "{{ host }}" "{{ target }}"
+    nix develop --builders "" -c ./scripts/provision.sh "{{ host }}" "{{ target }}"
 
-# Partition the NVMe, install NixOS with its escrowed identity, and reboot.
+# Partition the NVMe, install NixOS with both transitional identities, and reboot.
 # The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
     nix develop --builders "" -c ./scripts/install-spark-node.sh "{{ node }}"

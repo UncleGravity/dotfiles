@@ -4,17 +4,19 @@ Installation starts from the stock NixOS minimal aarch64 USB image. Kexec does
 not work on this hardware: `kexec -e` resets the SoC into firmware and boots the
 existing operating system.
 
-The installer partitions the NVMe, installs NixOS, injects the escrowed SSH
-host identity, and reboots the node.
+The installer partitions the NVMe, installs NixOS, injects both transitional
+machine identities, and reboots the node.
 
 ## SSH identity domains
 
 1. Operator keys determine who can log in. They are declared in
    `modules/common/ssh-keys.nix` and authorized on every host.
-2. Host keys identify the machine. They are generated before installation and
-   stored in `secrets/host-keys/`, with private keys encrypted to the operator.
-3. The SOPS age identity determines which secrets the machine can decrypt. It
-   is derived from the escrowed public host key and registered in `.sops.yaml`.
+2. Clan's machine Age identity is staged at `/var/lib/sops-nix/key.txt`. It
+   decrypts Clan vars, including the runtime SSH host key.
+3. The retained SSH key at `/etc/ssh/ssh_host_ed25519_key` decrypts legacy
+   sops-nix files. Spark-01 also uses it as the inference controller identity.
+4. Both SSH key copies contain the same escrowed identity and therefore serve
+   the same tracked fingerprint during the transition.
 
 Factory and USB installer host keys must never be promoted into the installed
 system.
@@ -45,8 +47,9 @@ system.
    just host-key check spark-0[N]
    ```
 
-6. Commit and back up the host-key bundle, SOPS anchor, and rekeyed secret
-   files before erasing the factory OS.
+6. Enroll the node in Clan's `sshd` service, import the same private and public
+   keys into its `openssh` vars, and commit the host-key bundle, Clan vars,
+   recipients, SOPS anchor, and rekeyed files before erasing the factory OS.
 7. Boot the NixOS USB image. Set a temporary root password and verify that the
    management NIC received its reserved address:
 
@@ -68,9 +71,10 @@ system.
    just spark-install spark-0[N]
    ```
 
-   Disko creates a 1 GiB ESP and an ext4 root filesystem. The first node may
-   spend 30-60 minutes building the NVIDIA kernel. Remove the USB stick during
-   the reboot.
+   The installer verifies and stages both identities before `nixos-anywhere`
+   starts. Disko creates a 1 GiB ESP and an ext4 root filesystem. The first
+   node may spend 30-60 minutes building the NVIDIA kernel. Remove the USB
+   stick during the reboot.
 
 10. Verify the installed identity before accepting it into `known_hosts`.
     These commands must report the same fingerprint:

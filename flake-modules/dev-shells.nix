@@ -8,6 +8,7 @@
       default = pkgs.mkShell {
         name = "dotfiles";
         packages = with pkgs; [
+          age
           nh
           nix-output-monitor
           nixos-anywhere
@@ -17,7 +18,14 @@
           statix
           omnix
           cachix
+          coreutils
+          diffutils
+          jq
+          nushell
+          openssh
           shellcheck
+          sops
+          ssh-to-age
           config.packages.clan
         ];
       };

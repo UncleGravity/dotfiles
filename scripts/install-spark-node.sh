@@ -21,16 +21,16 @@ ip=$(nix eval --raw "$repo_root#sparkNodes.$node.managementAddress" 2>/dev/null)
   exit 1
 }
 
-extra_files=$(mktemp -d)
-trap 'rm -rf -- "$extra_files"' EXIT
-"$repo_root/scripts/host-key.sh" stage "$node" "$extra_files"
-
 echo "This will ERASE the NVMe on $node ($ip) and install NixOS."
 read -r -p "Type $node to continue: " confirmation
 if [[ $confirmation != "$node" ]]; then
   echo "Confirmation did not match; aborting." >&2
   exit 1
 fi
+
+extra_files=$(mktemp -d)
+trap 'rm -rf -- "$extra_files"' EXIT
+"$repo_root/scripts/stage-install-secrets.sh" "$node" "$extra_files"
 
 nixos-anywhere --flake "$repo_root#$node" --target-host "root@$ip" \
   --extra-files "$extra_files" \
