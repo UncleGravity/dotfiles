@@ -6,14 +6,6 @@
   # These constructors preserve the existing outputs until Clan owns the machines.
   inherit (inputs.nixpkgs) lib;
 
-  sparkNodes = import ../machines/nixos/spark/nodes.nix;
-
-  systems = {
-    aarch64-linux = "aarch64-linux";
-    x86_64-linux = "x86_64-linux";
-    aarch64-darwin = "aarch64-darwin";
-  };
-
   mkHomeManagerConfig = {
     platform,
     username,
@@ -34,53 +26,6 @@
       };
     };
   };
-
-  mkNixos = {
-    system,
-    username,
-    hostname,
-    systemStateVersion,
-    homeStateVersion,
-    configDir ? ../machines/nixos/${hostname},
-    machineModule ? configDir + "/configuration.nix",
-    homeModule ? configDir + "/home.nix",
-    extraModules ? [],
-    extraSpecialArgs ? {},
-    withHomeManager ? true,
-  }:
-    lib.nixosSystem {
-      specialArgs =
-        {
-          inherit inputs username hostname homeStateVersion;
-        }
-        // extraSpecialArgs;
-      modules =
-        [
-          inputs.disko.nixosModules.disko
-          inputs.sops-nix.nixosModules.sops
-          ../modules/nixos
-          self.nixosModules.inference
-        ]
-        ++ extraModules
-        ++ [machineModule]
-        ++ lib.optional withHomeManager inputs.home-manager.nixosModules.home-manager
-        ++ lib.optional withHomeManager (mkHomeManagerConfig {
-          platform = "nixos";
-          inherit username hostname homeStateVersion homeModule;
-        })
-        ++ [
-          {
-            nixpkgs = {
-              hostPlatform = system;
-              config.allowUnfree = true;
-            };
-            system = {
-              stateVersion = systemStateVersion;
-              configurationRevision = self.rev or self.dirtyRev or self.narHash;
-            };
-          }
-        ];
-    };
 
   mkDarwin = {
     system,
@@ -127,30 +72,12 @@
 in {
   flake = {
     darwinConfigurations.banana = mkDarwin {
-      system = systems.aarch64-darwin;
+      system = "aarch64-darwin";
       username = "angel";
       hostname = "banana";
       systemStateVersion = 6;
       homeStateVersion = "25.05";
     };
-
-    nixosConfigurations =
-      lib.mapAttrs (
-        hostname: node:
-          mkNixos {
-            system = systems.aarch64-linux;
-            username = "angel";
-            inherit hostname;
-            systemStateVersion = "26.05";
-            homeStateVersion = "26.05";
-            configDir = ../machines/nixos/spark;
-            extraModules = [inputs.dgx-spark.nixosModules.dgx-spark];
-            extraSpecialArgs = {inherit node sparkNodes;};
-          }
-      )
-      sparkNodes;
-
-    inherit sparkNodes;
 
     lib.inference = import ../packages/inference/nix/lib {inherit lib;};
     nixosModules.inference = import ../packages/inference/nix/modules;
