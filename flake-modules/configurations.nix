@@ -135,16 +135,7 @@ in {
     };
 
     nixosConfigurations =
-      {
-        sisyphus = mkNixos {
-          system = systems.x86_64-linux;
-          username = "angel";
-          hostname = "sisyphus";
-          systemStateVersion = "26.05";
-          homeStateVersion = "26.05";
-        };
-      }
-      // lib.mapAttrs (
+      lib.mapAttrs (
         hostname: node:
           mkNixos {
             system = systems.aarch64-linux;

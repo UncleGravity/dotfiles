@@ -18,87 +18,133 @@
       username = "angel";
     };
 
-    inventory.machines.portal.deploy.targetHost = "angel@portal";
-    inventory.machines.kiwi.deploy.targetHost = "angel@kiwi";
-
-    machines.kiwi = {
-      _module.args.hostname = "kiwi";
-
-      imports = [
-        ../modules/nixos
-        self.nixosModules.inference
-        inputs.copyparty.nixosModules.default
-        inputs.home-manager.nixosModules.home-manager
-        ../machines/nixos/kiwi/configuration.nix
-      ];
-
-      clan.core.enableRecommendedDefaults = false;
-
-      # Preserve the NixOS ZFS default overridden by Clan's core module.
-      services.zfs.autoSnapshot.monthly = 12;
-
-      nixpkgs = {
-        hostPlatform = "x86_64-linux";
-        config.allowUnfree = true;
-      };
-
-      system = {
-        stateVersion = "24.11";
-        configurationRevision = self.rev or self.dirtyRev or self.narHash;
-      };
-
-      home-manager = {
-        extraSpecialArgs = {
-          inherit inputs;
-          username = "angel";
-        };
-        sharedModules = [../modules/home];
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        users.angel = {
-          imports = [../machines/nixos/kiwi/home.nix];
-          home.stateVersion = "25.05";
-        };
-      };
+    inventory.machines = {
+      kiwi.deploy.targetHost = "angel@kiwi";
+      portal.deploy.targetHost = "angel@portal";
+      sisyphus.deploy.targetHost = "angel@sisyphus";
     };
 
-    machines.portal = {
-      _module.args.hostname = "portal";
+    machines = {
+      kiwi = {
+        _module.args.hostname = "kiwi";
 
-      imports = [
-        ../modules/nixos
-        self.nixosModules.inference
-        inputs.home-manager.nixosModules.home-manager
-        ../machines/nixos/portal/configuration.nix
-      ];
+        imports = [
+          ../modules/nixos
+          self.nixosModules.inference
+          inputs.copyparty.nixosModules.default
+          inputs.home-manager.nixosModules.home-manager
+          ../machines/nixos/kiwi/configuration.nix
+        ];
 
-      clan.core.enableRecommendedDefaults = false;
+        clan.core.enableRecommendedDefaults = false;
 
-      # Preserve the pre-Clan values against unconditional Clan ZFS defaults.
-      networking.hostId = null;
-      boot.zfs.forceImportRoot = true;
+        # Preserve the NixOS ZFS default overridden by Clan's core module.
+        services.zfs.autoSnapshot.monthly = 12;
 
-      nixpkgs = {
-        hostPlatform = "x86_64-linux";
-        config.allowUnfree = true;
-      };
-
-      system = {
-        stateVersion = "26.05";
-        configurationRevision = self.rev or self.dirtyRev or self.narHash;
-      };
-
-      home-manager = {
-        extraSpecialArgs = {
-          inherit inputs;
-          username = "angel";
+        nixpkgs = {
+          hostPlatform = "x86_64-linux";
+          config.allowUnfree = true;
         };
-        sharedModules = [../modules/home];
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        users.angel = {
-          imports = [../machines/nixos/portal/home.nix];
-          home.stateVersion = "26.05";
+
+        system = {
+          stateVersion = "24.11";
+          configurationRevision = self.rev or self.dirtyRev or self.narHash;
+        };
+
+        home-manager = {
+          extraSpecialArgs = {
+            inherit inputs;
+            username = "angel";
+          };
+          sharedModules = [../modules/home];
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          users.angel = {
+            imports = [../machines/nixos/kiwi/home.nix];
+            home.stateVersion = "25.05";
+          };
+        };
+      };
+
+      portal = {
+        _module.args.hostname = "portal";
+
+        imports = [
+          ../modules/nixos
+          self.nixosModules.inference
+          inputs.home-manager.nixosModules.home-manager
+          ../machines/nixos/portal/configuration.nix
+        ];
+
+        clan.core.enableRecommendedDefaults = false;
+
+        # Preserve the pre-Clan values against unconditional Clan ZFS defaults.
+        networking.hostId = null;
+        boot.zfs.forceImportRoot = true;
+
+        nixpkgs = {
+          hostPlatform = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+
+        system = {
+          stateVersion = "26.05";
+          configurationRevision = self.rev or self.dirtyRev or self.narHash;
+        };
+
+        home-manager = {
+          extraSpecialArgs = {
+            inherit inputs;
+            username = "angel";
+          };
+          sharedModules = [../modules/home];
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          users.angel = {
+            imports = [../machines/nixos/portal/home.nix];
+            home.stateVersion = "26.05";
+          };
+        };
+      };
+
+      sisyphus = {
+        _module.args.hostname = "sisyphus";
+
+        imports = [
+          ../modules/nixos
+          self.nixosModules.inference
+          inputs.home-manager.nixosModules.home-manager
+          ../machines/nixos/sisyphus/configuration.nix
+        ];
+
+        clan.core.enableRecommendedDefaults = false;
+
+        # Preserve the pre-Clan values against unconditional Clan ZFS defaults.
+        networking.hostId = null;
+        boot.zfs.forceImportRoot = true;
+
+        nixpkgs = {
+          hostPlatform = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+
+        system = {
+          stateVersion = "26.05";
+          configurationRevision = self.rev or self.dirtyRev or self.narHash;
+        };
+
+        home-manager = {
+          extraSpecialArgs = {
+            inherit inputs;
+            username = "angel";
+          };
+          sharedModules = [../modules/home];
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          users.angel = {
+            imports = [../machines/nixos/sisyphus/home.nix];
+            home.stateVersion = "26.05";
+          };
         };
       };
     };
