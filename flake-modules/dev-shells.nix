@@ -1,6 +1,6 @@
 {
   perSystem = {
-    inputs',
+    config,
     pkgs,
     ...
   }: {
@@ -18,7 +18,7 @@
           omnix
           cachix
           shellcheck
-          inputs'.clan-core.packages.clan-cli
+          config.packages.clan
         ];
       };
 

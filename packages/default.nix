@@ -1,4 +1,5 @@
 {
+  clanCli,
   pkgs,
   self,
 }: let
@@ -9,6 +10,8 @@
 
   common = {
     bootstrap = pkgs.callPackage ./bootstrap.nix {};
+    clan = pkgs.callPackage ./clan.nix {inherit clanCli;};
+    clan-unwrapped = clanCli;
     optnix-fzf = pkgs.callPackage ./optnix-fzf.nix {inherit optnix;};
     nix-search-fzf = pkgs.callPackage ./nix-search-fzf.nix {};
     push = pkgs.callPackage ./push.nix {};

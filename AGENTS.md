@@ -13,6 +13,11 @@
 **nh search** / **gh search** - Search nixpkgs and nixos options
 - `nh search <package> --limit <number>` - Search nixpkgs for packages (e.g., `nh search cargo --limit 5`)
 
+**Clan**
+- The repository's `clan` package runs the pinned Clan CLI through 1Password.
+- It injects the operator Age identity only into the Clan process and does not persist it.
+- Use `nix run .#clan-unwrapped -- ...` only for troubleshooting without 1Password.
+
 **searching**
 - Use `fd` isntead of `find` when possible.
 - Use `rg` and `ast-grep` instead of `grep` when possible.
