@@ -86,6 +86,7 @@ in {
 
     inventory.instances = {
       sshd.roles.server.machines = {
+        kiwi.settings.certificate.enable = false;
         portal.settings.certificate.enable = false;
         sisyphus.settings.certificate.enable = false;
         spark-01.settings.certificate.enable = false;
