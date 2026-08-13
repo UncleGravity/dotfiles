@@ -69,6 +69,10 @@ in {
 
     inventory.machines =
       {
+        banana = {
+          machineClass = "darwin";
+          deploy.targetHost = "angel@banana";
+        };
         kiwi.deploy.targetHost = "angel@kiwi";
         portal.deploy.targetHost = "angel@portal";
         sisyphus.deploy.targetHost = "angel@sisyphus";
@@ -80,6 +84,54 @@ in {
 
     machines =
       {
+        banana = {
+          _module.args.hostname = "banana";
+
+          imports = [
+            ../modules/darwin
+            inputs.home-manager.darwinModules.home-manager
+            inputs.nix-homebrew.darwinModules.nix-homebrew
+            ../machines/darwin/banana/configuration.nix
+          ];
+
+          clan.core = {
+            enableRecommendedDefaults = false;
+            deployment.requireExplicitUpdate = true;
+          };
+
+          nixpkgs = {
+            hostPlatform = "aarch64-darwin";
+            config.allowUnfree = true;
+          };
+
+          system.stateVersion = 6;
+
+          nix-homebrew = {
+            enable = true;
+            user = "angel";
+            autoMigrate = true;
+            mutableTaps = false;
+            taps = {
+              "homebrew/homebrew-core" = inputs.homebrew-core;
+              "homebrew/homebrew-cask" = inputs.homebrew-cask;
+            };
+          };
+
+          home-manager = {
+            extraSpecialArgs = {
+              inherit inputs;
+              username = "angel";
+            };
+            sharedModules = [../modules/home];
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.angel = {
+              imports = [../machines/darwin/banana/home.nix];
+              home.stateVersion = "25.05";
+            };
+          };
+        };
+
         kiwi = {
           _module.args.hostname = "kiwi";
 
