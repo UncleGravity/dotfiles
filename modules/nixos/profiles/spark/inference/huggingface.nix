@@ -1,18 +1,18 @@
 {
   config,
   lib,
-  node,
   pkgs,
   username,
   ...
 }: let
+  cluster = config.my.sparkCluster;
   home = config.users.users.${username}.home;
   hubEnvironment = {
     HF_HUB_ENABLE_HF_TRANSFER = "1";
     HF_HUB_DISABLE_TELEMETRY = "1";
     HF_HUB_DISABLE_XET = "1";
   };
-  tokenPath = config.clan.core.vars.generators.spark-huggingface-spark.files.token.path;
+  tokenPath = config.clan.core.vars.generators.${cluster.huggingfaceGenerator}.files.token.path;
 in {
   # Downloads happen on the controller; workers receive replicas over the
   # fabric as described in docs/spark/stage-models.md.
@@ -28,15 +28,15 @@ in {
 
   environment.variables =
     hubEnvironment
-    // lib.optionalAttrs node.controller {
+    // lib.optionalAttrs cluster.isController {
       HF_TOKEN_PATH = tokenPath;
     };
 
   my.inference.serviceEnvironment =
     hubEnvironment
-    // lib.optionalAttrs node.controller {
+    // lib.optionalAttrs cluster.isController {
       HF_TOKEN_PATH = tokenPath;
     };
 
-  systemd.tmpfiles.rules = lib.optional node.controller "r ${home}/.cache/huggingface/token - - - - -";
+  systemd.tmpfiles.rules = lib.optional cluster.isController "r ${home}/.cache/huggingface/token - - - - -";
 }

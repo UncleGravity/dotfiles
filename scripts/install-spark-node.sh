@@ -16,7 +16,8 @@ repo_root=$(git rev-parse --show-toplevel)
 cache_url=https://unclegravity-nix.cachix.org
 cache_key=unclegravity-nix.cachix.org-1:fnXTPHMhvKwMrqyU/z00iyf8SkUuK0YP2PpCYb1t3nI=
 
-ip=$(nix eval --raw "$repo_root#sparkNodes.$node.managementAddress" 2>/dev/null) || {
+ip=$(nix eval --builders "" --raw \
+  "$repo_root#lib.sparkCluster.nodes.$node.managementAddress" 2>/dev/null) || {
   echo "Unknown Spark node: $node" >&2
   exit 1
 }

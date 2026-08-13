@@ -1,7 +1,7 @@
-{node, ...}: let
-  kiwiAddress = "192.168.1.200";
-  nodeExporterPort = 9100;
-  gpuExporterPort = 9835;
+{config, ...}: let
+  cluster = config.my.sparkCluster;
+  node = cluster.localNode;
+  inherit (cluster.monitor) gpuExporterPort nodeExporterPort sourceAddress;
 in {
   services.prometheus.exporters = {
     node = {
@@ -32,7 +32,7 @@ in {
   };
 
   networking.firewall.extraCommands = ''
-    iptables -A nixos-fw -i mgmt0 -s ${kiwiAddress}/32 -p tcp -m multiport --dports ${toString nodeExporterPort},${toString gpuExporterPort} -j nixos-fw-accept
+    iptables -A nixos-fw -i mgmt0 -s ${sourceAddress}/32 -p tcp -m multiport --dports ${toString nodeExporterPort},${toString gpuExporterPort} -j nixos-fw-accept
   '';
 
   systemd.services = {

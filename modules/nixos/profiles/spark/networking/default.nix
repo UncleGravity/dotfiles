@@ -1,24 +1,14 @@
 {
+  config,
   lib,
-  node,
-  sparkNodes,
   ...
 }: let
+  cluster = config.my.sparkCluster;
+  node = cluster.localNode;
   managementInterface = "mgmt0";
   fabric0Interface = "fabric0";
   fabric1Interface = "fabric1";
   nodeId = toString node.id;
-
-  fabricHosts =
-    lib.foldlAttrs (
-      hosts: hostname: peer:
-        hosts
-        // {
-          "10.100.0.${toString peer.id}" = ["${hostname}-f0"];
-          "10.100.1.${toString peer.id}" = ["${hostname}-f1"];
-        }
-    ) {}
-    sparkNodes;
 in {
   boot.kernel.sysctl = {
     "net.ipv4.conf.all.arp_announce" = 2;
@@ -28,7 +18,7 @@ in {
   networking = {
     useDHCP = false;
     useNetworkd = true;
-    hosts = fabricHosts;
+    hosts = cluster.fabricHosts;
 
     firewall = {
       enable = true;

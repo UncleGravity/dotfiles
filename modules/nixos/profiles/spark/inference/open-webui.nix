@@ -1,8 +1,10 @@
 {
-  node,
+  config,
   pkgs,
   ...
 }: let
+  cluster = config.my.sparkCluster;
+  node = cluster.localNode;
   openWebuiPython = pkgs.python3Packages.overrideScope (
     _final: prev: {
       onnxruntime = prev.onnxruntime.override {
@@ -22,7 +24,7 @@
   );
 in {
   services.open-webui = {
-    enable = node.controller;
+    enable = cluster.isController;
     package = pkgs.open-webui.override {python3Packages = openWebuiPython;};
     host = "127.0.0.1";
     port = 8080;

@@ -1,28 +1,13 @@
 {
   config,
   lib,
-  node,
-  sparkNodes,
   username,
   ...
 }: let
-  coordinationPublicKey = builtins.replaceStrings ["\n" "\r"] ["" ""] (
-    builtins.readFile ../../../../../vars/per-machine/spark-01/spark-coordination-spark/id_ed25519.pub/value
-  );
-  inferenceNodes =
-    lib.mapAttrs (_: peer: {
-      platform = "linux/arm64";
-      inherit (peer) managementAddress;
-      sshHostKey = peer.sshHostKey or null;
-      fabric = {
-        fabric0 = "10.100.0.${toString peer.id}";
-        fabric1 = "10.100.1.${toString peer.id}";
-      };
-    })
-    sparkNodes;
+  cluster = config.my.sparkCluster;
+  workers = lib.filter (name: name != cluster.controlNode) cluster.orderedNodes;
 in {
   imports = [
-    ./coordination.nix
     ./huggingface.nix
     ./recipes
     # ./open-webui.nix
@@ -34,32 +19,34 @@ in {
     protectHostMemory = true;
     allowSwap = true;
     memoryMaxPercent = 95;
-    controlNode = "spark-01";
-    nodes = inferenceNodes;
+    inherit (cluster) controlNode;
+    nodes = cluster.inferenceNodes;
     coordination =
       {
-        authorizedKeys = [coordinationPublicKey];
+        authorizedKeys = [cluster.coordinationPublicKey];
       }
-      // lib.optionalAttrs node.controller {
-        identityFile = config.clan.core.vars.generators.spark-coordination-spark.files.id_ed25519.path;
+      // lib.optionalAttrs cluster.isController {
+        identityFile = config.clan.core.vars.generators.${cluster.coordinationGenerator}.files.id_ed25519.path;
       };
 
-    instances.laguna = {
-      recipe = "laguna-vllm";
-      nodes = ["spark-01"];
-      autoStart = false;
-    };
+    instances = {
+      laguna = {
+        recipe = "laguna-vllm";
+        nodes = [cluster.controlNode];
+        autoStart = false;
+      };
 
-    instances.deepseek-v4-flash-0731 = {
-      recipe = "deepseek-v4-flash-0731";
-      nodes = ["spark-01" "spark-02"];
-      autoStart = false;
-    };
+      deepseek-v4-flash-0731 = {
+        recipe = "deepseek-v4-flash-0731";
+        nodes = [cluster.controlNode (lib.head workers)];
+        autoStart = false;
+      };
 
-    instances.glm52 = {
-      recipe = "glm52-b12x-spark";
-      nodes = ["spark-01" "spark-02" "spark-03" "spark-04"];
-      autoStart = false;
+      glm52 = {
+        recipe = "glm52-b12x-spark";
+        nodes = cluster.orderedNodes;
+        autoStart = false;
+      };
     };
   };
 
@@ -83,5 +70,5 @@ in {
 
   boot.kernel.sysctl."vm.swappiness" = 1;
 
-  networking.firewall.allowedTCPPorts = lib.optionals node.controller [8000 8888];
+  networking.firewall.allowedTCPPorts = lib.optionals cluster.isController [8000 8888];
 }

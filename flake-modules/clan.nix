@@ -4,12 +4,11 @@
   self,
   ...
 }: let
-  sparkNodes = import ../modules/nixos/profiles/spark/nodes.nix;
+  sparkNodeSettings = import ../modules/clan/spark-cluster/inventory.nix;
+  sparkNodeMembers = lib.mapAttrs (_: settings: {inherit settings;}) sparkNodeSettings;
 
-  mkSparkMachine = hostname: node: {
-    _module.args = {
-      inherit hostname node sparkNodes;
-    };
+  mkSparkMachine = hostname: _: {
+    _module.args = {inherit hostname;};
 
     imports = [
       ../modules/nixos
@@ -51,12 +50,11 @@
 in {
   imports = [inputs.clan-core.flakeModules.default];
 
-  flake.sparkNodes = sparkNodes;
-
   clan = {
     modules = {
       nas = ../modules/clan/nas;
       pangolin = ../modules/clan/pangolin;
+      spark-cluster = ../modules/clan/spark-cluster;
     };
 
     meta = {
@@ -82,18 +80,16 @@ in {
       // lib.mapAttrs (hostname: _: {
         deploy.targetHost = "angel@${hostname}";
       })
-      sparkNodes;
+      sparkNodeSettings;
 
     inventory.instances = {
-      sshd.roles.server.machines = {
-        kiwi.settings.certificate.enable = false;
-        portal.settings.certificate.enable = false;
-        sisyphus.settings.certificate.enable = false;
-        spark-01.settings.certificate.enable = false;
-        spark-02.settings.certificate.enable = false;
-        spark-03.settings.certificate.enable = false;
-        spark-04.settings.certificate.enable = false;
-      };
+      sshd.roles.server.machines =
+        {
+          kiwi.settings.certificate.enable = false;
+          portal.settings.certificate.enable = false;
+          sisyphus.settings.certificate.enable = false;
+        }
+        // lib.mapAttrs (_: _: {settings.certificate.enable = false;}) sparkNodeSettings;
 
       pangolin = {
         module = {
@@ -121,7 +117,19 @@ in {
             {
               sisyphus = {};
             }
-            // lib.mapAttrs (_: _: {}) sparkNodes;
+            // lib.mapAttrs (_: _: {}) sparkNodeSettings;
+        };
+      };
+
+      spark = {
+        module = {
+          input = "self";
+          name = "spark-cluster";
+        };
+        roles = {
+          node.machines = sparkNodeMembers;
+          controller.machines.spark-01 = {};
+          monitor.machines.kiwi.settings.sourceAddress = "192.168.1.200";
         };
       };
     };
@@ -297,6 +305,6 @@ in {
           };
         };
       }
-      // lib.mapAttrs mkSparkMachine sparkNodes;
+      // lib.mapAttrs mkSparkMachine sparkNodeSettings;
   };
 }

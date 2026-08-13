@@ -7,8 +7,11 @@ selects its participant nodes and assigns their roles. The configuration uses
 
 ## Inventory
 
-`modules/nixos/profiles/spark/nodes.nix` is the single source of truth for
-flake configuration generation, installation, and per-node networking.
+`modules/clan/spark-cluster/inventory.nix` is the source of truth for node
+management addresses, MAC addresses, and fabric IDs. The `spark` service
+instance in `flake-modules/clan.nix` assigns roles, then
+`modules/clan/spark-cluster/` validates and projects the inventory into each
+node and Kiwi's monitoring configuration.
 
 | Node | Management | Fabric rail 0 | Fabric rail 1 | Role |
 | --- | --- | --- | --- | --- |
@@ -24,18 +27,19 @@ configuration is under `infra/mikrotik-crs804/`.
 
 ## Layout
 
-- `machines/spark-0N/configuration.nix` identifies each managed machine and
-  imports the shared profile.
+- `machines/spark-0N/configuration.nix` is the per-machine extension point.
+- `modules/clan/spark-cluster/` owns cluster membership, roles, and the shared
+  Spark profile import.
 - `modules/nixos/profiles/spark/` contains hardware, networking, monitoring,
   inference, and user policy shared by every node.
 - `modules/home/profiles/spark.nix` contains the shared Home Manager profile.
-- `secrets/spark/controller.yaml` contains controller-only SOPS secrets.
+- `vars/per-machine/spark-01/` contains controller-only Clan vars.
 - `scripts/install-spark-node.sh` installs a node from the NixOS USB image.
 - `infra/mikrotik-crs804/` contains the external switch config and runbook.
 
-Clan registers each Spark as an individual machine. The shared profile remains
-single-source; per-node values are selected from `nodes.nix` through the
-transitional `node` module argument.
+Clan registers each Spark as an individual machine and applies the shared
+profile through the `spark-cluster` service's `node` role. Modules consume the
+service's normalized `my.sparkCluster` option.
 
 ## Deploy
 
@@ -70,7 +74,9 @@ before rebooting.
 
 ## Secrets
 
-- `spark-01` receives controller-only secrets from `secrets/spark/controller.yaml`.
+- `spark-01` receives the dedicated coordination key and Hugging Face token
+  from the `spark-coordination-spark` and `spark-huggingface-spark` Clan
+  generators.
 - The console password hash is shared through the `console-password-angel` Clan generator.
 - Each permanent host identity must be registered before installation.
 - Spark nodes must not be added to the `secrets/secrets.yaml` recipient rule.

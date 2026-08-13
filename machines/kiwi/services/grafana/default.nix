@@ -10,8 +10,7 @@
   grafanaPort = 3131;
   prometheusPort = 9090;
   nodeExporterPort = 9100;
-  gpuExporterPort = 9835;
-  sparkNodes = import ../../../../modules/nixos/profiles/spark/nodes.nix;
+  sparkCluster = config.my.sparkCluster;
   mkSparkStaticConfigs = port:
     lib.mapAttrsToList (hostname: peer: {
       targets = ["${peer.managementAddress}:${toString port}"];
@@ -20,7 +19,7 @@
         node = hostname;
       };
     })
-    sparkNodes;
+    sparkCluster.nodes;
   resticExporterPorts = {
     b2 = 9753;
     t7 = 9754;
@@ -285,13 +284,13 @@ in {
           job_name = "spark-node";
           scrape_interval = "5s";
           scrape_timeout = "4s";
-          static_configs = mkSparkStaticConfigs nodeExporterPort;
+          static_configs = mkSparkStaticConfigs sparkCluster.monitor.nodeExporterPort;
         }
         {
           job_name = "spark-gpu";
           scrape_interval = "5s";
           scrape_timeout = "4s";
-          static_configs = mkSparkStaticConfigs gpuExporterPort;
+          static_configs = mkSparkStaticConfigs sparkCluster.monitor.gpuExporterPort;
         }
         {
           job_name = "restic-b2";

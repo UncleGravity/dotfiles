@@ -1,9 +1,11 @@
 {
+  config,
   lib,
-  node,
   pkgs,
   ...
-}: {
+}: let
+  cluster = config.my.sparkCluster;
+in {
   imports = [
     ./hardware
     ./inference
@@ -18,7 +20,7 @@
     ntfy.enable = false;
   };
 
-  services.dgx-dashboard.enable = lib.mkForce node.controller;
+  services.dgx-dashboard.enable = lib.mkForce cluster.isController;
 
   nix.settings = {
     extra-substituters = ["https://graham33.cachix.org"];

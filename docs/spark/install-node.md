@@ -13,8 +13,10 @@ machine identities, and reboots the node.
    `modules/common/ssh-keys.nix` and authorized on every host.
 2. Clan's machine Age identity is staged at `/var/lib/sops-nix/key.txt`. It
    decrypts Clan vars, including the runtime SSH host key.
-3. The retained SSH key at `/etc/ssh/ssh_host_ed25519_key` decrypts legacy
-   sops-nix files. Spark-01 also uses it as the inference controller identity.
+3. The retained SSH key at `/etc/ssh/ssh_host_ed25519_key` supports rollback
+   to older generations that still decrypt legacy sops-nix files. The current
+   generation uses only the Clan machine identity; inference uses a separate
+   dedicated coordination key.
 4. Both SSH key copies contain the same escrowed identity and therefore serve
    the same tracked fingerprint during the transition.
 
@@ -32,7 +34,8 @@ system.
 
 2. Disable Secure Boot in the BIOS.
 3. Record the `enP7s7` MAC address, add its DHCP reservation, add the node to
-   `modules/nixos/profiles/spark/nodes.nix`, and enable its fabric switch port.
+   the `spark` service instance in `flake-modules/clan.nix`, and enable its
+   fabric switch port.
 4. Create the permanent host identity:
 
    ```bash

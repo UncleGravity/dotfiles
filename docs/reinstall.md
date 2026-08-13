@@ -5,9 +5,10 @@ boot:
 
 - `/var/lib/sops-nix/key.txt` is the Clan machine Age identity. It decrypts
   Clan vars, including the SSH host key used by `sshd`.
-- `/etc/ssh/ssh_host_ed25519_key` is the retained legacy identity. Existing
-  sops-nix files still use its derived Age recipient, and Spark-01 also uses it
-  as the inference controller credential.
+- `/etc/ssh/ssh_host_ed25519_key` is the retained legacy identity. Portal and
+  Sisyphus still use its derived Age recipient; Sparks retain it only for
+  rollback to older generations. Spark coordination uses a separate
+  Clan-managed key.
 
 `scripts/stage-install-secrets.sh` stages both into the single
 `nixos-anywhere --extra-files` tree and verifies that both copies of the SSH
@@ -63,7 +64,6 @@ cmp -s "$legacy" "$runtime"
 test "$(stat -c %a "$legacy")" = 600
 test "$(stat -c %a "$runtime")" = 400
 systemctl is-active --quiet sshd.service
-test "$(systemctl show sops-install-secrets.service -p Result --value)" = success
 test -z "$(systemctl --failed --no-legend --plain)"
 REMOTE
 ```
@@ -71,4 +71,4 @@ REMOTE
 The two printed fingerprints must match. Open a second strict SSH connection
 before closing the recovery session, then verify the host's workload-specific
 services and data. Keep the retained `/etc/ssh` identity and escrow files until
-all legacy SOPS recipients and the Spark controller credential have migrated.
+all legacy SOPS recipients have migrated.
