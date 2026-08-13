@@ -143,15 +143,6 @@ in {
           systemStateVersion = "26.05";
           homeStateVersion = "26.05";
         };
-
-        kiwi = mkNixos {
-          system = systems.x86_64-linux;
-          username = "angel";
-          hostname = "kiwi";
-          systemStateVersion = "24.11";
-          homeStateVersion = "25.05";
-          extraModules = [inputs.copyparty.nixosModules.default];
-        };
       }
       // lib.mapAttrs (
         hostname: node:

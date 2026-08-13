@@ -19,6 +19,48 @@
     };
 
     inventory.machines.portal.deploy.targetHost = "angel@portal";
+    inventory.machines.kiwi.deploy.targetHost = "angel@kiwi";
+
+    machines.kiwi = {
+      _module.args.hostname = "kiwi";
+
+      imports = [
+        ../modules/nixos
+        self.nixosModules.inference
+        inputs.copyparty.nixosModules.default
+        inputs.home-manager.nixosModules.home-manager
+        ../machines/nixos/kiwi/configuration.nix
+      ];
+
+      clan.core.enableRecommendedDefaults = false;
+
+      # Preserve the NixOS ZFS default overridden by Clan's core module.
+      services.zfs.autoSnapshot.monthly = 12;
+
+      nixpkgs = {
+        hostPlatform = "x86_64-linux";
+        config.allowUnfree = true;
+      };
+
+      system = {
+        stateVersion = "24.11";
+        configurationRevision = self.rev or self.dirtyRev or self.narHash;
+      };
+
+      home-manager = {
+        extraSpecialArgs = {
+          inherit inputs;
+          username = "angel";
+        };
+        sharedModules = [../modules/home];
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        users.angel = {
+          imports = [../machines/nixos/kiwi/home.nix];
+          home.stateVersion = "25.05";
+        };
+      };
+    };
 
     machines.portal = {
       _module.args.hostname = "portal";
