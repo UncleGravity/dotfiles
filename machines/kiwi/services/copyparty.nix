@@ -41,12 +41,14 @@
   };
 
   systemd.services.copyparty = {
-    wants = ["network-online.target"];
-    after = ["network-online.target"];
-    unitConfig.RequiresMountsFor = [
-      "/srv/share"
-      "/mnt/nas/unas/ai"
-      "/mnt/nas/unas/personal"
+    wants = [
+      "network-online.target"
+      "remote-fs.target"
     ];
+    after = [
+      "network-online.target"
+      "remote-fs.target"
+    ];
+    unitConfig.RequiresMountsFor = ["/srv/share"];
   };
 }
