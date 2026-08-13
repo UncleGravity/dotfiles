@@ -1,7 +1,6 @@
 {...}: {
   imports = [
     ./hardware
-    ./services
     ./users.nix
   ];
 

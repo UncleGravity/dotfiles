@@ -54,6 +54,8 @@ in {
   flake.sparkNodes = sparkNodes;
 
   clan = {
+    modules.pangolin = ../modules/clan/pangolin;
+
     meta = {
       name = "angelnet";
       domain = "angel.pizza";
@@ -79,8 +81,19 @@ in {
       })
       sparkNodes;
 
-    inventory.instances.sshd = {
-      roles.server.machines.portal.settings.certificate.enable = false;
+    inventory.instances = {
+      sshd.roles.server.machines.portal.settings.certificate.enable = false;
+
+      pangolin = {
+        module = {
+          input = "self";
+          name = "pangolin";
+        };
+        roles = {
+          server.machines.portal.settings.letsEncryptEmail = "viera.tech@gmail.com";
+          client.machines.kiwi = {};
+        };
+      };
     };
 
     machines =
