@@ -9,7 +9,6 @@
     ./inference
     ./monitoring.nix
     ./networking
-    ./users.nix
   ];
 
   my = {

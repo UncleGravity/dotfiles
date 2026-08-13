@@ -6,6 +6,7 @@
     ./boot.nix
     ./cachix.nix
     ./clan.nix
+    ./console-password.nix
     ./locale.nix
     ./nh.nix
     ./nix.nix

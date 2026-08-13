@@ -4,7 +4,6 @@
     ./inference
     ./services
     ./specialisations
-    ./users.nix
   ];
 
   my = {

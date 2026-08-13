@@ -1,7 +1,6 @@
 {...}: {
   imports = [
     ./hardware
-    ./users.nix
   ];
 
   my = {

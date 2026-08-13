@@ -5,6 +5,8 @@
   ...
 }: {
   clan.core.vars.generators."console-password-${username}" = {
+    share = true;
+
     prompts.password = {
       description = "Console password for ${username}";
       type = "hidden";
@@ -24,7 +26,7 @@
     '';
   };
 
-  # Emergency entrance: Only works from Hetzner web console. Not SSH.
+  # Console login only; SSH remains key-only and sudo passwordless.
   users.users.${username}.hashedPasswordFile =
     config.clan.core.vars.generators."console-password-${username}".files.password-hash.path;
 }
