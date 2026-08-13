@@ -25,7 +25,13 @@ in {
     };
     files = {
       "secret-key".deploy = false;
-      environment.mode = "0400";
+      environment = {
+        mode = "0400";
+        restartUnits = [
+          "searx-init.service"
+          "searx.service"
+        ];
+      };
     };
     runtimeInputs = [pkgs.coreutils];
     script = ''
@@ -48,7 +54,6 @@ in {
   sops = {
     secrets = {
       "litellm/master-key".sopsFile = ../../../secrets/secrets.yaml;
-      "searx/secret-key".sopsFile = ../secrets/secrets.yaml;
     };
 
     templates = {
@@ -65,16 +70,6 @@ in {
           OPENAI_API_KEY=${config.sops.placeholder."litellm/master-key"}
         '';
         restartUnits = ["open-webui.service"];
-      };
-
-      "searx.env" = {
-        content = ''
-          SEARXNG_SECRET_KEY=${config.sops.placeholder."searx/secret-key"}
-        '';
-        restartUnits = [
-          "searx-init.service"
-          "searx.service"
-        ];
       };
     };
   };
@@ -148,7 +143,7 @@ in {
 
     searx = {
       enable = true;
-      environmentFile = config.sops.templates."searx.env".path;
+      environmentFile = config.clan.core.vars.generators.searx.files.environment.path;
       settings = {
         server = {
           bind_address = "127.0.0.1";
