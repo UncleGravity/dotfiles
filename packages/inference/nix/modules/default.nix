@@ -367,6 +367,12 @@ in {
         instanceServices
         // lib.optionalAttrs isRegistryHost {
           docker-registry.environment.OTEL_TRACES_EXPORTER = "none";
+        }
+        // lib.optionalAttrs hasFabric {
+          rsync = {
+            after = ["network-online.target"];
+            wants = ["network-online.target"];
+          };
         };
 
       slices.inference = lib.mkIf cfg.protectHostMemory {
