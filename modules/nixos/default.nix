@@ -5,6 +5,7 @@
     # ── Baseline (always applied) ---------------------------------------
     ./boot.nix
     ./cachix.nix
+    ./clan.nix
     ./locale.nix
     ./nh.nix
     ./nix.nix

@@ -183,7 +183,6 @@ in {
 
           clan.core = {
             enableRecommendedDefaults = false;
-            sops.defaultGroups = ["admins"];
           };
 
           # Preserve the pre-Clan values against unconditional Clan ZFS defaults.
