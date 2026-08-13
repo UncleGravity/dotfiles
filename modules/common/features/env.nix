@@ -2,16 +2,44 @@
   config,
   lib,
   options,
+  pkgs,
   username,
   ...
 }: let
   cfg = config.my.env;
   home = config.users.users.${username}.home;
 
+  mkShellGenerator = name: {
+    share = true;
+
+    prompts."${name}.sh" = {
+      description = "Contents of ${name}.sh";
+      type = "multiline-hidden";
+      persist = true;
+    };
+
+    files."${name}.sh" = {
+      owner = username;
+      group =
+        if pkgs.stdenv.hostPlatform.isDarwin
+        then "staff"
+        else "users";
+      mode = "0600";
+    };
+
+    runtimeInputs = [pkgs.coreutils];
+    script = ''
+      if [[ ! -s "$prompts/${name}.sh" ]]; then
+        echo "${name}.sh must not be empty" >&2
+        exit 1
+      fi
+
+      cp "$prompts/${name}.sh" "$out/${name}.sh"
+    '';
+  };
+
   mkShellSecret = name: {
-    path = "${home}/.config/zsh/secrets/${name}.sh";
-    owner = username;
-    mode = "0600";
+    "vars/shell-env-${name}/${name}.sh".path = "${home}/.config/zsh/secrets/${name}.sh";
   };
 in {
   # ---------------------------------------------------------------------------
@@ -30,9 +58,14 @@ in {
 
   config = lib.mkMerge [
     {
+      clan.core.vars.generators = lib.mkMerge [
+        (lib.mkIf cfg.home.enable {shell-env-home = mkShellGenerator "home";})
+        (lib.mkIf cfg.work.enable {shell-env-work = mkShellGenerator "work";})
+      ];
+
       sops.secrets = lib.mkMerge [
-        (lib.mkIf cfg.home.enable {"home.sh" = mkShellSecret "home";})
-        (lib.mkIf cfg.work.enable {"work.sh" = mkShellSecret "work";})
+        (lib.mkIf cfg.home.enable (mkShellSecret "home"))
+        (lib.mkIf cfg.work.enable (mkShellSecret "work"))
       ];
     }
 

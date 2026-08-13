@@ -1,11 +1,5 @@
-{config, ...}: {
-  sops.secrets."tailscale/authkey" = {
-    mode = "0600";
-    owner = "root";
-  };
-
+_: {
   my.tailscale = {
     enable = true;
-    authKeyFile = config.sops.secrets."tailscale/authkey".path;
   };
 }
