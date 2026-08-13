@@ -85,7 +85,10 @@ in {
       sparkNodes;
 
     inventory.instances = {
-      sshd.roles.server.machines.portal.settings.certificate.enable = false;
+      sshd.roles.server.machines = {
+        portal.settings.certificate.enable = false;
+        spark-04.settings.certificate.enable = false;
+      };
 
       pangolin = {
         module = {
