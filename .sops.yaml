@@ -1,18 +1,17 @@
 keys:
-  - &all-recipients
-    # Operator
-    - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
+  # Operator
+  - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
 
-    # Host identities derived from SSH host keys
-    # cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
-    - &banana age1gfgas2vwf4emddhqquqk8uzr306d3mdpv3hap3sk32rglxf50egscyd0xd
-    - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
-    - &sisyphus age1qhtwcahzlraukzjc5ylmnjucfk9xu5f5zw6v0u4kklxt88hawumsc2pvf0
-    - &spark-01 age12x743m4fkgqazl0638sjsc7eet05gsrr0x05y5mapd65hsjg0yasqd2w22
-    - &spark-02 age18wmpu7l6vhyxdl39y4xzhac0dyrkgytkcd0jswgxqjpeekvcuv0s4ewkrl
-    - &spark-03 age1c8cqnnc4mgzd9h4n2rkp8udkvcwsqpfl7hz47k50m8vu0nh92pas0x4e8a
-    - &spark-04 age1hg3th2alfw4u3k0497kvcvp685e7guv5pxy7aezzze7ddzv7s9dq0km0gn
-    - &portal age1st49759cc4kyncs3pykwzy3uxucsrl3v532gm83j7f6eq5me745q65tcnq
+  # Host identities derived from SSH host keys
+  # cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
+  - &banana age1gfgas2vwf4emddhqquqk8uzr306d3mdpv3hap3sk32rglxf50egscyd0xd
+  - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
+  - &sisyphus age1qhtwcahzlraukzjc5ylmnjucfk9xu5f5zw6v0u4kklxt88hawumsc2pvf0
+  - &spark-01 age12x743m4fkgqazl0638sjsc7eet05gsrr0x05y5mapd65hsjg0yasqd2w22
+  - &spark-02 age18wmpu7l6vhyxdl39y4xzhac0dyrkgytkcd0jswgxqjpeekvcuv0s4ewkrl
+  - &spark-03 age1c8cqnnc4mgzd9h4n2rkp8udkvcwsqpfl7hz47k50m8vu0nh92pas0x4e8a
+  - &spark-04 age1hg3th2alfw4u3k0497kvcvp685e7guv5pxy7aezzze7ddzv7s9dq0km0gn
+  - &portal age1st49759cc4kyncs3pykwzy3uxucsrl3v532gm83j7f6eq5me745q65tcnq
 
 creation_rules:
   # Secrets only needed by the Spark controller.
@@ -26,14 +25,6 @@ creation_rules:
   # OpenTofu runtime credentials are operator-only.
   - path_regex: ^infra/.*\.(yaml|json|env|ini|sops)$
     age: [*angel]
-
-  # ntfy is shared by the entire fleet.
-  - path_regex: ^secrets/ntfy\.yaml$
-    age: *all-recipients
-
-  # Cachix write access is shared by the entire fleet.
-  - path_regex: ^secrets/cachix\.yaml$
-    age: *all-recipients
 
   # Host-local secrets.
   - path_regex: ^machines/banana/.*\.(yaml|json|env|ini|sops)$
