@@ -366,7 +366,11 @@ in {
       services =
         instanceServices
         // lib.optionalAttrs isRegistryHost {
-          docker-registry.environment.OTEL_TRACES_EXPORTER = "none";
+          docker-registry = {
+            after = ["network-online.target"];
+            wants = ["network-online.target"];
+            environment.OTEL_TRACES_EXPORTER = "none";
+          };
         }
         // lib.optionalAttrs hasFabric {
           rsync = {
