@@ -4,8 +4,10 @@ NOTE: Incomplete readme. Flake output composition lives in `flake-modules/`.
 
 ## NixOS
 
-Reinstall through the repository entrypoints so both transitional machine
-identities are present before first boot. See [docs/reinstall.md](docs/reinstall.md).
+Reinstall through the repository entrypoints so the required machine identities
+are present before first boot. Sparks use only their Clan machine identity;
+Portal and Sisyphus still use the transitional dual-identity path. See
+[docs/reinstall.md](docs/reinstall.md).
 
 ```sh
 just provision portal root@<installer-ip>

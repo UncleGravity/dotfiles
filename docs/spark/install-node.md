@@ -4,8 +4,8 @@ Installation starts from the stock NixOS minimal aarch64 USB image. Kexec does
 not work on this hardware: `kexec -e` resets the SoC into firmware and boots the
 existing operating system.
 
-The installer partitions the NVMe, installs NixOS, injects both transitional
-machine identities, and reboots the node.
+The installer partitions the NVMe, installs NixOS, injects the Clan machine
+identity, and reboots the node.
 
 ## SSH identity domains
 
@@ -13,15 +13,11 @@ machine identities, and reboots the node.
    `modules/common/ssh-keys.nix` and authorized on every host.
 2. Clan's machine Age identity is staged at `/var/lib/sops-nix/key.txt`. It
    decrypts Clan vars, including the runtime SSH host key.
-3. The retained SSH key at `/etc/ssh/ssh_host_ed25519_key` supports rollback
-   to older generations that still decrypt legacy sops-nix files. The current
-   generation uses only the Clan machine identity; inference uses a separate
-   dedicated coordination key.
-4. Both SSH key copies contain the same escrowed identity and therefore serve
-   the same tracked fingerprint during the transition.
+3. Inference uses a separate Clan-managed coordination key. It is not the SSH
+   server host key.
 
 Factory and USB installer host keys must never be promoted into the installed
-system.
+system. The Spark installer does not stage `/etc/ssh` host keys.
 
 ## Procedure
 
@@ -33,27 +29,17 @@ system.
    ```
 
 2. Disable Secure Boot in the BIOS.
-3. Record the `enP7s7` MAC address, add its DHCP reservation, add the node to
-   the `spark` service instance in `flake-modules/clan.nix`, and enable its
-   fabric switch port.
-4. Create the permanent host identity:
+3. Confirm the node is already enrolled in the `spark` service instance and
+   that all of its Clan vars are valid:
 
    ```bash
-   just host-key create spark-0[N]
+   nix run --builders "" .#clan -- vars check spark-0[N]
    ```
 
-5. Replace the node's `.sops.yaml` anchor with the printed host age identity,
-   then update and verify its secret recipients:
-
-   ```bash
-   just sops-update-keys
-   just host-key check spark-0[N]
-   ```
-
-6. Enroll the node in Clan's `sshd` service, import the same private and public
-   keys into its `openssh` vars, and commit the host-key bundle, Clan vars,
-   recipients, SOPS anchor, and rekeyed files before erasing the factory OS.
-7. Boot the NixOS USB image. Set a temporary root password and verify that the
+   This reinstall procedure only supports the four existing enrolled nodes.
+   First-time enrollment is a separate procedure. Never regenerate an existing
+   node's `openssh` generator during reinstall.
+4. Boot the NixOS USB image. Set a temporary root password and verify that the
    management NIC received its reserved address:
 
    ```bash
@@ -61,41 +47,47 @@ system.
    ip -br addr
    ```
 
-8. Replace the temporary known-host entry and authorize the operator:
+5. Replace the temporary known-host entry and authorize the operator:
 
    ```bash
    ssh-keygen -R <ip>
    ssh-copy-id root@<ip>
    ```
 
-9. Run the installer:
+6. Run the installer:
 
    ```bash
    just spark-install spark-0[N]
    ```
 
-   The installer verifies and stages both identities before `nixos-anywhere`
-   starts. Disko creates a 1 GiB ESP and an ext4 root filesystem. The first
-   node may spend 30-60 minutes building the NVIDIA kernel. Remove the USB
-   stick during the reboot.
+   The installer verifies and stages the Clan machine identity before
+   `nixos-anywhere` starts. It fails unless the evaluated Spark configuration
+   uses only that identity for SOPS and the SSH server host key. Disko creates
+   a 1 GiB ESP and an ext4 root filesystem. The first node may spend 30-60
+   minutes building the NVIDIA kernel. Remove the USB stick during the reboot.
 
-10. Verify the installed identity before accepting it into `known_hosts`.
+7. Verify the installed identity before accepting it into `known_hosts`.
     These commands must report the same fingerprint:
 
     ```bash
-    ssh-keygen -lf secrets/host-keys/spark-0[N].pub
+    ssh-keygen -lf \
+      vars/per-machine/spark-0[N]/openssh/ssh.id_ed25519.pub/value
     ssh-keyscan -t ed25519 spark-0[N].local 2>/dev/null \
       | rg ' ssh-ed25519 ' \
       | ssh-keygen -lf -
     ```
 
-11. Remove temporary entries and reconnect:
+8. Remove temporary entries and reconnect:
 
     ```bash
     ssh-keygen -R <ip>
     ssh-keygen -R spark-0[N].local
     ssh spark-0[N].local
     ```
+
+   Verify `/var/lib/sops-nix/key.txt` and the runtime Clan SSH secret exist,
+   while `/etc/ssh/ssh_host_ed25519_key{,.pub}` do not. Open a second strict
+   SSH connection before closing the installer session.
 
 Successful remote builds publish their input and output closures to the
 personal cache. Later nodes can substitute the kernel and drivers from that

@@ -177,7 +177,7 @@ host-key *args:
 provision host target:
     nix develop --builders "" -c ./scripts/provision.sh "{{ host }}" "{{ target }}"
 
-# Partition the NVMe, install NixOS with both transitional identities, and reboot.
+# Partition the NVMe, install NixOS with the Clan machine identity, and reboot.
 # The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
     nix develop --builders "" -c ./scripts/install-spark-node.sh "{{ node }}"

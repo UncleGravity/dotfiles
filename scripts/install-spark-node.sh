@@ -22,7 +22,25 @@ ip=$(nix eval --builders "" --raw \
   exit 1
 }
 
+identity_contract=$(nix eval --builders "" --raw \
+  "$repo_root#nixosConfigurations.$node.config" \
+  --apply 'config:
+    let
+      hostKeys = config.services.openssh.hostKeys;
+    in
+      if config.sops.age.sshKeyPaths == []
+        && builtins.length hostKeys == 1
+        && (builtins.head hostKeys).path == "/run/secrets/vars/openssh/ssh.id_ed25519"
+        && (builtins.head hostKeys).type == "ed25519"
+      then "clan-only"
+      else throw "Spark install requires Clan-only SOPS and SSH host identity configuration"')
+[[ $identity_contract == "clan-only" ]] || {
+  echo "Spark identity configuration is not Clan-only: $node" >&2
+  exit 1
+}
+
 echo "This will ERASE the NVMe on $node ($ip) and install NixOS."
+echo "Only the Clan machine identity will be staged; no legacy /etc/ssh identity will be installed."
 read -r -p "Type $node to continue: " confirmation
 if [[ $confirmation != "$node" ]]; then
   echo "Confirmation did not match; aborting." >&2
@@ -31,7 +49,7 @@ fi
 
 extra_files=$(mktemp -d)
 trap 'rm -rf -- "$extra_files"' EXIT
-"$repo_root/scripts/stage-install-secrets.sh" "$node" "$extra_files"
+"$repo_root/scripts/stage-install-secrets.sh" --clan-only "$node" "$extra_files"
 
 nixos-anywhere --flake "$repo_root#$node" --target-host "root@$ip" \
   --extra-files "$extra_files" \
