@@ -29,7 +29,7 @@ configuration is under `infra/mikrotik-crs804/`.
 - `modules/nixos/profiles/spark/` contains hardware, networking, monitoring,
   inference, and user policy shared by every node.
 - `modules/home/profiles/spark.nix` contains the shared Home Manager profile.
-- `secrets/spark/` contains controller-only and cluster-wide SOPS secrets.
+- `secrets/spark/controller.yaml` contains controller-only SOPS secrets.
 - `scripts/install-spark-node.sh` installs a node from the NixOS USB image.
 - `infra/mikrotik-crs804/` contains the external switch config and runbook.
 
@@ -71,6 +71,6 @@ before rebooting.
 ## Secrets
 
 - `spark-01` receives controller-only secrets from `secrets/spark/controller.yaml`.
-- Every Spark receives shared secrets from `secrets/spark/shared.yaml`.
+- The console password hash is shared through the `console-password-angel` Clan generator.
 - Each permanent host identity must be registered before installation.
-- Spark nodes must not be added to the repository-wide secret recipient rule.
+- Spark nodes must not be added to the `secrets/secrets.yaml` recipient rule.

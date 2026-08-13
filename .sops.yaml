@@ -19,10 +19,6 @@ creation_rules:
   - path_regex: ^secrets/spark/controller\.(yaml|json|env|ini|sops)$
     age: [*angel, *spark-01]
 
-  # Secrets shared by every Spark node.
-  - path_regex: ^secrets/spark/shared\.(yaml|json|env|ini|sops)$
-    age: [*angel, *spark-01, *spark-02, *spark-03, *spark-04]
-
   # Pre-generated host identities are operator-only.
   - path_regex: ^secrets/host-keys/.*\.sops$
     age: [*angel]

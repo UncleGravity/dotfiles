@@ -40,7 +40,7 @@ survives replacement.
 
 Open `https://pangolin.angel.pizza`, create the administrator and organization,
 and confirm the `angel.pizza` domain. Create a site for each Newt connector and
-store its credentials in that host's SOPS file before deploying it.
+store its credentials in Clan vars before deploying it.
 
 ## Deploy
 
@@ -50,10 +50,10 @@ Deploy configuration changes over the `portal` SSH host:
 just deploy portal
 ```
 
-Edit Portal-specific secrets with:
+Check the Pangolin and Newt vars before deploying:
 
 ```sh
-sops edit machines/portal/secrets/secrets.yaml
+nix run --builders "" .#clan -- vars check portal kiwi
 ```
 
 ## Replace
