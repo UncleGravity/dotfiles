@@ -87,6 +87,7 @@ in {
     inventory.instances = {
       sshd.roles.server.machines = {
         portal.settings.certificate.enable = false;
+        spark-01.settings.certificate.enable = false;
         spark-02.settings.certificate.enable = false;
         spark-03.settings.certificate.enable = false;
         spark-04.settings.certificate.enable = false;
