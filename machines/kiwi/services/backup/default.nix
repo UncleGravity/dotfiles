@@ -9,7 +9,7 @@
   mountPoint = "/srv/share";
   ntfy = lib.getExe pkgs.ntfy-sh;
   ntfyTitle = "${hostname} Backup";
-  ntfyTopicFile = config.sops.secrets."ntfy/topic".path;
+  ntfyTopicFile = config.clan.core.vars.generators.ntfy.files.topic.path;
 
   notify = message: ''NTFY_TOPIC="$(<${ntfyTopicFile})" ${ntfy} pub -m ${lib.escapeShellArg message} -t ${lib.escapeShellArg ntfyTitle}'';
 
@@ -69,7 +69,6 @@ in {
     "backup/b2/restic/repo" = {};
     "backup/b2/restic/password" = {};
     "backup/t7-password" = {};
-    "ntfy/topic" = {};
   };
 
   systemd.services = {

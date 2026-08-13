@@ -12,15 +12,24 @@ in {
     // {default = true;};
 
   config = lib.mkIf cfg.enable {
-    sops.secrets."ntfy/topic" = {
-      sopsFile = ../../../secrets/ntfy.yaml;
-      owner = username;
-      mode = "0400";
+    clan.core.vars.generators.ntfy = {
+      share = true;
+
+      prompts.topic = {
+        description = "ntfy topic";
+        type = "hidden";
+        persist = true;
+      };
+
+      files.topic = {
+        owner = username;
+        mode = "0400";
+      };
     };
 
     environment = {
       systemPackages = [pkgs.ntfy-sh];
-      shellAliases."ntfy" = ''NTFY_TOPIC="$(cat ${config.sops.secrets."ntfy/topic".path})" ntfy publish'';
+      shellAliases."ntfy" = ''NTFY_TOPIC="$(cat ${config.clan.core.vars.generators.ntfy.files.topic.path})" ntfy publish'';
     };
   };
 }

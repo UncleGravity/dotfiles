@@ -1,13 +1,14 @@
 # Automatically upload locally built Nix store paths to Cachix.
-{config, ...}: {
-  sops.secrets."cachix/auth-token" = {
-    sopsFile = ../../secrets/cachix.yaml;
-    mode = "0400";
-  };
+{config, ...}: let
+  authToken = config.clan.core.vars.generators.cachix.files.auth-token;
+in {
+  clan.core.vars.generators.cachix.files.auth-token.restartUnits = [
+    "cachix-watch-store-agent.service"
+  ];
 
   services.cachix-watch-store = {
     enable = true;
     cacheName = "unclegravity-nix";
-    cachixTokenFile = config.sops.secrets."cachix/auth-token".path;
+    cachixTokenFile = authToken.path;
   };
 }

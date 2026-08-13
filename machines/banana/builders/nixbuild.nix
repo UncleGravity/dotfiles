@@ -8,7 +8,7 @@
   nixbuildSubstituters = lib.concatStringsSep "," config.nix.settings.substituters;
   nixbuildTrustedPublicKeys = lib.concatStringsSep "," config.nix.settings.trusted-public-keys;
   nixbuildSshEnvironment = [
-    "NIXBUILDNET_ACCESS_TOKENS=cachix://${nixbuildCache}=WRITE:${config.sops.placeholder."cachix/auth-token"}"
+    "NIXBUILDNET_ACCESS_TOKENS=cachix://${nixbuildCache}=WRITE:${config.sops.placeholder."vars/cachix/auth-token"}"
     "NIXBUILDNET_CACHES=cachix://${nixbuildCache}"
     "NIXBUILDNET_SUBSTITUTERS=${nixbuildSubstituters}"
     "NIXBUILDNET_TRUSTED_PUBLIC_KEYS=${nixbuildTrustedPublicKeys}"

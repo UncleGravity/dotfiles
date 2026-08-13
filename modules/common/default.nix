@@ -2,6 +2,7 @@
   imports = [
     # ── Baseline (always applied) ─────────────────────────────
     ./caches.nix
+    ./utility-vars.nix
     ./sops.nix
     ./ssh-keys.nix
 

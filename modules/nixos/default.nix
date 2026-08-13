@@ -5,7 +5,6 @@
     # ── Baseline (always applied) ---------------------------------------
     ./boot.nix
     ./cachix.nix
-    ./clan.nix
     ./console-password.nix
     ./locale.nix
     ./nh.nix
