@@ -38,11 +38,7 @@ in {
     nodes = inferenceNodes;
     coordination =
       {
-        authorizedKeys = [
-          coordinationPublicKey
-          # TODO: Remove after every Spark node passes the dedicated-key rollout.
-          sparkNodes.spark-01.sshHostKey
-        ];
+        authorizedKeys = [coordinationPublicKey];
       }
       // lib.optionalAttrs node.controller {
         identityFile = config.clan.core.vars.generators.spark-coordination-spark.files.id_ed25519.path;
