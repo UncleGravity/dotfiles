@@ -12,7 +12,7 @@ in {
 
     mediaLocation = lib.mkOption {
       type = lib.types.str;
-      default = "/nas/media";
+      default = "/srv/share/media";
       description = "Path to store media files";
     };
 
@@ -43,11 +43,9 @@ in {
     # Immich Service Configuration
     services.immich = {
       enable = true;
-      host = cfg.host;
+      inherit (cfg) host mediaLocation port;
       group = "nas";
-      port = cfg.port;
       openFirewall = true;
-      mediaLocation = cfg.mediaLocation;
       # Hardware acceleration for video transcoding
       accelerationDevices = null; # Give access to all devices
     };

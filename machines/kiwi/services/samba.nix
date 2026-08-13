@@ -38,7 +38,7 @@ in {
         };
 
         nas = {
-          path = "/nas";
+          path = "/srv/share";
           "comment" = "All the NAS folders";
           "read only" = "no";
           "valid users" = username;

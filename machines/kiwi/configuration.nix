@@ -11,7 +11,7 @@
   my = {
     profile = "server";
     audio.enable = true;
-    nas.unas = {
+    unas = {
       ai.enable = true;
       personal.enable = true;
     };

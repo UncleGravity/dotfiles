@@ -7,7 +7,6 @@
     ./grafana
     # ./guacamole
     ./iperf3.nix
-    ./nfs.nix
     ./samba.nix
     ./tailscale.nix
     ./tinyauth.nix

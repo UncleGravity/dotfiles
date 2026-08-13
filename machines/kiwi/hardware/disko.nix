@@ -1,4 +1,4 @@
-{...}: let
+_: let
   # Device Paths
   osDrivePath = "/dev/disk/by-id/nvme-WD_BLACK_SN770M_1TB_245166801032";
   hdd1Path = "/dev/disk/by-id/nvme-WD_Red_SN700_2000GB_25125L800378";
@@ -194,27 +194,25 @@ in {
 
         # Define datasets within the 'storagepool'.
         # storagepool/
-        # ├── root            # Dataset mounted at /nas (includes media)
-        # └── backups         # Dataset mounted at /nas/backups
+        # ├── share           # Data served by Kiwi
+        # └── backups         # Private backup storage
         datasets = {
-          "root" = {
+          "share" = {
             type = "zfs_fs";
-            options.mountpoint = "/nas"; # Main data share at the root of /nas
-            # options.mountpoint = "legacy";
+            mountpoint = "/srv/share";
           };
           "backups" = {
             type = "zfs_fs";
-            mountpoint = "/nas/backups";
+            mountpoint = "/srv/backups";
             options = {
-              # options.mountpoint = "legacy";
               "com.sun:auto-snapshot" = "false";
             };
           };
         };
 
-        # Create an initial blank snapshot of the /data dataset.
+        # Create an initial blank snapshot of the shared dataset.
         postCreateHook = ''
-          zfs snapshot storagepool/root@blank
+          zfs snapshot storagepool/share@blank
         '';
       };
     };

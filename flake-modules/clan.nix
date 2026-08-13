@@ -54,7 +54,10 @@ in {
   flake.sparkNodes = sparkNodes;
 
   clan = {
-    modules.pangolin = ../modules/clan/pangolin;
+    modules = {
+      nas = ../modules/clan/nas;
+      pangolin = ../modules/clan/pangolin;
+    };
 
     meta = {
       name = "angelnet";
@@ -92,6 +95,25 @@ in {
         roles = {
           server.machines.portal.settings.letsEncryptEmail = "viera.tech@gmail.com";
           client.machines.kiwi = {};
+        };
+      };
+
+      nas = {
+        module = {
+          input = "self";
+          name = "nas";
+        };
+        roles = {
+          server.machines.kiwi.settings = {
+            address = "192.168.1.200";
+            interface = "enp117s0";
+            trustedNetworks = ["192.168.1.0/24"];
+          };
+          mount.machines =
+            {
+              sisyphus = {};
+            }
+            // lib.mapAttrs (_: _: {}) sparkNodes;
         };
       };
     };

@@ -15,10 +15,7 @@
   my = {
     profile = "server";
     env.home.enable = false;
-    nas = {
-      kiwi.enable = true;
-      unas.ai.enable = true;
-    };
+    unas.ai.enable = true;
     ntfy.enable = false;
   };
 

@@ -5,8 +5,8 @@
   pkgs,
   ...
 }: let
-  backupDataset = "storagepool/root";
-  mountPoint = "/nas";
+  backupDataset = "storagepool/share";
+  mountPoint = "/srv/share";
   ntfy = lib.getExe pkgs.ntfy-sh;
   ntfyTitle = "${hostname} Backup";
   ntfyTopicFile = config.sops.secrets."ntfy/topic".path;
@@ -38,11 +38,13 @@
     extraBackupArgs =
       [
         "--tag=nas"
+        "--group-by=host,tags"
         "--one-file-system"
       ]
       ++ extraBackupArgs;
 
     pruneOpts = [
+      "--group-by=host,tags"
       "--keep-weekly=7"
       "--keep-monthly=6"
     ];

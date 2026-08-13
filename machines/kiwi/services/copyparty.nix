@@ -29,7 +29,7 @@
 
     volumes = {
       "/kiwi" = {
-        path = "/nas";
+        path = "/srv/share";
         access.r = username;
       };
 
@@ -44,7 +44,7 @@
     wants = ["network-online.target"];
     after = ["network-online.target"];
     unitConfig.RequiresMountsFor = [
-      "/nas"
+      "/srv/share"
       "/mnt/nas/unas/ai"
       "/mnt/nas/unas/personal"
     ];
