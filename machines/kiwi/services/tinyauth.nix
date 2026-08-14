@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   domain = "auth.angel.pizza";
@@ -14,6 +15,59 @@
     "tinyauth/oidc/grafana-client-secret"
   ];
 in {
+  clan.core.vars.generators.tinyauth-users = {
+    prompts.users = {
+      description = "TinyAuth users file";
+      type = "multiline-hidden";
+      persist = true;
+    };
+    files.users = {
+      owner = "tinyauth";
+      group = "tinyauth";
+      mode = "0400";
+    };
+    runtimeInputs = [pkgs.gawk];
+    script = ''
+      awk '
+        BEGIN {
+          records = 0
+          invalid = 0
+        }
+        {
+          line = $0
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+          if (line == "") next
+
+          count = split(line, parts, ":")
+          if (count < 2 || count > 3) {
+            invalid = 1
+            next
+          }
+
+          for (i = 1; i <= count; i++) {
+            field = parts[i]
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
+            if (field == "") invalid = 1
+            parts[i] = field
+          }
+
+          username = parts[1]
+          hash = parts[2]
+          gsub(/\$\$/, "$", hash)
+          if (seen[username]++) invalid = 1
+          if (hash !~ /^\$2[aby]\$(0[4-9]|[12][0-9]|3[01])\$[.\/A-Za-z0-9]{53}$/) invalid = 1
+          records++
+        }
+        END {
+          if (records == 0 || invalid) {
+            print "TinyAuth users file must contain unique username:bcrypt[:totp] records" > "/dev/stderr"
+            exit 1
+          }
+        }
+      ' "$out/users"
+    '';
+  };
+
   sops.secrets = lib.genAttrs secretNames (_: {
     sopsFile = ../secrets/secrets.yaml;
     owner = "tinyauth";
