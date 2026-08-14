@@ -8,7 +8,6 @@
   port = 3000;
   statePath = "/var/lib/tinyauth";
   secretNames = [
-    "tinyauth/users"
     "tinyauth/oidc/dawarich-client-secret"
     "tinyauth/oidc/open-webui-client-secret"
     "tinyauth/oidc/pangolin-client-secret"
@@ -25,6 +24,7 @@ in {
       owner = "tinyauth";
       group = "tinyauth";
       mode = "0400";
+      restartUnits = ["tinyauth.service"];
     };
     runtimeInputs = [pkgs.gawk];
     script = ''
@@ -90,7 +90,7 @@ in {
         AUTH_SECURECOOKIE = true;
         AUTH_SUBDOMAINSENABLED = false;
         AUTH_TRUSTEDPROXIES = "127.0.0.1/32";
-        AUTH_USERSFILE = config.sops.secrets."tinyauth/users".path;
+        AUTH_USERSFILE = config.clan.core.vars.generators.tinyauth-users.files.users.path;
         AUTH_USERATTRIBUTES_ANGEL_NAME = "Angel";
         AUTH_USERATTRIBUTES_ANGEL_EMAIL = "viera.tech@gmail.com";
         AUTH_USERATTRIBUTES_ANGEL_LOCALE = "en-US";
