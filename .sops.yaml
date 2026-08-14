@@ -2,13 +2,6 @@ keys:
   # Operator
   - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
 
-  # Host identities derived from SSH host keys
-  # cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
-  - &banana age1gfgas2vwf4emddhqquqk8uzr306d3mdpv3hap3sk32rglxf50egscyd0xd
-  - &kiwi age1l2nec9f0vag8dztjekumhs2tcsvl8k4xx8wf0cxqj5t2y3xclyas4yrnwq
-  - &sisyphus age1qhtwcahzlraukzjc5ylmnjucfk9xu5f5zw6v0u4kklxt88hawumsc2pvf0
-  - &portal age1st49759cc4kyncs3pykwzy3uxucsrl3v532gm83j7f6eq5me745q65tcnq
-
 creation_rules:
   # Pre-generated host identities are operator-only.
   - path_regex: ^secrets/host-keys/.*\.sops$
@@ -18,22 +11,9 @@ creation_rules:
   - path_regex: ^infra/.*\.(yaml|json|env|ini|sops)$
     age: [*angel]
 
-  # Host-local secrets.
-  - path_regex: ^machines/banana/.*\.(yaml|json|env|ini|sops)$
-    age: [*angel, *banana]
-
-  - path_regex: ^machines/kiwi/.*\.(yaml|json|env|ini|sops)$
-    age: [*angel, *kiwi]
-
-  - path_regex: ^machines/sisyphus/.*\.(yaml|json|env|ini|sops)$
-    age: [*angel, *sisyphus]
-
-  - path_regex: ^machines/portal/.*\.(yaml|json|env|ini|sops)$
-    age: [*angel, *portal]
-
-  # Existing internal shared-secret bundle.
+  # Retained legacy secrets are operator-only.
   - path_regex: ^secrets/secrets\.yaml$
-    age: [*angel, *banana, *kiwi, *sisyphus]
+    age: [*angel]
 
   # Fail closed: unmatched files are operator-only.
   - age: [*angel]
