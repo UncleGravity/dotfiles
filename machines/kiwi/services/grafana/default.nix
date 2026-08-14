@@ -117,15 +117,6 @@
   };
 in {
   sops.secrets = {
-    "grafana/oauth-client-secret" = {
-      sopsFile = ../../secrets/secrets.yaml;
-      key = "tinyauth/oidc/grafana-client-secret";
-      owner = "grafana";
-      group = "grafana";
-      mode = "0400";
-      restartUnits = ["grafana.service"];
-    };
-
     "grafana/secret-key" = {
       owner = "grafana";
       group = "grafana";
@@ -170,7 +161,7 @@ in {
           allow_sign_up = true;
           auto_login = true;
           client_id = "686c07de-8601-48af-8ac1-59c2a05856c0";
-          client_secret = "$__file{${config.sops.secrets."grafana/oauth-client-secret".path}}";
+          client_secret = "$__file{${config.clan.core.vars.generators.tinyauth-oidc-grafana.files.grafana-client-secret.path}}";
           scopes = "openid profile email";
           auth_url = "https://${authDomain}/authorize";
           token_url = "https://${authDomain}/api/oidc/token";

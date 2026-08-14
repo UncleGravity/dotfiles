@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -65,7 +66,6 @@ in {
 
       "open-webui.env" = {
         content = ''
-          OAUTH_CLIENT_SECRET=${config.sops.placeholder."tinyauth/oidc/open-webui-client-secret"}
           OPENAI_API_KEY=${config.sops.placeholder."litellm/master-key"}
         '';
         restartUnits = ["open-webui.service"];
@@ -194,6 +194,9 @@ in {
     wants = [
       "litellm.service"
       "searx.service"
+    ];
+    serviceConfig.EnvironmentFile = lib.mkAfter [
+      config.clan.core.vars.generators.tinyauth-oidc-open-webui.files.environment.path
     ];
   };
 }

@@ -3,26 +3,13 @@
   port = 3002;
   oidcClientId = "19ca6a2e-1dd9-4b02-b4f4-3b8520cd878e";
 in {
-  sops.templates."dawarich.env" = {
-    content = ''
-      OIDC_CLIENT_SECRET=${config.sops.placeholder."tinyauth/oidc/dawarich-client-secret"}
-    '';
-    owner = "dawarich";
-    group = "dawarich";
-    mode = "0400";
-    restartUnits = [
-      "dawarich-sidekiq-all.service"
-      "dawarich-web.service"
-    ];
-  };
-
   services = {
     dawarich = {
       enable = true;
       localDomain = domain;
       webPort = port;
       configureNginx = false;
-      extraEnvFiles = [config.sops.templates."dawarich.env".path];
+      extraEnvFiles = [config.clan.core.vars.generators.tinyauth-oidc-dawarich.files.environment.path];
 
       environment = {
         ALLOW_EMAIL_PASSWORD_LOGIN = "true";
