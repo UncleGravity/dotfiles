@@ -14,6 +14,7 @@
       owner = username;
       group = "users";
       mode = "0400";
+      restartUnits = ["copyparty.service"];
     };
     runtimeInputs = [pkgs.coreutils];
     script = ''
@@ -31,21 +32,13 @@
     '';
   };
 
-  sops.secrets."copyparty/password" = {
-    sopsFile = ../secrets/secrets.yaml;
-    owner = username;
-    group = "users";
-    mode = "0400";
-    restartUnits = ["copyparty.service"];
-  };
-
   services.copyparty = {
     enable = true;
     user = username;
     group = "users";
 
     accounts.${username}.passwordFile =
-      config.sops.secrets."copyparty/password".path;
+      config.clan.core.vars.generators.copyparty.files.password.path;
 
     settings = {
       i = "0.0.0.0"; # careful!
