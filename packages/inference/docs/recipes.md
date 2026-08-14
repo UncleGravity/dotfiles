@@ -60,48 +60,11 @@ Do not import a recipe from another machine directory.
 
 ## Recipe example
 
-A deployment-local recipe remains self-contained. For example, the Sisyphus
-llama.cpp recipe declares its model, secret, image context, and server command
-together:
-
-```nix
-# machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix
-let
-  modelFile = "Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf";
-  modelPath = "/models/primary/${modelFile}";
-  apiKeyPath = "/run/secrets/sisyphus/llama-api-key";
-in {
-  sops.secrets."sisyphus/llama-api-key".mode = "0400";
-
-  my.inference.recipes.qwen3-6-heretic-27b = {
-    models.primary = {
-      repo = "llmfan46/Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-GGUF";
-      revision = "a6b6a6d9385fe7850644e56bfdc93a04a6cb2ee8";
-      selection.include = [modelFile];
-    };
-
-    image.context = ./.;
-
-    container = {
-      devices = ["nvidia.com/gpu=all"];
-      mounts = [{
-        sourcePath = apiKeyPath;
-        targetPath = apiKeyPath;
-      }];
-      args = [
-        "--model"
-        modelPath
-        "--port"
-        "8080"
-        "--api-key-file"
-        apiKeyPath
-      ];
-    };
-
-    endpoint.port = 8080;
-  };
-}
-```
+A deployment-local recipe remains self-contained. The current Sisyphus
+llama.cpp declaration lives in
+[`machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix`](../../../machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix)
+and owns its model revision, image context, devices, server arguments, endpoint,
+and firewall rule.
 
 Model attribute keys are recipe-local logical names. Nix normalizes
 `models.target` into the catalog model named `target`, and the planner mounts
