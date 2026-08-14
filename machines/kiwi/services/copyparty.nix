@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   username,
   ...
 }: {
@@ -16,7 +15,6 @@
       mode = "0400";
       restartUnits = ["copyparty.service"];
     };
-    runtimeInputs = [pkgs.coreutils];
     script = ''
       if [[ ! -s "$out/password" ]]; then
         echo "Copyparty password must not be empty" >&2

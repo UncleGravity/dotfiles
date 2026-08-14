@@ -27,14 +27,11 @@
       mode = "0600";
     };
 
-    runtimeInputs = [pkgs.coreutils];
     script = ''
-      if [[ ! -s "$prompts/${name}.sh" ]]; then
+      if [[ ! -s "$out/${name}.sh" ]]; then
         echo "${name}.sh must not be empty" >&2
         exit 1
       fi
-
-      cp "$prompts/${name}.sh" "$out/${name}.sh"
     '';
   };
 

@@ -1,7 +1,6 @@
 {
   config,
   hostname,
-  pkgs,
   username,
   ...
 }: let
@@ -19,7 +18,6 @@ in {
       mode = "0600";
       restartUnits = ["samba-password.service"];
     };
-    runtimeInputs = [pkgs.coreutils];
     script = ''
       if [[ ! -s "$out/password" ]]; then
         echo "Samba password must not be empty" >&2

@@ -33,7 +33,6 @@ in {
         ];
       };
     };
-    runtimeInputs = [pkgs.coreutils];
     script = ''
       if [[ ! -s "$out/secret-key" ]]; then
         echo "SearxNG secret key must not be empty" >&2
