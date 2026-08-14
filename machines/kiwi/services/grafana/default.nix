@@ -328,9 +328,9 @@ in {
     prometheus-restic-exporter-b2 = mkResticExporter {
       name = "b2";
       port = resticExporterPorts.b2;
-      environmentFile = config.sops.secrets."backup/b2.env".path;
-      repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
-      passwordFile = config.sops.secrets."backup/b2/restic/password".path;
+      environmentFile = config.clan.core.vars.generators.backup-b2.files.environment.path;
+      repositoryFile = config.clan.core.vars.generators.backup-b2.files.repository.path;
+      passwordFile = config.clan.core.vars.generators.backup-b2.files.password.path;
     };
 
     prometheus-restic-exporter-t7 = mkResticExporter {

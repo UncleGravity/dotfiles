@@ -64,12 +64,40 @@
     serviceConfig.WorkingDirectory = "${mountPoint}/.zfs/snapshot";
   };
 in {
-  sops.secrets = {
-    "backup/b2.env" = {};
-    "backup/b2/restic/repo" = {};
-    "backup/b2/restic/password" = {};
-    "backup/t7-password" = {};
+  clan.core.vars.generators.backup-b2 = {
+    prompts = {
+      environment = {
+        description = "B2 environment file";
+        type = "multiline-hidden";
+        persist = true;
+      };
+      repository = {
+        description = "B2 Restic repository";
+        type = "hidden";
+        persist = true;
+      };
+      password = {
+        description = "B2 Restic repository password";
+        type = "hidden";
+        persist = true;
+      };
+    };
+    files = lib.genAttrs ["environment" "repository" "password"] (_: {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = ["prometheus-restic-exporter-b2.service"];
+    });
+    script = ''
+      test -s "$out/environment"
+      for name in repository password; do
+        test -s "$out/$name"
+        test "$(tr -cd '\r\n' < "$out/$name" | wc -c)" -eq 0
+      done
+    '';
   };
+
+  sops.secrets."backup/t7-password" = {};
 
   systemd.services = {
     "restic-backups-b2" = mkResticService [mountPoint];
@@ -114,9 +142,9 @@ in {
         extraBackupArgs = ["--limit-upload=10000"];
       }
       // {
-        environmentFile = config.sops.secrets."backup/b2.env".path;
-        repositoryFile = config.sops.secrets."backup/b2/restic/repo".path;
-        passwordFile = config.sops.secrets."backup/b2/restic/password".path;
+        environmentFile = config.clan.core.vars.generators.backup-b2.files.environment.path;
+        repositoryFile = config.clan.core.vars.generators.backup-b2.files.repository.path;
+        passwordFile = config.clan.core.vars.generators.backup-b2.files.password.path;
       };
 
     t7 =
