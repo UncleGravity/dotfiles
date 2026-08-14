@@ -161,7 +161,7 @@ sops-update-keys:
     git ls-files -z -- '*.yaml' '*.yml' '*.json' '*.env' '*.ini' '*.sops' |
         while IFS= read -r -d '' file; do
             [[ -f "$file" ]] || continue
-            if [[ "$(sops filestatus "$file")" == '{"encrypted":true}' ]]; then
+            if status=$(sops filestatus "$file" 2>/dev/null) && [[ "$status" == '{"encrypted":true}' ]]; then
                 sops --config .sops.yaml updatekeys --yes "$file"
             fi
         done
