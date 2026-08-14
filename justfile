@@ -172,7 +172,7 @@ sops-update-keys:
 host-key *args:
     ./scripts/host-key.sh "$@"
 
-# Wipe a machine and install NixOS with both transitional machine identities.
+# Wipe a machine and install NixOS with its Clan machine identity.
 # Usage: just provision portal root@<ip>   (IP: just infra "output portal_ipv4")
 provision host target:
     nix develop --builders "" -c ./scripts/provision.sh "{{ host }}" "{{ target }}"

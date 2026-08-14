@@ -28,7 +28,8 @@ identity_contract=$(nix eval --builders "" --raw \
     let
       hostKeys = config.services.openssh.hostKeys;
     in
-      if config.sops.age.sshKeyPaths == []
+      if config.sops.age.keyFile == "/var/lib/sops-nix/key.txt"
+        && config.sops.age.sshKeyPaths == []
         && builtins.length hostKeys == 1
         && (builtins.head hostKeys).path == "/run/secrets/vars/openssh/ssh.id_ed25519"
         && (builtins.head hostKeys).type == "ed25519"
@@ -49,7 +50,7 @@ fi
 
 extra_files=$(mktemp -d)
 trap 'rm -rf -- "$extra_files"' EXIT
-"$repo_root/scripts/stage-install-secrets.sh" --clan-only "$node" "$extra_files"
+"$repo_root/scripts/stage-install-secrets.sh" "$node" "$extra_files"
 
 nixos-anywhere --flake "$repo_root#$node" --target-host "root@$ip" \
   --extra-files "$extra_files" \

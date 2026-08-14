@@ -3,7 +3,7 @@ set -euo pipefail
 
 umask 077
 
-# Install NixOS with an escrowed host identity; erases the target disk.
+# Install NixOS with its Clan machine identity; erases the target disk.
 
 usage() {
   echo "Usage: $0 <hostname> <ssh-target>   e.g. $0 portal root@1.2.3.4" >&2
@@ -32,7 +32,26 @@ spark-01 | spark-02 | spark-03 | spark-04)
   ;;
 esac
 
+identity_contract=$(nix eval --builders "" --raw \
+  "$repo_root#nixosConfigurations.$host.config" \
+  --apply 'config:
+    let
+      hostKeys = config.services.openssh.hostKeys;
+    in
+      if config.sops.age.keyFile == "/var/lib/sops-nix/key.txt"
+        && config.sops.age.sshKeyPaths == []
+        && builtins.length hostKeys == 1
+        && (builtins.head hostKeys).path == "/run/secrets/vars/openssh/ssh.id_ed25519"
+        && (builtins.head hostKeys).type == "ed25519"
+      then "clan-only"
+      else throw "Provisioning requires Clan-only SOPS and SSH host identity configuration"')
+[[ $identity_contract == "clan-only" ]] || {
+  echo "Identity configuration is not Clan-only: $host" >&2
+  exit 1
+}
+
 echo "This will ERASE the disk on $target and install '$host' from this flake."
+echo "Only the Clan machine identity will be staged; no /etc/ssh host identity will be installed."
 read -r -p "Type $host to continue: " confirmation
 if [[ $confirmation != "$host" ]]; then
   echo "Confirmation did not match; aborting." >&2

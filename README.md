@@ -4,9 +4,8 @@ NOTE: Incomplete readme. Flake output composition lives in `flake-modules/`.
 
 ## NixOS
 
-Reinstall through the repository entrypoints so the required machine identities
-are present before first boot. Sparks use only their Clan machine identity;
-Portal and Sisyphus still use the transitional dual-identity path. See
+Reinstall through the repository entrypoints so the Clan machine identity is
+present before first boot. The installed SSH host key is also a Clan var. See
 [docs/reinstall.md](docs/reinstall.md).
 
 ```sh
@@ -84,26 +83,20 @@ Requirement: configure iCloud for clipboard sharing.
 
    Update flake.nix with values
 
-6. Set up sops-nix for secrets management:
-   ```bash
-   # [On new machine]
-   # Create host ssh keypair (/etc/ssh/)
-   nix shell nixpkgs#ssh-to-age
-   sudo ssh-keygen -A
-   cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
-
-   # [On old machine]
-   # Add the public key to .sops.yaml!
-   # Re-encerypt secrets.yaml with new public key
-   sops updatekeys secrets/secrets.yaml
-
-   # commit and push
-   ```
-
-7. Git clone this repo
+6. Git clone this repo
    ```bash
    git clone git@github.com:UncleGravity/dotfiles.git ~/nix
    cd ~/nix
+   ```
+
+7. Restore the enrolled Clan machine identity before the first build:
+   ```bash
+   nix run --builders "" .#clan -- vars check banana
+   staging=$(mktemp -d)
+   nix run --builders "" .#clan -- vars upload banana --directory "$staging"
+   sudo install -d -m 0700 /var/lib/sops-nix
+   sudo install -m 0600 "$staging/key.txt" /var/lib/sops-nix/key.txt
+   rm -rf "$staging"
    ```
 
 8. Build your new system:

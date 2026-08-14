@@ -5,7 +5,7 @@ set +x
 umask 077
 
 usage() {
-  echo "Usage: $0 [--clan-only] <host> <staging-root>" >&2
+  echo "Usage: $0 <host> <staging-root>" >&2
   exit 2
 }
 
@@ -79,14 +79,6 @@ file_mode() {
   die "cannot determine file mode: $path"
 }
 
-clan_only=false
-if [[ ${1:-} == "--clan-only" ]]; then
-  clan_only=true
-  shift
-elif [[ ${1:-} == --* ]]; then
-  usage
-fi
-
 (($# == 2)) || usage
 host=$1
 root=$2
@@ -105,9 +97,7 @@ repo_root=$(git -C "$script_dir/.." rev-parse --show-toplevel)
 machine_metadata=$repo_root/sops/machines/$host/key.json
 clan_private=$repo_root/vars/per-machine/$host/openssh/ssh.id_ed25519/secret
 clan_public=$repo_root/vars/per-machine/$host/openssh/ssh.id_ed25519.pub/value
-escrow_public=$repo_root/secrets/host-keys/$host.pub
 scratch_dir=$(mktemp -d "${TMPDIR:-/tmp}/install-secrets.XXXXXX")
-published_files=()
 published_dirs=()
 publish_complete=false
 
@@ -118,9 +108,6 @@ cleanup() {
   trap - EXIT
   set +e
   if [[ $publish_complete != true ]]; then
-    for path in "${published_files[@]}"; do
-      [[ ! -e $path ]] || unlink "$path"
-    done
     for path in "${published_dirs[@]}"; do
       [[ ! -e $path ]] || rm -rf -- "$path"
     done
@@ -135,23 +122,17 @@ trap 'exit 143' TERM
 
 machine_dir=$scratch_dir/var/lib/sops-nix
 machine_key=$machine_dir/key.txt
-ssh_dir=$scratch_dir/etc/ssh
-legacy_private=$ssh_dir/ssh_host_ed25519_key
-legacy_public=$ssh_dir/ssh_host_ed25519_key.pub
 clan_decrypted_private=$scratch_dir/clan-ssh-host-key
 target_machine_dir=$root/var/lib/sops-nix
 target_ssh_dir=$root/etc/ssh
 
-for command in age-keygen chmod cmp cp git install jq mktemp nix rm sops ssh-keygen stat unlink; do
+for command in age-keygen chmod cp git install jq mktemp nix rm sops ssh-keygen stat; do
   require_command "$command"
 done
 
 for path in "$machine_metadata" "$clan_private" "$clan_public"; do
   require_regular_file "$path"
 done
-if [[ $clan_only != true ]]; then
-  require_regular_file "$escrow_public"
-fi
 
 if [[ -e $target_machine_dir || -L $target_machine_dir ]]; then
   die "refusing to overwrite staged Clan identity directory: $target_machine_dir"
@@ -216,49 +197,16 @@ read -r derived_public_type derived_public_blob _ < <(
 [[ $derived_public_type == "$clan_public_type" && $derived_public_blob == "$clan_public_blob" ]] ||
   die "Clan SSH private and public values differ"
 
-if [[ $clan_only != true ]]; then
-  (
-    cd "$repo_root"
-    "$script_dir/host-key.sh" stage "$host" "$scratch_dir"
-  )
-
-  require_regular_file "$legacy_private"
-  require_regular_file "$legacy_public"
-  cmp -s "$legacy_public" "$escrow_public" ||
-    die "staged SSH public key does not match its escrowed value"
-  cmp -s "$legacy_public" "$clan_public" ||
-    die "legacy and Clan SSH public keys differ"
-  cmp -s "$clan_decrypted_private" "$legacy_private" ||
-    die "legacy and Clan SSH private keys differ"
-fi
-
 [[ $(file_mode "$machine_dir") == 700 ]] ||
   die "unexpected mode on Clan machine identity directory"
 [[ $(file_mode "$machine_key") == 600 ]] ||
   die "unexpected mode on Clan machine identity"
 [[ $(file_mode "$clan_decrypted_private") == 600 ]] ||
   die "unexpected mode on decrypted Clan SSH private key"
-if [[ $clan_only != true ]]; then
-  [[ $(file_mode "$legacy_private") == 600 ]] ||
-    die "unexpected mode on retained SSH private key"
-  [[ $(file_mode "$legacy_public") == 644 ]] ||
-    die "unexpected mode on retained SSH public key"
-fi
 
 install -d -m 0755 "$(dirname -- "$target_machine_dir")"
 published_dirs+=("$target_machine_dir")
 cp -a "$machine_dir" "$target_machine_dir"
-if [[ $clan_only != true ]]; then
-  install -d -m 0755 "$target_ssh_dir"
-  published_files+=("$target_ssh_dir/ssh_host_ed25519_key")
-  install -m 0600 "$legacy_private" "$target_ssh_dir/ssh_host_ed25519_key"
-  published_files+=("$target_ssh_dir/ssh_host_ed25519_key.pub")
-  install -m 0644 "$legacy_public" "$target_ssh_dir/ssh_host_ed25519_key.pub"
-fi
 publish_complete=true
 
-if [[ $clan_only == true ]]; then
-  echo "Staged and verified the Clan machine identity for '$host' under '$root'; no legacy SSH identity was staged."
-else
-  echo "Staged and verified both install identities for '$host' under '$root'."
-fi
+echo "Staged and verified the Clan machine identity for '$host' under '$root'; no /etc/ssh host identity was staged."
