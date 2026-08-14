@@ -97,7 +97,23 @@ in {
     '';
   };
 
-  sops.secrets."backup/t7-password" = {};
+  clan.core.vars.generators.backup-t7 = {
+    prompts.password = {
+      description = "T7 Restic repository password";
+      type = "hidden";
+      persist = true;
+    };
+    files.password = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = ["prometheus-restic-exporter-t7.service"];
+    };
+    script = ''
+      test -s "$out/password"
+      test "$(tr -cd '\r\n' < "$out/password" | wc -c)" -eq 0
+    '';
+  };
 
   systemd.services = {
     "restic-backups-b2" = mkResticService [mountPoint];
@@ -154,7 +170,7 @@ in {
         onCalendar = "02:01:00";
       }
       // {
-        passwordFile = config.sops.secrets."backup/t7-password".path;
+        passwordFile = config.clan.core.vars.generators.backup-t7.files.password.path;
         repository = "/mnt/t7/restic";
       };
   };

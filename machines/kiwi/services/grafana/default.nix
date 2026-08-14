@@ -337,7 +337,7 @@ in {
       name = "t7";
       port = resticExporterPorts.t7;
       repository = "/mnt/t7/restic";
-      passwordFile = config.sops.secrets."backup/t7-password".path;
+      passwordFile = config.clan.core.vars.generators.backup-t7.files.password.path;
       requiredMounts = ["/mnt/t7"];
     };
 
