@@ -17,6 +17,7 @@ in {
       owner = "root";
       group = "root";
       mode = "0600";
+      restartUnits = ["samba-password.service"];
     };
     runtimeInputs = [pkgs.coreutils];
     script = ''
@@ -32,11 +33,6 @@ in {
         exit 1
       fi
     '';
-  };
-
-  sops.secrets."samba/password" = {
-    mode = "0600";
-    restartUnits = ["samba-password.service"];
   };
 
   services = {
@@ -126,7 +122,7 @@ in {
       RemainAfterExit = true;
     };
     script = ''
-      password="$(<${config.sops.secrets."samba/password".path})"
+      password="$(<${config.clan.core.vars.generators.samba.files.password.path})"
       printf '%s\n%s\n' "$password" "$password" | smbpasswd -a -s ${username}
     '';
   };
