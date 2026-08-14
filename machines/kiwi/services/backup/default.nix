@@ -107,7 +107,6 @@ in {
       owner = "root";
       group = "root";
       mode = "0400";
-      restartUnits = ["prometheus-restic-exporter-t7.service"];
     };
     script = ''
       test -s "$out/password"
