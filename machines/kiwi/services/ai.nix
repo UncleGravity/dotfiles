@@ -51,26 +51,39 @@ in {
     '';
   };
 
-  sops = {
-    secrets = {
-      "litellm/master-key".sopsFile = ../../../secrets/secrets.yaml;
+  clan.core.vars.generators.litellm = {
+    prompts.master-key = {
+      description = "LiteLLM master key";
+      type = "hidden";
+      persist = true;
     };
-
-    templates = {
-      "litellm.env" = {
-        content = ''
-          LITELLM_MASTER_KEY=${config.sops.placeholder."litellm/master-key"}
-        '';
+    files = {
+      master-key.deploy = false;
+      environment = {
+        mode = "0400";
         restartUnits = ["litellm.service"];
       };
-
-      "open-webui.env" = {
-        content = ''
-          OPENAI_API_KEY=${config.sops.placeholder."litellm/master-key"}
-        '';
+      open-webui-environment = {
+        mode = "0400";
         restartUnits = ["open-webui.service"];
       };
     };
+    script = ''
+      if [[ ! -s "$out/master-key" ]]; then
+        echo "LiteLLM master key must not be empty" >&2
+        exit 1
+      fi
+      originalSize="$(wc -c < "$out/master-key")"
+      singleLineSize="$(tr -d '\r\n' < "$out/master-key" | wc -c)"
+      if [[ "$originalSize" -ne "$singleLineSize" ]]; then
+        echo "LiteLLM master key must be a single line" >&2
+        exit 1
+      fi
+
+      masterKey="$(cat "$out/master-key")"
+      printf 'LITELLM_MASTER_KEY=%s\n' "$masterKey" > "$out/environment"
+      printf 'OPENAI_API_KEY=%s\n' "$masterKey" > "$out/open-webui-environment"
+    '';
   };
 
   # SERVICES
@@ -80,7 +93,7 @@ in {
       package = pkgs.litellm.override {inherit python3Packages;};
       host = "127.0.0.1";
       port = litellmPort;
-      environmentFile = config.sops.templates."litellm.env".path;
+      environmentFile = config.clan.core.vars.generators.litellm.files.environment.path;
       settings = {
         general_settings.master_key = "os.environ/LITELLM_MASTER_KEY";
         model_list = [
@@ -108,7 +121,7 @@ in {
       enable = true;
       host = "127.0.0.1";
       port = openWebuiPort;
-      environmentFile = config.sops.templates."open-webui.env".path;
+      environmentFile = config.clan.core.vars.generators.litellm.files.open-webui-environment.path;
       environment = {
         WEBUI_URL = "https://${domain}";
         WEBUI_AUTH = "True";

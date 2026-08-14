@@ -116,13 +116,30 @@
     '';
   };
 in {
-  sops.secrets = {
-    "grafana/secret-key" = {
+  clan.core.vars.generators.grafana-secret-key = {
+    prompts.secret-key = {
+      description = "Grafana secret key";
+      type = "hidden";
+      persist = true;
+    };
+    files.secret-key = {
       owner = "grafana";
       group = "grafana";
       mode = "0400";
       restartUnits = ["grafana.service"];
     };
+    script = ''
+      if [[ ! -s "$out/secret-key" ]]; then
+        echo "Grafana secret key must not be empty" >&2
+        exit 1
+      fi
+      originalSize="$(wc -c < "$out/secret-key")"
+      singleLineSize="$(tr -d '\r\n' < "$out/secret-key" | wc -c)"
+      if [[ "$originalSize" -ne "$singleLineSize" ]]; then
+        echo "Grafana secret key must be a single line" >&2
+        exit 1
+      fi
+    '';
   };
 
   services = {
@@ -145,7 +162,7 @@ in {
         };
 
         security = {
-          secret_key = "$__file{${config.sops.secrets."grafana/secret-key".path}}";
+          secret_key = "$__file{${config.clan.core.vars.generators.grafana-secret-key.files.secret-key.path}}";
           disable_initial_admin_creation = true;
           disable_gravatar = true;
           cookie_secure = true;
