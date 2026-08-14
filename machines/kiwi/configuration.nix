@@ -19,7 +19,6 @@
     desktop = {
       enable = true;
       environment = "gnome";
-      rdp.enable = true; # For Guacamole
     };
 
     docker.enable = true;

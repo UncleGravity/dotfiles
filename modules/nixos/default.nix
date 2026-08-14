@@ -22,7 +22,6 @@
     ./features/desktop.nix
     ./features/docker.nix
     ./features/escape-hatch.nix
-    ./features/guacamole.nix
     ./features/hackrf.nix
     ./features/immich.nix
     ./features/nvidia-ai.nix
