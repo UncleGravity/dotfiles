@@ -1,11 +1,39 @@
 {
   config,
   hostname,
+  pkgs,
   username,
   ...
 }: let
   lanInterface = "enp117s0";
 in {
+  clan.core.vars.generators.samba = {
+    prompts.password = {
+      description = "Samba password for ${username}";
+      type = "hidden";
+      persist = true;
+    };
+    files.password = {
+      owner = "root";
+      group = "root";
+      mode = "0600";
+    };
+    runtimeInputs = [pkgs.coreutils];
+    script = ''
+      if [[ ! -s "$out/password" ]]; then
+        echo "Samba password must not be empty" >&2
+        exit 1
+      fi
+
+      originalSize="$(wc -c < "$out/password")"
+      singleLineSize="$(tr -d '\r\n' < "$out/password" | wc -c)"
+      if [[ "$originalSize" -ne "$singleLineSize" ]]; then
+        echo "Samba password must be a single line" >&2
+        exit 1
+      fi
+    '';
+  };
+
   sops.secrets."samba/password" = {
     mode = "0600";
     restartUnits = ["samba-password.service"];
