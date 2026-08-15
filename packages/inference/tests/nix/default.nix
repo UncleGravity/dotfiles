@@ -45,6 +45,14 @@
     fabric0 = "10.100.0.${toString id}";
     fabric1 = "10.100.1.${toString id}";
   };
+  expectedModelStoreRules = map (path: "d /srv/models/${path} 2770 root infer -") [
+    ".locks"
+    ".locks/hf"
+    ".locks/images"
+    ".staging"
+    ".staging/hf"
+    "hf"
+  ];
   expectedFabricHosts = lib.foldlAttrs (hosts: name: node: let
     fabric = expectedFabric node.id;
   in
@@ -98,7 +106,8 @@
     result = builtins.tryEval evaluation;
   in
     !result.success;
-  moduleContract = assert lib.hasInfix "inference-configured" controller.systemd.services.infer-glm52.serviceConfig.ExecStart;
+  moduleContract = assert lib.all (rule: builtins.elem rule controller.systemd.tmpfiles.rules) expectedModelStoreRules;
+  assert lib.hasInfix "inference-configured" controller.systemd.services.infer-glm52.serviceConfig.ExecStart;
   assert controller.systemd.services.infer-glm52.environment.HF_TOKEN_PATH
   == "/run/secrets/vars/spark-huggingface-spark/token";
   assert rejects {my.inference.coordination.identityFile = lib.mkForce null;};

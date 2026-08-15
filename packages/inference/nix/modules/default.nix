@@ -395,6 +395,12 @@ in {
         [
           "d /var/lib/infer 0755 root root -"
           "d ${cfg.modelStore.localRoot} 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/.locks 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/.locks/hf 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/.locks/images 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/.staging 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/.staging/hf 2770 root infer -"
+          "d ${cfg.modelStore.localRoot}/hf 2770 root infer -"
         ]
         ++ lib.optional isRegistryHost "d ${registryDataDir} 0750 docker-registry docker-registry -";
 

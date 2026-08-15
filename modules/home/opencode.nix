@@ -46,6 +46,10 @@
           models = {
             "sisyphus-current" = {
               name = "Sisyphus Current";
+              limit = {
+                context = 65536;
+                output = 8192;
+              };
             };
 
             "spark-current" = {

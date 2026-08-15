@@ -6,6 +6,8 @@ import { modelsCommand } from "../cli/models.js"
 import { runCli } from "../runtime/run-cli.js"
 import { InferenceToolsLive } from "../runtime/system.js"
 
+process.umask(0o007)
+
 const cli = Command.runWith(modelsCommand, {
   version: "0.1.0"
 })
