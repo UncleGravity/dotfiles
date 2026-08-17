@@ -37,9 +37,9 @@ The supported paths are:
   attempting it.
 
 Both installers fail before the erase prompt unless the evaluated machine uses
-an empty `sops.age.sshKeyPaths` list and exactly one Ed25519 host key at the
-Clan runtime path. The Spark installer supports only the four existing nodes;
-adding another node is a separate enrollment procedure.
+empty `sops.age.sshKeyPaths` and `sops.gnupg.sshKeyPaths` lists and exactly one
+Ed25519 host key at the Clan runtime path. The Spark installer supports only the
+four existing nodes; adding another node is a separate enrollment procedure.
 
 Never regenerate an enrolled machine's `openssh` var during reinstall. A new
 key changes its server fingerprint and invalidates pinned known hosts. Run

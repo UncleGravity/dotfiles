@@ -40,6 +40,7 @@ identity_contract=$(nix eval --builders "" --raw \
     in
       if config.sops.age.keyFile == "/var/lib/sops-nix/key.txt"
         && config.sops.age.sshKeyPaths == []
+        && config.sops.gnupg.sshKeyPaths == []
         && builtins.length hostKeys == 1
         && (builtins.head hostKeys).path == "/run/secrets/vars/openssh/ssh.id_ed25519"
         && (builtins.head hostKeys).type == "ed25519"

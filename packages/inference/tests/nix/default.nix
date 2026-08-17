@@ -148,7 +148,8 @@
     && config.services.dockerRegistry.enable == (name == "spark-01")
     && (config.clan.core.vars.generators ? spark-coordination-spark) == (name == "spark-01")
     && (config.clan.core.vars.generators ? spark-huggingface-spark) == (name == "spark-01")
-    && config.sops.age.sshKeyPaths == [])
+    && config.sops.age.sshKeyPaths == []
+    && config.sops.gnupg.sshKeyPaths == [])
   sparkNames;
   assert controller.my.inference.coordination.identityFile
   == "/run/secrets/vars/spark-coordination-spark/id_ed25519";
