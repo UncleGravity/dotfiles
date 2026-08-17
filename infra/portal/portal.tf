@@ -89,7 +89,7 @@ resource "hcloud_rdns" "portal_ipv4" {
 # and Traefik terminates TLS with its own Let's Encrypt wildcard cert.
 
 locals {
-  managed_by = "managed by opentofu (nix repo, infra/)"
+  managed_by = "managed by opentofu (nix repo, infra/portal/)"
 }
 
 resource "cloudflare_dns_record" "pangolin" {

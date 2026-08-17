@@ -148,10 +148,10 @@ deploy host:
     nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --builders "" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
-# Manage cloud resources (infra/) with OpenTofu.
+# Manage Portal cloud resources with OpenTofu.
 # Usage: just infra init | plan | apply | output
 infra *args="plan":
-    sops exec-env infra/secrets.env "nix develop --builders '' -c tofu -chdir=infra {{ args }}"
+    sops exec-env infra/portal/secrets.env "nix develop --builders '' -c tofu -chdir=infra/portal {{ args }}"
 
 # Synchronize every tracked SOPS file with the recipient policy in .sops.yaml.
 sops-update-keys:

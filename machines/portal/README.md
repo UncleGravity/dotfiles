@@ -4,7 +4,7 @@
 
 | Layer | Managed by | State |
 |---|---|---|
-| Server, IPv4 address, firewall, DNS | OpenTofu in `infra/` | Encrypted `infra/terraform.tfstate` |
+| Server, IPv4 address, firewall, DNS | OpenTofu in `infra/portal/` | Encrypted `infra/portal/terraform.tfstate` |
 | NixOS and Pangolin services | This flake | Git |
 | Pangolin application data | `/var/lib/pangolin` | Portal root disk |
 
@@ -21,7 +21,7 @@ just infra plan   # Preview changes to Hetzner and Cloudflare.
 just infra apply  # Apply the reviewed changes.
 ```
 
-Commit `infra/terraform.tfstate` and `infra/.terraform.lock.hcl` after an
+Commit `infra/portal/terraform.tfstate` and `infra/portal/.terraform.lock.hcl` after an
 apply. The state is encrypted by the OpenTofu configuration.
 
 Install NixOS using the reported IPv4 address:

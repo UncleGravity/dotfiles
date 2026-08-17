@@ -39,5 +39,5 @@ result
 *.raw
 
 # OpenTofu (state itself IS committed - encrypted via the encryption block)
-infra/.terraform/
+infra/**/.terraform/
 *.tfstate.backup

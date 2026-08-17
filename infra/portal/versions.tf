@@ -3,7 +3,8 @@
 # (layer 1) is installed with `just provision` and updated with `just deploy`.
 #
 # Run via `just infra <plan|apply|...>` - it wraps tofu with the credentials
-# from infra/secrets.env (sops). State is committed to git, encrypted below.
+# from infra/portal/secrets.env (sops). State is committed to git, encrypted
+# below.
 #
 # This file is the plumbing (providers, encryption, variables, outputs);
 # every actual resource lives in portal.tf.
@@ -21,7 +22,7 @@ terraform {
   }
 
   # OpenTofu-native state/plan encryption so terraform.tfstate can live in git.
-  # Passphrase comes from TF_VAR_state_passphrase in infra/secrets.env.
+  # Passphrase comes from TF_VAR_state_passphrase in infra/portal/secrets.env.
   encryption {
     key_provider "pbkdf2" "passphrase" {
       passphrase = var.state_passphrase
