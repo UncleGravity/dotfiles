@@ -80,4 +80,3 @@ before rebooting.
 - The console password hash is shared through the `console-password-angel` Clan generator.
 - Each permanent host identity must be enrolled in Clan's `openssh` vars before
   installation.
-- Spark nodes must not be added to the `secrets/secrets.yaml` recipient rule.

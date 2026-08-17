@@ -7,9 +7,5 @@ creation_rules:
   - path_regex: ^infra/.*\.(yaml|json|env|ini|sops)$
     age: [*angel]
 
-  # Retained legacy secrets are operator-only.
-  - path_regex: ^secrets/secrets\.yaml$
-    age: [*angel]
-
   # Fail closed: unmatched files are operator-only.
   - age: [*angel]
