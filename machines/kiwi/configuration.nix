@@ -1,9 +1,22 @@
-{...}: {
+{
+  inputs,
+  username,
+  ...
+}: {
   imports = [
+    ../../modules/nixos
+    inputs.self.nixosModules.inference
+    inputs.copyparty.nixosModules.default
     ./hardware
     ./networking
     ./services
   ];
+
+  nixpkgs.hostPlatform = "x86_64-linux";
+  system.stateVersion = "24.11";
+
+  # Home
+  home-manager.users.${username}.imports = [./home.nix];
 
   # ---------------------------------------------------------------------------
   # Custom modules

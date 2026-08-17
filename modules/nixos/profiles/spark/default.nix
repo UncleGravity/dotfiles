@@ -1,17 +1,27 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
+  username,
   ...
 }: let
   cluster = config.my.sparkCluster;
 in {
   imports = [
+    ../..
+    inputs.self.nixosModules.inference
+    inputs.dgx-spark.nixosModules.dgx-spark
     ./hardware
     ./inference
     ./monitoring.nix
     ./networking
   ];
+
+  nixpkgs.hostPlatform = "aarch64-linux";
+  system.stateVersion = "26.05";
+
+  home-manager.users.${username}.imports = [../../../home/profiles/spark.nix];
 
   my = {
     profile = "server";

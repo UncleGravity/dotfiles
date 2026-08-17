@@ -1,8 +1,33 @@
 # Configuration for the 'my-macbook' machine
-{...}: {
+{
+  inputs,
+  username,
+  ...
+}: {
   imports = [
+    ../../modules/darwin
+    inputs.nix-homebrew.darwinModules.nix-homebrew
     ./builders
   ];
+
+  clan.core.deployment.requireExplicitUpdate = true;
+
+  nixpkgs.hostPlatform = "aarch64-darwin";
+  system.stateVersion = 6;
+
+  # Home
+  home-manager.users.${username}.imports = [./home.nix];
+
+  nix-homebrew = {
+    enable = true;
+    user = "angel";
+    autoMigrate = true;
+    mutableTaps = false;
+    taps = {
+      "homebrew/homebrew-core" = inputs.homebrew-core;
+      "homebrew/homebrew-cask" = inputs.homebrew-cask;
+    };
+  };
 
   # SECRETS
   my.env.work.enable = true;

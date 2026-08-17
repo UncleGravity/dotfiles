@@ -1,6 +1,7 @@
-{
+{inputs, ...}: {
   imports = [
     ../common
+    inputs.home-manager.nixosModules.home-manager
 
     # ── Baseline (always applied) ---------------------------------------
     ./boot.nix
@@ -29,6 +30,8 @@
     ./features/tailscale.nix
     ./features/unas.nix
   ];
+
+  system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or inputs.self.narHash;
 
   # ----------------------------------------------------------------------
   # Enable touchpad support (enabled default in most desktopManager).

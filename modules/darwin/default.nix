@@ -1,6 +1,7 @@
-{
+{inputs, ...}: {
   imports = [
     ../common
+    inputs.home-manager.darwinModules.home-manager
 
     # ── Baseline (always applied) ─────────────────────────────
     ./cachix.nix
