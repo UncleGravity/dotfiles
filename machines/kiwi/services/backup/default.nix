@@ -64,6 +64,13 @@
     serviceConfig.WorkingDirectory = "${mountPoint}/.zfs/snapshot";
   };
 in {
+  assertions = [
+    {
+      assertion = config.my.ntfy.enable;
+      message = "Kiwi backups require my.ntfy.enable for notifications";
+    }
+  ];
+
   clan.core.vars.generators.backup-b2 = {
     prompts = {
       environment = {

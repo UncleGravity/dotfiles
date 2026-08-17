@@ -38,8 +38,8 @@
       frequent = 4; # How many frequent snapshots to keep
       hourly = 24;
       daily = 7;
-      # weekly = 4;
-      # monthly = 6;
+      weekly = 4;
+      # monthly = 1;
     };
 
     autoScrub.enable = true; # periodic background scrub (prevent bit rot)
