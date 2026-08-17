@@ -10,4 +10,10 @@ RUN chmod 0755 \
     /usr/local/libexec/infer-deepseek-v4-prepare-runtime \
     /usr/local/bin/infer-deepseek-v4-flash-0731
 
+# Cap vLLM's shm busy-wait grace period so decode does not pin CPU cores
+# with sched_yield() spinning (GB10 thermals; upstream default is 1s).
+RUN f="$(python3 -c 'import vllm.distributed.device_communicators.shm_broadcast as m; print(m.__file__)')" \
+  && grep -q 'busy_loop_s: float = 1,' "$f" \
+  && sed -i 's/busy_loop_s: float = 1,/busy_loop_s: float = 0.002,/' "$f"
+
 ENTRYPOINT ["/usr/local/bin/infer-deepseek-v4-flash-0731"]
