@@ -3,10 +3,6 @@ keys:
   - &angel age1xndmu8qplxwc6czlgv6amh2s7aujazcdv879r3fvhthh8xt6pfaqe75555
 
 creation_rules:
-  # Pre-generated host identities are operator-only.
-  - path_regex: ^secrets/host-keys/.*\.sops$
-    age: [*angel]
-
   # OpenTofu runtime credentials are operator-only.
   - path_regex: ^infra/.*\.(yaml|json|env|ini|sops)$
     age: [*angel]

@@ -166,12 +166,6 @@ sops-update-keys:
             fi
         done
 
-# Create, import, verify, or stage escrowed SSH host identities.
-# Usage: just host-key create <host> | import <host> <key|-> | check [host]
-[positional-arguments]
-host-key *args:
-    ./scripts/host-key.sh "$@"
-
 # Wipe a machine and install NixOS with its Clan machine identity.
 # Usage: just provision portal root@<ip>   (IP: just infra "output portal_ipv4")
 provision host target:
