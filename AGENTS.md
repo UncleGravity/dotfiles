@@ -14,8 +14,8 @@
 - `nh search <package> --limit <number>` - Search nixpkgs for packages (e.g., `nh search cargo --limit 5`)
 
 **Clan**
-- The repository's `clan` package prefers an explicit SOPS Age identity or the standard local `~/.config/sops/age/keys.txt` file.
-- When no local identity is available, it runs the pinned Clan CLI through 1Password and injects the operator identity only into that process.
+- The repository's `clan` package runs the pinned Clan CLI through 1Password and injects the operator Age identity only into that process.
+- An explicitly supplied `SOPS_AGE_KEY` or `SOPS_AGE_KEY_FILE` overrides 1Password for deliberate recovery or testing.
 - Use `nix run .#clan-unwrapped -- ...` only for troubleshooting without 1Password.
 
 **searching**
