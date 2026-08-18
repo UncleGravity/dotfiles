@@ -73,17 +73,9 @@ check:
 lint:
     statix check .
 
-# Garbage collect old generations (default: 30 days)
-gc days="30d":
-    @echo "Performing garbage collection..."
-    nh clean all --keep-since "{{ days }}" --ask
-    @echo "Garbage collection completed!"
-
-# Remove unused nix store paths
-trim:
-    @echo "Pruning unused nix store paths..."
-    nix-store --gc
-    @echo "Pruning completed!"
+# Remove old generations and collect unreferenced store paths.
+clean days="30d":
+    nh clean all --keep 3 --keep-since "{{ days }}" --ask
 
 # List system generations
 list-generations:
@@ -114,28 +106,6 @@ status:
     @echo "Nix Version: $(nix --version)"
     @echo "Flake Status:"
     @nix flake metadata
-
-# Format and mount disk using Disko
-[confirm("DANGER: This will destroy, format, and mount the disk according to the Disko configuration for the specified host. THIS IS A DESTRUCTIVE OPERATION. Are you sure you want to continue?")]
-disko hostname:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "Preparing to format and mount disk using Disko for hostname: {{ hostname }}"
-    if [ "{{ system_type }}" != "nixos" ]; then
-        echo "❌ Disko command is only supported on NixOS systems."
-        exit 1
-    fi
-
-    DISKO_CONFIG="./machines/{{ hostname }}/hardware/disko.nix"
-
-    if [ ! -f "$DISKO_CONFIG" ]; then
-        echo "❌ Disko configuration file not found: $DISKO_CONFIG"
-        exit 1
-    fi
-
-    echo "Running Disko with config: $DISKO_CONFIG"
-    sudo nix --builders "" --extra-experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount "$DISKO_CONFIG"
-    echo "Disko command completed successfully!"
 
 # Build a NixOS host on the target machine and deploy over SSH.
 # Usage: just deploy <hostname>
