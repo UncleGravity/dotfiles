@@ -4,8 +4,6 @@
   pkgs,
   ...
 }: {
-  #TODO: Load secret ENVIRONMENT variables from sops-nix
-
   imports = [
     ./aliases.nix
     ./fzf.nix
@@ -37,8 +35,8 @@
     # Secrets -------------------------------------------------------------------------------------
     # Loaded on every zsh invocation, keep envExtra LIGHTWEIGHT
     envExtra = ''
-      [ -r "${config.xdg.configHome}/zsh/secrets/home.sh" ] && source "${config.xdg.configHome}/zsh/secrets/home.sh"
-      [ -r "${config.xdg.configHome}/zsh/secrets/work.sh" ] && source "${config.xdg.configHome}/zsh/secrets/work.sh"
+      [ -r /run/secrets/vars/shell-env-home/home.sh ] && source /run/secrets/vars/shell-env-home/home.sh
+      [ -r /run/secrets/vars/shell-env-work/work.sh ] && source /run/secrets/vars/shell-env-work/work.sh
     '';
 
     initContent = let

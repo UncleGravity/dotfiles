@@ -20,12 +20,6 @@ in {
       default = true;
       description = "Whether to advertise this machine as an exit node";
     };
-
-    authKeyFile = lib.mkOption {
-      type = lib.types.path;
-      default = "/run/secrets/vars/tailscale/authkey";
-      description = "Path to a file containing the Tailscale auth key";
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -57,7 +51,7 @@ in {
 
     services.tailscale = {
       enable = true;
-      inherit (cfg) authKeyFile;
+      authKeyFile = config.clan.core.vars.generators.tailscale.files.authkey.path;
       openFirewall = true; # allow the Tailscale UDP port through the firewall
       useRoutingFeatures = "both"; # enable subnet-router & exit-node roles
       extraUpFlags =

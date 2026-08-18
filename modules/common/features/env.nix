@@ -1,13 +1,11 @@
 {
   config,
   lib,
-  options,
   pkgs,
   username,
   ...
 }: let
   cfg = config.my.env;
-  home = config.users.users.${username}.home;
 
   mkShellGenerator = name: {
     share = true;
@@ -34,10 +32,6 @@
       fi
     '';
   };
-
-  mkShellSecret = name: {
-    "vars/shell-env-${name}/${name}.sh".path = "${home}/.config/zsh/secrets/${name}.sh";
-  };
 in {
   # ---------------------------------------------------------------------------
   # Shell env secrets (explicitly sourced in zshrc).
@@ -48,31 +42,13 @@ in {
   # ---------------------------------------------------------------------------
   options.my.env = {
     home.enable =
-      lib.mkEnableOption "personal shell env secrets (~/.config/zsh/secrets/home.sh)"
+      lib.mkEnableOption "personal shell environment secrets"
       // {default = true;};
-    work.enable = lib.mkEnableOption "work shell env secrets (~/.config/zsh/secrets/work.sh)";
+    work.enable = lib.mkEnableOption "work shell environment secrets";
   };
 
-  config = lib.mkMerge [
-    {
-      clan.core.vars.generators = lib.mkMerge [
-        (lib.mkIf cfg.home.enable {shell-env-home = mkShellGenerator "home";})
-        (lib.mkIf cfg.work.enable {shell-env-work = mkShellGenerator "work";})
-      ];
-
-      sops.secrets = lib.mkMerge [
-        (lib.mkIf cfg.home.enable (mkShellSecret "home"))
-        (lib.mkIf cfg.work.enable (mkShellSecret "work"))
-      ];
-    }
-
-    (lib.optionalAttrs (options ? systemd.tmpfiles.rules) {
-      # sops-nix creates the missing parent directories as root (bad).
-      systemd.tmpfiles.rules = lib.mkIf (cfg.home.enable || cfg.work.enable) [
-        "d ${home}/.config 0700 ${username} users -"
-        "d ${home}/.config/zsh 0700 ${username} users -"
-        "d ${home}/.config/zsh/secrets 0700 ${username} users -"
-      ];
-    })
+  config.clan.core.vars.generators = lib.mkMerge [
+    (lib.mkIf cfg.home.enable {shell-env-home = mkShellGenerator "home";})
+    (lib.mkIf cfg.work.enable {shell-env-work = mkShellGenerator "work";})
   ];
 }

@@ -1,4 +1,8 @@
-{lib, ...}: {
+{lib, ...}: let
+  serverGenerator = "pangolin-server-pangolin";
+  cloudflareGenerator = "pangolin-cloudflare-pangolin";
+  newtGenerator = "newt-pangolin";
+in {
   _class = "clan.service";
 
   manifest = {
@@ -50,19 +54,12 @@
       };
     };
 
-    perInstance = {
-      instanceName,
-      settings,
-      ...
-    }: {
+    perInstance = {settings, ...}: {
       nixosModule = {
         config,
         pkgs,
         ...
-      }: let
-        serverGenerator = "pangolin-server-${instanceName}";
-        cloudflareGenerator = "pangolin-cloudflare-${instanceName}";
-      in {
+      }: {
         clan.core.vars.generators.${serverGenerator} = {
           share = true;
           files.environment = {
@@ -152,10 +149,8 @@
         then roles.server.machines.${lib.head serverNames}.settings
         else throw "Pangolin instance '${instanceName}' requires exactly one server";
     in {
-      nixosModule = {config, ...}: let
-        generator = "newt-${instanceName}";
-      in {
-        clan.core.vars.generators.${generator} = {
+      nixosModule = {config, ...}: {
+        clan.core.vars.generators.${newtGenerator} = {
           prompts = {
             newt-id = {
               description = "Newt client ID";
@@ -190,7 +185,7 @@
         services.newt = {
           enable = true;
           settings.endpoint = "https://${serverSettings.dashboardDomain}";
-          environmentFile = config.clan.core.vars.generators.${generator}.files.environment.path;
+          environmentFile = config.clan.core.vars.generators.${newtGenerator}.files.environment.path;
         };
       };
     };
