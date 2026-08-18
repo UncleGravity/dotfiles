@@ -2,7 +2,6 @@
   config,
   lib,
   username,
-  hostname,
   pkgs,
   ...
 }: {
@@ -41,9 +40,4 @@
       '';
     }
   ];
-
-  # Networking
-  networking = {
-    hostName = hostname;
-  };
 }

@@ -1,16 +1,14 @@
 {
+  config,
   lib,
-  hostname,
   ...
 }: {
   #############################################################
   #  Host & User config
   #############################################################
   networking = {
-    hostName = hostname;
-    localHostName = hostname;
-    computerName = hostname;
-    # system.defaults.smb.NetBIOSName = lib.mkDefault hostname; # Often derived from hostname
+    localHostName = config.networking.hostName;
+    computerName = config.networking.hostName;
     wakeOnLan.enable = lib.mkDefault true;
   };
 }

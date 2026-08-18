@@ -1,6 +1,5 @@
 {
   config,
-  hostname,
   lib,
   pkgs,
   ...
@@ -8,7 +7,7 @@
   backupDataset = "storagepool/share";
   mountPoint = "/srv/share";
   ntfy = lib.getExe pkgs.ntfy-sh;
-  ntfyTitle = "${hostname} Backup";
+  ntfyTitle = "${config.networking.hostName} Backup";
   ntfyTopicFile = config.clan.core.vars.generators.ntfy.files.topic.path;
 
   notify = message: ''NTFY_TOPIC="$(<${ntfyTopicFile})" ${ntfy} pub -m ${lib.escapeShellArg message} -t ${lib.escapeShellArg ntfyTitle}'';

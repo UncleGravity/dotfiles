@@ -1,6 +1,5 @@
 {
   config,
-  hostname,
   username,
   ...
 }: let
@@ -42,7 +41,7 @@ in {
 
       settings = {
         global = {
-          "server string" = hostname;
+          "server string" = config.networking.hostName;
           "smb ports" = "445";
           "disable netbios" = "yes";
 
