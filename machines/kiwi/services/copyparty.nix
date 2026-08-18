@@ -2,7 +2,10 @@
   config,
   username,
   ...
-}: {
+}: let
+  domain = "files.angel.pizza";
+  port = 3923;
+in {
   clan.core.vars.generators.copyparty = {
     prompts.password = {
       description = "Copyparty password for ${username}";
@@ -35,28 +38,44 @@
     user = username;
     group = "users";
 
-    accounts.${username}.passwordFile =
-      config.clan.core.vars.generators.copyparty.files.password.path;
+    # accounts.${username}.passwordFile =
+    #   config.clan.core.vars.generators.copyparty.files.password.path;
 
     settings = {
-      i = "0.0.0.0"; # careful!
-      p = 3923;
+      p = port;
       http-only = true;
       no-reload = true;
       hist = "/var/cache/copyparty";
+      idp-h-usr = "remote-user";
+      xff-src = "127.0.0.1";
     };
 
     volumes = {
       "/kiwi" = {
         path = "/srv/share";
-        access.r = username;
+        access.r = "*";
       };
 
       "/unas" = {
         path = "/mnt/nas/unas";
-        access.r = username;
+        access.r = "*";
       };
     };
+  };
+
+  services.newt.blueprint.proxy-resources.copyparty = {
+    name = "Copyparty";
+    protocol = "http";
+    full-domain = domain;
+    auth.sso-enabled = true;
+    auth.sso-users = [config.services.tinyauth.settings.AUTH_USERATTRIBUTES_ANGEL_EMAIL];
+    targets = [
+      {
+        hostname = "127.0.0.1";
+        method = "http";
+        inherit port;
+      }
+    ];
   };
 
   systemd.services.copyparty = {
