@@ -9,7 +9,7 @@
 
   # bash assoc array literal: [name]="runner-store-path"
   vmRunnersBash = lib.concatStringsSep "\n" (lib.mapAttrsToList (
-      name: vm: ''  [${name}]="${vm.runner}"''
+      name: vm: ''[${name}]="${vm.runner}"''
     )
     vms);
 

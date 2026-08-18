@@ -7,17 +7,17 @@ set -euo pipefail
 : "${INFER_ROLE:?missing INFER_ROLE}"
 : "${INFER_WORLD_SIZE:?missing INFER_WORLD_SIZE}"
 
-if [[ "${INFER_WORLD_SIZE}" != "2" ]]; then
+if [[ ${INFER_WORLD_SIZE} != "2" ]]; then
   echo "DeepSeek V4 Flash 0731 requires exactly two nodes" >&2
   exit 2
 fi
 
 case "${INFER_ROLE}" in
-  head | worker) ;;
-  *)
-    echo "unsupported inference role: ${INFER_ROLE}" >&2
-    exit 2
-    ;;
+head | worker) ;;
+*)
+  echo "unsupported inference role: ${INFER_ROLE}" >&2
+  exit 2
+  ;;
 esac
 
 /usr/local/libexec/infer-deepseek-v4-prepare-runtime /models/model
@@ -36,7 +36,7 @@ cluster_args=(
   --master-port 25000
 )
 
-if [[ "${INFER_ROLE}" == "worker" ]]; then
+if [[ ${INFER_ROLE} == "worker" ]]; then
   cluster_args+=(--headless)
 fi
 

@@ -34,7 +34,6 @@ jobs:
           name: ${{ secrets.CACHIX_CACHE }}
       - name: Run nix flake check
         run: nix flake check --all-systems --show-trace
-
   # ---------------------------------------------------------------------------
   # Job 2: Discover all configurations dynamically
   # ---------------------------------------------------------------------------
@@ -49,7 +48,6 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: ./.github/actions/discover-nix-configs
         id: discover
-
   # ---------------------------------------------------------------------------
   # Job 3: Build each configuration on appropriate runner
   # ---------------------------------------------------------------------------
@@ -85,7 +83,6 @@ jobs:
           if [ -L result ]; then
             cachix push ${{ secrets.CACHIX_CACHE }} ./result
           fi
-
   # ---------------------------------------------------------------------------
   # Job 4: Notify on failures
   # ---------------------------------------------------------------------------

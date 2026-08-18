@@ -7,17 +7,17 @@ set -euo pipefail
 : "${INFER_ROLE:?missing INFER_ROLE}"
 : "${INFER_WORLD_SIZE:?missing INFER_WORLD_SIZE}"
 
-if [[ "${INFER_WORLD_SIZE}" != "4" ]]; then
+if [[ ${INFER_WORLD_SIZE} != "4" ]]; then
   echo "GLM 5.2 TP4/DCP4 requires exactly four nodes" >&2
   exit 2
 fi
 
 case "${INFER_ROLE}" in
-  head | worker) ;;
-  *)
-    echo "unsupported inference role: ${INFER_ROLE}" >&2
-    exit 2
-    ;;
+head | worker) ;;
+*)
+  echo "unsupported inference role: ${INFER_ROLE}" >&2
+  exit 2
+  ;;
 esac
 
 readonly ray_port=26479
@@ -46,7 +46,7 @@ ray_common=(
   --temp-dir="${ray_root}/tmp"
 )
 
-if [[ "${INFER_ROLE}" == "worker" ]]; then
+if [[ ${INFER_ROLE} == "worker" ]]; then
   for ((attempt = 1; attempt <= 120; attempt++)); do
     if (: >/dev/tcp/"${INFER_HEAD_ADDRESS}"/"${ray_port}") 2>/dev/null; then
       exec ray start \
@@ -75,7 +75,7 @@ for ((attempt = 1; attempt <= 180; attempt++)); do
   sleep 2
 done
 
-if [[ "${cluster_ready}" != "1" ]]; then
+if [[ ${cluster_ready} != "1" ]]; then
   ray status --address="${RAY_ADDRESS}" || true
   echo "Ray did not register all four Spark GPUs" >&2
   exit 1

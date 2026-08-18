@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   programs.yazi = {
     enable = true;
     enableZshIntegration = true;
@@ -31,8 +28,16 @@
 
     settings = {
       plugin.prepend_fetchers = [
-        { group = "git"; url = "*";  run = "git"; }
-        { group = "git"; url = "*/"; run = "git"; }
+        {
+          group = "git";
+          url = "*";
+          run = "git";
+        }
+        {
+          group = "git";
+          url = "*/";
+          run = "git";
+        }
       ];
       mgr = {
         sort_by = "mtime";
@@ -62,7 +67,11 @@
       ];
 
       input.prepend_keymap = [
-        { on = [ "<Esc>" ]; run = "close"; desc = "Cancel input"; }
+        {
+          on = ["<Esc>"];
+          run = "close";
+          desc = "Cancel input";
+        }
       ];
     };
     # theme = { /* if you want theme.toml */ };

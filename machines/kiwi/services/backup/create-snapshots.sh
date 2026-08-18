@@ -5,7 +5,7 @@ set -euo pipefail
 
 log() { echo "(pre-backup hook) $*"; }
 
-if (( $# != 3 )); then
+if (($# != 3)); then
   log "Usage: $0 <zfs_binary_path> <dataset> <snapshot_name>"
   exit 1
 fi
@@ -15,7 +15,7 @@ readonly DATASET=$2
 readonly SNAPSHOT_NAME=$3
 readonly SNAPSHOT="${DATASET}@${SNAPSHOT_NAME}"
 
-if [[ ! -x "$ZFS" ]]; then
+if [[ ! -x $ZFS ]]; then
   log "ERROR: '$ZFS' is not executable"
   exit 1
 fi
@@ -33,7 +33,7 @@ fi
 mountpoint=$("$ZFS" get -H -o value mountpoint "$DATASET")
 snapshot_path="$mountpoint/.zfs/snapshot/$SNAPSHOT_NAME"
 
-if [[ ! -d "$snapshot_path" ]]; then
+if [[ ! -d $snapshot_path ]]; then
   log "ERROR: snapshot is not accessible at $snapshot_path"
   exit 1
 fi
