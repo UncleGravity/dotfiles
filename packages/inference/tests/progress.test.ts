@@ -14,9 +14,9 @@ test("progress events are versioned, observable, and metered", async () => {
       state: "started",
       scope: "cluster",
       operation: "prepare-node",
-      message: "Preparing 'spark-02'",
-      instance: "glm52",
-      node: "spark-02"
+      message: "Preparing 'node-b'",
+      instance: "fixture",
+      node: "node-b"
     })
     const events = yield* hub.events.pipe(Stream.take(1), Stream.runCollect)
     const metrics = yield* Metric.snapshot
@@ -27,7 +27,7 @@ test("progress events are versioned, observable, and metered", async () => {
   assert.equal(Schema.is(ProgressEvent)(event), true)
   assert.equal(event?.schemaVersion, 1)
   assert.equal(event?.operation, "prepare-node")
-  assert.equal(event?.instance, "glm52")
+  assert.equal(event?.instance, "fixture")
   assert.equal(
     metrics.some((metric) => metric.id === "inference_progress_events_total"),
     true

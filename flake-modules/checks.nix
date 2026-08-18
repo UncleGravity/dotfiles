@@ -1,25 +1,20 @@
-{
-  inputs,
-  lib,
-  ...
-}: {
+{inputs, ...}: {
   perSystem = {
     pkgs,
     system,
     ...
-  }: {
+  }: let
+    nixosSystem =
+      if pkgs.stdenv.hostPlatform.isx86_64
+      then "x86_64-linux"
+      else "aarch64-linux";
+  in {
     checks = import ../packages/inference/tests/nix {
       inherit pkgs;
       inferenceLib = inputs.self.lib.inference;
       inferencePackage = inputs.self.packages.${system}.inference;
-      kiwiConfiguration = inputs.self.nixosConfigurations.kiwi;
-      sparkConfiguration = inputs.self.nixosConfigurations.spark-01;
-      sparkConfigurations = lib.genAttrs [
-        "spark-01"
-        "spark-02"
-        "spark-03"
-        "spark-04"
-      ] (name: inputs.self.nixosConfigurations.${name});
+      nixosLib = inputs.nixpkgs.lib;
+      nixosPkgs = inputs.nixpkgs.legacyPackages.${nixosSystem};
     };
   };
 }

@@ -4,10 +4,10 @@
     "name": "fixture-vllm",
     "hash": "d9c1a161bee504d378117b1a3066f8ca60a31e7b094113100fa7908777d5bc0f"
   },
-  "inventoryHash": "8c60775a44fde717442730f388ac3b91a0b1e50e1bd0104d00fcaa0c6d16d0c7",
+  "inventoryHash": "52a2e6f359330edf726f10619207252a4c99f18753429cec869ccbbde24ae3c1",
   "startOrder": "workers-first",
-  "nodes": ["spark-02", "spark-01"],
-  "head": "spark-02",
+  "nodes": ["node-b", "node-a"],
+  "head": "node-b",
   "models": [
     {
       "name": "target",
@@ -35,7 +35,7 @@
   },
   "nodePlans": [
     {
-      "node": "spark-02",
+      "node": "node-b",
       "role": "head",
       "rank": 0,
       "container": {
@@ -44,10 +44,10 @@
         "extraOptions": ["--ipc=host"],
         "environment": {
           "HF_HUB_OFFLINE": "1",
-          "INFER_HEAD_ADDRESS": "10.100.0.2",
-          "INFER_HEAD_NODE": "spark-02",
-          "INFER_NODE": "spark-02",
-          "INFER_NODE_ADDRESS": "10.100.0.2",
+          "INFER_HEAD_ADDRESS": "198.51.100.2",
+          "INFER_HEAD_NODE": "node-b",
+          "INFER_NODE": "node-b",
+          "INFER_NODE_ADDRESS": "198.51.100.2",
           "INFER_PORT": "8000",
           "INFER_RANK": "0",
           "INFER_ROLE": "head",
@@ -64,7 +64,7 @@
       }
     },
     {
-      "node": "spark-01",
+      "node": "node-a",
       "role": "worker",
       "rank": 1,
       "container": {
@@ -73,10 +73,10 @@
         "extraOptions": ["--ipc=host"],
         "environment": {
           "HF_HUB_OFFLINE": "1",
-          "INFER_HEAD_ADDRESS": "10.100.0.2",
-          "INFER_HEAD_NODE": "spark-02",
-          "INFER_NODE": "spark-01",
-          "INFER_NODE_ADDRESS": "10.100.0.1",
+          "INFER_HEAD_ADDRESS": "198.51.100.2",
+          "INFER_HEAD_NODE": "node-b",
+          "INFER_NODE": "node-a",
+          "INFER_NODE_ADDRESS": "198.51.100.1",
           "INFER_PORT": "8000",
           "INFER_RANK": "1",
           "INFER_ROLE": "worker",
@@ -94,9 +94,9 @@
     }
   ],
   "endpoint": {
-    "node": "spark-02",
+    "node": "node-b",
     "port": 8000,
-    "healthUrl": "http://192.168.1.32:8000/health",
+    "healthUrl": "http://192.0.2.2:8000/health",
     "startupTimeoutSeconds": 900
   }
 }

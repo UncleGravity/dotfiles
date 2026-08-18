@@ -1,50 +1,122 @@
 {
   inferenceLib,
   inferencePackage,
-  kiwiConfiguration,
+  nixosLib,
+  nixosPkgs,
   pkgs,
-  sparkConfiguration,
-  sparkConfigurations,
 }: let
   inherit (pkgs) lib;
   fixture = import ./fixture.nix {
     inherit inferenceLib pkgs;
   };
-  controller = sparkConfiguration.config;
-  sparkNames = [
-    "spark-01"
-    "spark-02"
-    "spark-03"
-    "spark-04"
+  localPlatform =
+    if nixosPkgs.stdenv.hostPlatform.isx86_64
+    then "linux/amd64"
+    else "linux/arm64";
+  nodeNames = [
+    "node-a"
+    "node-b"
+    "node-c"
+    "node-d"
   ];
-  stripNewlines = builtins.replaceStrings ["\n" "\r"] ["" ""];
-  sparkConfigs = lib.mapAttrs (_: configuration: configuration.config) sparkConfigurations;
-  expectedNodes = {
-    spark-01 = {
-      id = 1;
-      managementAddress = "192.168.1.31";
-      managementMac = "4c:bb:47:2e:47:8c";
+  nodes = {
+    node-a = {
+      platform = localPlatform;
+      managementAddress = "192.0.2.1";
+      sshHostKey = "ssh-ed25519 node-a-key";
+      fabric.fabric0 = "198.51.100.1";
     };
-    spark-02 = {
-      id = 2;
-      managementAddress = "192.168.1.32";
-      managementMac = "4c:bb:47:2e:35:8c";
+    node-b = {
+      platform = localPlatform;
+      managementAddress = "192.0.2.2";
+      sshHostKey = "ssh-ed25519 node-b-key";
+      fabric.fabric0 = "198.51.100.2";
     };
-    spark-03 = {
-      id = 3;
-      managementAddress = "192.168.1.33";
-      managementMac = "4c:bb:47:2f:83:13";
+    node-c = {
+      platform = localPlatform;
+      managementAddress = "192.0.2.3";
+      sshHostKey = "ssh-ed25519 node-c-key";
+      fabric.fabric0 = "198.51.100.3";
     };
-    spark-04 = {
-      id = 4;
-      managementAddress = "192.168.1.34";
-      managementMac = "4c:bb:47:2e:e0:b0";
+    node-d = {
+      platform = localPlatform;
+      managementAddress = "192.0.2.4";
+      sshHostKey = "ssh-ed25519 node-d-key";
+      fabric.fabric0 = "198.51.100.4";
     };
   };
-  expectedFabric = id: {
-    fabric0 = "10.100.0.${toString id}";
-    fabric1 = "10.100.1.${toString id}";
+  instances = {
+    single = {
+      recipe = "fixture-vllm";
+      nodes = ["node-a"];
+      autoStart = true;
+    };
+    dual = {
+      recipe = "fixture-vllm";
+      nodes = ["node-a" "node-b"];
+      autoStart = false;
+    };
+    quad = {
+      recipe = "fixture-vllm";
+      nodes = nodeNames;
+      autoStart = true;
+    };
   };
+  recipe = {
+    models.target = {
+      repo = "example/tiny-model";
+      revision = "1111111111111111111111111111111111111111";
+    };
+    image = {
+      context = ../fixtures/build-context;
+      buildArgs.VLLM_VERSION = "0.25.1";
+    };
+    topology = {
+      nodeCounts = [1 2 4];
+      startOrder = "workers-first";
+    };
+    container = {
+      devices = ["nvidia.com/gpu=all"];
+      extraOptions = ["--ipc=host"];
+      environment.HF_HUB_OFFLINE = "1";
+      args = [
+        "/models/target"
+        "--served-model-name"
+        "fixture"
+      ];
+    };
+    endpoint.port = 8000;
+  };
+  mkSystem = localNode:
+    nixosLib.nixosSystem {
+      system = nixosPkgs.stdenv.hostPlatform.system;
+      modules = [
+        ../../nix/modules
+        {
+          nixpkgs.config.allowUnfree = true;
+          networking.hostName = localNode;
+          system.stateVersion = "26.05";
+
+          my.inference = {
+            enable = true;
+            controlNode = "node-a";
+            coordination = {
+              authorizedKeys = ["ssh-ed25519 coordination-key"];
+              identityFile =
+                if localNode == "node-a"
+                then "/run/keys/coordination"
+                else null;
+            };
+            inherit instances nodes;
+            recipes.fixture-vllm = recipe;
+          };
+        }
+      ];
+    };
+  controllerConfiguration = mkSystem "node-a";
+  workerConfiguration = mkSystem "node-b";
+  controller = controllerConfiguration.config;
+  worker = workerConfiguration.config;
   expectedModelStoreRules = map (path: "d /srv/models/${path} 2770 root infer -") [
     ".locks"
     ".locks/hf"
@@ -53,125 +125,31 @@
     ".staging/hf"
     "hf"
   ];
-  expectedFabricHosts = lib.foldlAttrs (hosts: name: node: let
-    fabric = expectedFabric node.id;
-  in
-    hosts
-    // {
-      ${fabric.fabric0} = ["${name}-f0"];
-      ${fabric.fabric1} = ["${name}-f1"];
-    }) {}
-  expectedNodes;
-  expectedInstances = {
-    deepseek-v4-flash-0731 = {
-      autoStart = false;
-      nodes = ["spark-01" "spark-02"];
-      recipe = "deepseek-v4-flash-0731";
-    };
-    glm52 = {
-      autoStart = false;
-      nodes = sparkNames;
-      recipe = "glm52-b12x-spark";
-    };
-    laguna = {
-      autoStart = false;
-      nodes = ["spark-01"];
-      recipe = "laguna-vllm";
-    };
-  };
-  sparkScrapeJobs =
-    map (job: {
-      inherit
-        (job)
-        job_name
-        scrape_interval
-        scrape_timeout
-        static_configs
-        ;
-    }) (lib.filter (
-        job: lib.elem job.job_name ["spark-node" "spark-gpu"]
-      )
-      kiwiConfiguration.config.services.prometheus.scrapeConfigs);
-  mkStaticConfigs = port:
-    map (name: {
-      targets = ["${expectedNodes.${name}.managementAddress}:${toString port}"];
-      labels = {
-        cluster = "spark";
-        node = name;
-      };
-    })
-    sparkNames;
   rejects = module: let
-    evaluation = (sparkConfiguration.extendModules {modules = [module];}).config.system.build.toplevel.drvPath;
+    evaluation = (controllerConfiguration.extendModules {modules = [module];}).config.system.build.toplevel.drvPath;
     result = builtins.tryEval evaluation;
   in
     !result.success;
   moduleContract = assert lib.all (rule: builtins.elem rule controller.systemd.tmpfiles.rules) expectedModelStoreRules;
-  assert lib.hasInfix "inference-configured" controller.systemd.services.infer-glm52.serviceConfig.ExecStart;
-  assert controller.systemd.services.infer-glm52.environment.HF_TOKEN_PATH
-  == "/run/secrets/vars/spark-huggingface-spark/token";
+  assert lib.hasInfix "inference-configured" controller.systemd.services.infer-dual.serviceConfig.ExecStart;
+  assert controller.systemd.services.infer-single.wantedBy == ["multi-user.target"];
+  assert controller.systemd.services.infer-dual.wantedBy == [];
+  assert controller.systemd.services.infer-quad.wantedBy == ["multi-user.target"];
+  assert builtins.hasAttr "infer-node-dual" controller.systemd.services;
+  assert builtins.hasAttr "infer-prepare-dual" controller.systemd.services;
+  assert builtins.hasAttr "infer-node-quad" controller.systemd.services;
+  assert builtins.hasAttr "infer-prepare-quad" controller.systemd.services;
+  assert builtins.hasAttr "infer-node-dual" worker.systemd.services;
+  assert builtins.hasAttr "infer-prepare-dual" worker.systemd.services;
+  assert builtins.hasAttr "infer-node-quad" worker.systemd.services;
+  assert builtins.hasAttr "infer-prepare-quad" worker.systemd.services;
+  assert !(builtins.hasAttr "infer-single" worker.systemd.services);
+  assert !(builtins.hasAttr "infer-dual" worker.systemd.services);
+  assert !(builtins.hasAttr "infer-quad" worker.systemd.services);
   assert rejects {my.inference.coordination.identityFile = lib.mkForce null;};
   assert rejects {my.inference.coordination.authorizedKeys = lib.mkForce [];};
-  assert rejects {my.inference.nodes.spark-02.sshHostKey = lib.mkForce null;};
+  assert rejects {my.inference.nodes.node-b.sshHostKey = lib.mkForce null;};
     pkgs.runCommand "inference-module-contract" {} ''
-      touch $out
-    '';
-  topologyContract = assert lib.all (name: let
-    config = sparkConfigs.${name};
-    expected = expectedNodes.${name};
-    actual = config.my.sparkCluster.localNode;
-    opensshPublic = stripNewlines config.clan.core.vars.generators.openssh.files."ssh.id_ed25519.pub".value;
-    inferenceInstances =
-      lib.mapAttrs (_: instance: {
-        inherit (instance) autoStart nodes recipe;
-      })
-      config.my.inference.instances;
-  in
-    actual.id
-    == expected.id
-    && actual.managementAddress == expected.managementAddress
-    && actual.managementMac == expected.managementMac
-    && actual.fabric == expectedFabric expected.id
-    && actual.sshHostKey == opensshPublic
-    && config.my.sparkCluster.controlNode == "spark-01"
-    && config.my.sparkCluster.orderedNodes == sparkNames
-    && config.my.sparkCluster.fabricHosts == expectedFabricHosts
-    && config.my.inference.controlNode == "spark-01"
-    && inferenceInstances == expectedInstances
-    && config.services.prometheus.exporters.node.listenAddress == expected.managementAddress
-    && config.services.prometheus.exporters.node.port == 9100
-    && config.services.prometheus.exporters.nvidia-gpu.listenAddress == expected.managementAddress
-    && config.services.prometheus.exporters.nvidia-gpu.port == 9835
-    && lib.sort builtins.lessThan config.networking.firewall.trustedInterfaces
-    == ["fabric0" "fabric1" "lo" "podman+"]
-    && config.services.dgx-dashboard.enable == (name == "spark-01")
-    && config.services.dockerRegistry.enable == (name == "spark-01")
-    && (config.clan.core.vars.generators ? spark-coordination-spark) == (name == "spark-01")
-    && (config.clan.core.vars.generators ? spark-huggingface-spark) == (name == "spark-01")
-    && config.sops.age.sshKeyPaths == []
-    && config.sops.gnupg.sshKeyPaths == [])
-  sparkNames;
-  assert controller.my.inference.coordination.identityFile
-  == "/run/secrets/vars/spark-coordination-spark/id_ed25519";
-  assert controller.my.inference.serviceEnvironment.HF_TOKEN_PATH
-  == "/run/secrets/vars/spark-huggingface-spark/token";
-  assert controller.services.dockerRegistry.listenAddress == "10.100.0.1";
-  assert sparkScrapeJobs
-  == [
-    {
-      job_name = "spark-node";
-      scrape_interval = "5s";
-      scrape_timeout = "4s";
-      static_configs = mkStaticConfigs 9100;
-    }
-    {
-      job_name = "spark-gpu";
-      scrape_interval = "5s";
-      scrape_timeout = "4s";
-      static_configs = mkStaticConfigs 9835;
-    }
-  ];
-    pkgs.runCommand "spark-topology-contract" {} ''
       touch $out
     '';
 in
@@ -180,7 +158,6 @@ in
   assert fixture.invalidInstanceRejected; {
     inference = inferencePackage;
     inference-module-contract = moduleContract;
-    spark-topology-contract = topologyContract;
     inference-contracts =
       pkgs.runCommand "inference-contracts" {
         nativeBuildInputs = [inferencePackage pkgs.jq];

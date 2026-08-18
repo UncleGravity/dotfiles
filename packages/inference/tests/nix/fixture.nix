@@ -49,28 +49,28 @@
   recipe = recipes.fixture-vllm;
   catalog = inferenceLib.mkCatalog recipes;
   inventoryInput = {
-    localNode = "spark-01";
-    controlNode = "spark-01";
+    localNode = "node-a";
+    controlNode = "node-a";
     modelStore = {
       archiveRoot = "/mnt/nas/unas/ai/models";
       localRoot = "/srv/models";
     };
-    registry.endpoint = "10.100.0.1:5000";
+    registry.endpoint = "198.51.100.1:5000";
     nodes = {
-      spark-02 = {
+      node-b = {
         platform = "linux/arm64";
-        managementAddress = "192.168.1.32";
+        managementAddress = "192.0.2.2";
         fabric = {
-          fabric0 = "10.100.0.2";
-          fabric1 = "10.100.1.2";
+          fabric0 = "198.51.100.2";
+          fabric1 = "203.0.113.2";
         };
       };
-      spark-01 = {
+      node-a = {
         platform = "linux/arm64";
-        managementAddress = "192.168.1.31";
+        managementAddress = "192.0.2.1";
         fabric = {
-          fabric0 = "10.100.0.1";
-          fabric1 = "10.100.1.1";
+          fabric0 = "198.51.100.1";
+          fabric1 = "203.0.113.1";
         };
       };
     };
@@ -79,7 +79,7 @@
   instanceCatalog = inferenceLib.mkInstanceCatalog {
     instances.fixture = {
       recipe = "fixture-vllm";
-      nodes = ["spark-02" "spark-01"];
+      nodes = ["node-b" "node-a"];
       autoStart = true;
     };
     inherit recipes;
