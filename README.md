@@ -9,7 +9,7 @@ present before first boot. The installed SSH host key is also a Clan var. See
 [docs/reinstall.md](docs/reinstall.md).
 
 ```sh
-just provision portal root@<installer-ip>
+just reinstall portal root@<installer-ip>
 just spark-install spark-04
 ```
 

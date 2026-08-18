@@ -1,6 +1,6 @@
 # Cloud substrate for the flake's hosts (layer 0): hcloud server + static IP +
 # firewall, and the Cloudflare DNS records that point at them. NixOS itself
-# (layer 1) is installed with `just provision` and updated with `just deploy`.
+# (layer 1) is installed with `just reinstall` and updated with `just deploy`.
 #
 # Run via `just infra <plan|apply|...>` - it wraps tofu with the credentials
 # from infra/portal/secrets.env (sops). State is committed to git, encrypted
@@ -57,5 +57,5 @@ variable "cloudflare_zone_id" {
 
 output "portal_ipv4" {
   value       = hcloud_primary_ip.portal_ipv4.ip_address
-  description = "Static IPv4 of portal - provision with: just provision portal root@<this>"
+  description = "Static IPv4 of portal - install with: just reinstall portal root@<this>"
 }

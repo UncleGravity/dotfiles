@@ -28,10 +28,10 @@ Install NixOS using the reported IPv4 address:
 
 ```sh
 PORTAL_IPV4=$(just infra "output -raw portal_ipv4") # retrieve server IP
-just provision portal "root@$PORTAL_IPV4" # install NixOS
+just reinstall portal "root@$PORTAL_IPV4" # install NixOS
 ```
 
-Provisioning erases the target disk. It injects the Clan machine Age identity,
+Reinstallation erases the target disk. It injects the Clan machine Age identity,
 which decrypts the tracked runtime SSH host key as described in
 [`docs/reinstall.md`](../../docs/reinstall.md). The SSH fingerprint therefore
 survives replacement.
@@ -63,7 +63,7 @@ Replace the VM while retaining its public IPv4 address:
 ```sh
 just infra apply -replace=hcloud_server.portal
 PORTAL_IPV4=$(just infra "output -raw portal_ipv4")
-just provision portal "root@$PORTAL_IPV4"
+just reinstall portal "root@$PORTAL_IPV4"
 ```
 
 The public IPv4 address and stored SSH identity survive replacement.

@@ -1,11 +1,4 @@
 {lib, ...}: {
-  #############################################################
-  #  SOPS
-  #############################################################
-
-  sops = {
-    age.sshKeyPaths = lib.mkForce [];
-    gnupg.sshKeyPaths = lib.mkForce [];
-    validateSopsFiles = true;
-  };
+  sops.age.sshKeyPaths = lib.mkForce [];
+  sops.gnupg.sshKeyPaths = lib.mkForce [];
 }

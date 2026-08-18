@@ -11,7 +11,6 @@
           age
           nh
           nix-output-monitor
-          nixos-anywhere
           opentofu
           just
           nix-tree
