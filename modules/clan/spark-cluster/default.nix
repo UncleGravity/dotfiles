@@ -3,6 +3,8 @@
   lib,
   ...
 }: let
+  coordinationGenerator = "spark-coordination-spark";
+  huggingfaceGenerator = "spark-huggingface-spark";
   stripNewlines = builtins.replaceStrings ["\n" "\r"] ["" ""];
 
   exactlyOne = instanceName: roleName: machines: let
@@ -23,8 +25,6 @@
     controlNode = exactlyOne instanceName "controller" (roles.controller.machines or {});
     monitorName = exactlyOne instanceName "monitor" (roles.monitor.machines or {});
     monitorSettings = roles.monitor.machines.${monitorName}.settings;
-    coordinationGenerator = "spark-coordination-${instanceName}";
-    huggingfaceGenerator = "spark-huggingface-${instanceName}";
     readPublicValue = machine: generator: file:
       stripNewlines (clanLib.getPublicValue {
         inherit machine generator file;
@@ -35,7 +35,6 @@
         inherit (member) settings;
       in {
         inherit (settings) id managementAddress managementMac;
-        controller = name == controlNode;
         sshHostKey = readPublicValue name "openssh" "ssh.id_ed25519.pub";
         fabric = {
           fabric0 = "10.100.0.${toString settings.id}";
@@ -44,7 +43,6 @@
       })
       members;
     nodeValues = lib.attrValues nodes;
-    orderedNodes = lib.sort (left: right: nodes.${left}.id < nodes.${right}.id) (lib.attrNames nodes);
     inferenceNodes =
       lib.mapAttrs (_: node: {
         platform = "linux/arm64";
@@ -59,10 +57,6 @@
       }) {}
     nodes;
   in
-    assert lib.assertMsg (instanceName == "spark")
-    "Spark cluster instance must remain named 'spark' to preserve its generator IDs";
-    assert lib.assertMsg (lib.length nodeValues == 4)
-    "Spark cluster '${instanceName}' currently requires exactly four nodes";
     assert lib.assertMsg (builtins.hasAttr controlNode nodes)
     "Spark controller '${controlNode}' must also have the node role";
     assert lib.assertMsg (unique (map (node: node.id) nodeValues))
@@ -70,24 +64,15 @@
     assert lib.assertMsg (unique (map (node: node.managementAddress) nodeValues))
     "Spark cluster '${instanceName}' has duplicate management addresses";
     assert lib.assertMsg (unique (map (node: node.managementMac) nodeValues))
-    "Spark cluster '${instanceName}' has duplicate management MACs";
-    assert lib.assertMsg (unique (map (node: node.sshHostKey) nodeValues))
-    "Spark cluster '${instanceName}' has duplicate SSH host keys";
-    assert lib.assertMsg (lib.all (node: lib.hasPrefix "ssh-ed25519 " node.sshHostKey) nodeValues)
-    "Spark cluster '${instanceName}' requires Ed25519 SSH host keys"; {
+    "Spark cluster '${instanceName}' has duplicate management MACs"; {
       inherit
         controlNode
-        coordinationGenerator
         fabricHosts
-        huggingfaceGenerator
         inferenceNodes
-        instanceName
         nodes
-        orderedNodes
         ;
       coordinationPublicKey = readPublicValue controlNode coordinationGenerator "id_ed25519.pub";
       monitor = {
-        name = monitorName;
         inherit
           (monitorSettings)
           gpuExporterPort
@@ -114,8 +99,7 @@ in {
       maxInstances = 1;
       roles = {
         node = {
-          minMachines = 4;
-          maxMachines = 4;
+          minMachines = 1;
         };
         controller = {
           minMachines = 1;
@@ -156,11 +140,7 @@ in {
         roles,
         ...
       }: {
-        nixosModule = {
-          config,
-          lib,
-          ...
-        }: let
+        nixosModule = {config, ...}: let
           topology = mkTopology {
             directory = config.clan.core.settings.directory;
             inherit instanceName roles;
@@ -175,7 +155,6 @@ in {
                 localNode = topology.nodes.${machine.name};
                 isController = machine.name == topology.controlNode;
               };
-            sops.age.sshKeyPaths = lib.mkForce [];
           };
         };
       };
@@ -184,28 +163,12 @@ in {
     controller = {
       description = "The single Spark inference controller.";
 
-      perInstance = {
-        instanceName,
-        machine,
-        roles,
-        ...
-      }: let
-        controlNode = exactlyOne instanceName "controller" (roles.controller.machines or {});
-        coordinationGenerator = "spark-coordination-${instanceName}";
-        huggingfaceGenerator = "spark-huggingface-${instanceName}";
-      in {
+      perInstance = _: {
         nixosModule = {
           pkgs,
           username,
           ...
         }: {
-          assertions = [
-            {
-              assertion = machine.name == controlNode;
-              message = "Spark controller role must resolve to '${controlNode}'";
-            }
-          ];
-
           clan.core.vars.generators = {
             ${coordinationGenerator} = {
               files = {

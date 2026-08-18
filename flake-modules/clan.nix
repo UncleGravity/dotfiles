@@ -3,7 +3,8 @@
   lib,
   ...
 }: let
-  sparkNodeSettings = import ../modules/clan/spark-cluster/inventory.nix;
+  sparkInventory = import ../modules/clan/spark-cluster/inventory.nix;
+  sparkNodeSettings = sparkInventory.nodes;
   sparkNodeMembers = lib.mapAttrs (_: settings: {inherit settings;}) sparkNodeSettings;
 in {
   imports = [inputs.clan-core.flakeModules.default];
@@ -37,17 +38,15 @@ in {
       }
       // lib.mapAttrs (hostname: _: {
         deploy.targetHost = "angel@${hostname}";
+        tags = ["spark"];
       })
       sparkNodeSettings;
 
     inventory.instances = {
-      sshd.roles.server.machines =
-        {
-          kiwi.settings.certificate.enable = false;
-          portal.settings.certificate.enable = false;
-          sisyphus.settings.certificate.enable = false;
-        }
-        // lib.mapAttrs (_: _: {settings.certificate.enable = false;}) sparkNodeSettings;
+      sshd.roles.server = {
+        tags.nixos = {};
+        settings.certificate.enable = false;
+      };
 
       pangolin = {
         module = {
@@ -86,7 +85,7 @@ in {
         };
         roles = {
           node.machines = sparkNodeMembers;
-          controller.machines.spark-01 = {};
+          controller.machines.${sparkInventory.controlNode} = {};
           monitor.machines.kiwi.settings.sourceAddress = "192.168.1.200";
         };
       };
