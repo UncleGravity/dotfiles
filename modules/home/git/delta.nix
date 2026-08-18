@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Better diff viewer
   # (enableGitIntegration would clobber our custom `core.pager` / `diffFilter` args).
   programs.delta = {

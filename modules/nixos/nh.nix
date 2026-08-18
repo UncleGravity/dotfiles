@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ---------------------------------------------------------------------------
   # Automatic garbage collection & cleanup with `nh`
   programs.nh = {

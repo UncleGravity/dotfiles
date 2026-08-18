@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ---------------------------------------------------------------------------
   # Garbage collect EVERYTHING older than 30 days
   programs.nh = {

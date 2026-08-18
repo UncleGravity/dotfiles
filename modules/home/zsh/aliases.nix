@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Shell aliases configuration
   home.shellAliases = {
     # ------------ ls -> eza ------------
