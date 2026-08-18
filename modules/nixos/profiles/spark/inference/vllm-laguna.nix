@@ -127,50 +127,67 @@ in {
 
     networking.firewall.allowedTCPPorts = [cfg.port];
 
-    systemd.tmpfiles.rules = [
-      "d /var/cache/vllm-laguna 0755 root root -"
-    ];
+    systemd = {
+      tmpfiles.rules = [
+        "d /var/cache/vllm-laguna 0755 root root -"
+      ];
 
-    systemd.services.vllm-laguna-image = {
-      description = "Build the Laguna vLLM container image";
-      wantedBy = ["multi-user.target"];
-      wants = ["network-online.target"];
-      after = ["network-online.target"];
+      services.vllm-laguna-image = {
+        description = "Build the Laguna vLLM container image";
+        wantedBy = ["multi-user.target"];
+        wants = ["network-online.target"];
+        after = ["network-online.target"];
 
-      path = [pkgs.podman];
+        path = [pkgs.podman];
 
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        TimeoutStartSec = "infinity";
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          TimeoutStartSec = "infinity";
+        };
+
+        script = ''
+          installed_recipe="$(
+            podman image inspect \
+              --format '{{ index .Labels "org.nixos.vllm-laguna.recipe" }}' \
+              ${lib.escapeShellArg image} 2>/dev/null || true
+          )"
+
+          if [[ "$installed_recipe" == ${lib.escapeShellArg recipeHash} ]]; then
+            echo "${image} already matches recipe ${recipeHash}"
+            exit 0
+          fi
+
+          podman build \
+            --pull=missing \
+            --label ${lib.escapeShellArg "org.nixos.vllm-laguna.recipe=${recipeHash}"} \
+            --tag ${lib.escapeShellArg image} \
+            --file ${containerfile} \
+            ${buildContext}
+        '';
       };
 
-      script = ''
-        installed_recipe="$(
-          podman image inspect \
-            --format '{{ index .Labels "org.nixos.vllm-laguna.recipe" }}' \
-            ${lib.escapeShellArg image} 2>/dev/null || true
-        )"
-
-        if [[ "$installed_recipe" == ${lib.escapeShellArg recipeHash} ]]; then
-          echo "${image} already matches recipe ${recipeHash}"
-          exit 0
-        fi
-
-        podman build \
-          --pull=missing \
-          --label ${lib.escapeShellArg "org.nixos.vllm-laguna.recipe=${recipeHash}"} \
-          --tag ${lib.escapeShellArg image} \
-          --file ${containerfile} \
-          ${buildContext}
-      '';
+      services.podman-vllm-laguna = {
+        requires = [
+          "nvidia-container-toolkit-cdi-generator.service"
+          "vllm-laguna-image.service"
+        ];
+        after = [
+          "nvidia-container-toolkit-cdi-generator.service"
+          "vllm-laguna-image.service"
+        ];
+        unitConfig.ConditionPathIsDirectory = [
+          cfg.modelPath
+          cfg.draftModelPath
+        ];
+      };
     };
 
     virtualisation.oci-containers = {
       backend = "podman";
       containers.vllm-laguna = {
         inherit image;
-        autoStart = cfg.autoStart;
+        inherit (cfg) autoStart;
         pull = "never";
         devices = ["nvidia.com/gpu=all"];
         networks = ["host"];
@@ -215,21 +232,6 @@ in {
           (toString cfg.gpuMemoryUtilization)
         ];
       };
-    };
-
-    systemd.services.podman-vllm-laguna = {
-      requires = [
-        "nvidia-container-toolkit-cdi-generator.service"
-        "vllm-laguna-image.service"
-      ];
-      after = [
-        "nvidia-container-toolkit-cdi-generator.service"
-        "vllm-laguna-image.service"
-      ];
-      unitConfig.ConditionPathIsDirectory = [
-        cfg.modelPath
-        cfg.draftModelPath
-      ];
     };
   };
 }

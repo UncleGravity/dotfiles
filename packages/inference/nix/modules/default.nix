@@ -438,38 +438,40 @@ in {
       };
     };
 
-    services.dockerRegistry = lib.mkIf isRegistryHost {
-      enable = true;
-      listenAddress = registryAddress;
-      port = registryPort;
-      storagePath = registryDataDir;
-      enableDelete = false;
-      enableGarbageCollect = false;
-      openFirewall = false;
-    };
+    services = {
+      dockerRegistry = lib.mkIf isRegistryHost {
+        enable = true;
+        listenAddress = registryAddress;
+        port = registryPort;
+        storagePath = registryDataDir;
+        enableDelete = false;
+        enableGarbageCollect = false;
+        openFirewall = false;
+      };
 
-    services.openssh.settings = lib.mkIf coordinationEnabled {
-      ClientAliveInterval = 10;
-      ClientAliveCountMax = 3;
-    };
+      openssh.settings = lib.mkIf coordinationEnabled {
+        ClientAliveInterval = 10;
+        ClientAliveCountMax = 3;
+      };
 
-    services.rsyncd = lib.mkIf hasFabric {
-      enable = true;
-      socketActivated = false;
-      port = 873;
-      settings = {
-        globalSection = {
-          address = localFabricAddress;
-          uid = "root";
-          gid = "infer";
-          "use chroot" = true;
-          "max connections" = 1;
-          "read only" = true;
-        };
-        sections.models = {
-          path = cfg.modelStore.localRoot;
-          comment = "Verified local inference model artifacts";
-          "read only" = true;
+      rsyncd = lib.mkIf hasFabric {
+        enable = true;
+        socketActivated = false;
+        port = 873;
+        settings = {
+          globalSection = {
+            address = localFabricAddress;
+            uid = "root";
+            gid = "infer";
+            "use chroot" = true;
+            "max connections" = 1;
+            "read only" = true;
+          };
+          sections.models = {
+            path = cfg.modelStore.localRoot;
+            comment = "Verified local inference model artifacts";
+            "read only" = true;
+          };
         };
       };
     };

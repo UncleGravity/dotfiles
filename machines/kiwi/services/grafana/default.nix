@@ -348,8 +348,10 @@ in {
     restic-backups-t7.unitConfig.OnSuccess = lib.mkAfter ["refresh-restic-exporter-t7.service"];
   };
 
-  environment.etc."grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
-  environment.etc."grafana/dashboards/spark-cluster-overview.json".source = ./dashboards/spark-cluster-overview.json;
-  environment.etc."grafana/dashboards/spark-cluster.json".source = ./dashboards/spark-cluster.json;
-  environment.etc."grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
+  environment.etc = {
+    "grafana/dashboards/restic-backups.json".source = ./dashboards/restic-backups.json;
+    "grafana/dashboards/spark-cluster-overview.json".source = ./dashboards/spark-cluster-overview.json;
+    "grafana/dashboards/spark-cluster.json".source = ./dashboards/spark-cluster.json;
+    "grafana/dashboards/system-overview.json".source = ./dashboards/system-overview.json;
+  };
 }
