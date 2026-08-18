@@ -5,7 +5,6 @@
   ...
 }: let
   cluster = config.my.sparkCluster;
-  workers = lib.filter (name: name != cluster.controlNode) cluster.orderedNodes;
 in {
   imports = [
     ./huggingface.nix
@@ -26,25 +25,25 @@ in {
         authorizedKeys = [cluster.coordinationPublicKey];
       }
       // lib.optionalAttrs cluster.isController {
-        identityFile = config.clan.core.vars.generators.${cluster.coordinationGenerator}.files.id_ed25519.path;
+        identityFile = config.clan.core.vars.generators."spark-coordination-spark".files.id_ed25519.path;
       };
 
     instances = {
       laguna = {
         recipe = "laguna-vllm";
-        nodes = [cluster.controlNode];
+        nodes = ["spark-01"];
         autoStart = false;
       };
 
       deepseek-v4-flash-0731 = {
         recipe = "deepseek-v4-flash-0731";
-        nodes = [cluster.controlNode (lib.head workers)];
+        nodes = ["spark-01" "spark-02"];
         autoStart = false;
       };
 
       glm52 = {
         recipe = "glm52-b12x-spark";
-        nodes = cluster.orderedNodes;
+        nodes = ["spark-01" "spark-02" "spark-03" "spark-04"];
         autoStart = false;
       };
     };

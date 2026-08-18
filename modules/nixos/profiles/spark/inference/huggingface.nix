@@ -12,7 +12,7 @@
     HF_HUB_DISABLE_TELEMETRY = "1";
     HF_HUB_DISABLE_XET = "1";
   };
-  tokenPath = config.clan.core.vars.generators.${cluster.huggingfaceGenerator}.files.token.path;
+  tokenPath = config.clan.core.vars.generators."spark-huggingface-spark".files.token.path;
 in {
   # Downloads happen on the controller; workers receive replicas over the
   # fabric as described in docs/spark/stage-models.md.
