@@ -1,33 +1,18 @@
 # Configuration for the 'my-macbook' machine
-{
-  inputs,
-  username,
-  ...
-}: {
+{username, ...}: {
   imports = [
     ../../modules/darwin
-    inputs.nix-homebrew.darwinModules.nix-homebrew
     ./builders
   ];
-
-  clan.core.deployment.requireExplicitUpdate = true;
-
-  nixpkgs.hostPlatform = "aarch64-darwin";
-  system.stateVersion = 6;
 
   # Home
   home-manager.users.${username}.imports = [./home.nix];
 
-  nix-homebrew = {
-    enable = true;
-    user = "angel";
-    autoMigrate = true;
-    mutableTaps = false;
-    taps = {
-      "homebrew/homebrew-core" = inputs.homebrew-core;
-      "homebrew/homebrew-cask" = inputs.homebrew-cask;
-    };
-  };
+  # Only update when explicitly targetted with `clan machines update banana`
+  clan.core.deployment.requireExplicitUpdate = true;
+
+  nixpkgs.hostPlatform = "aarch64-darwin";
+  system.stateVersion = 6;
 
   my = {
     # SECRETS
@@ -51,10 +36,4 @@
       cleanup = "zap"; # Only keep brews and casks managed by nix
     };
   };
-
-  # Example: Override system packages for this specific machine
-  # environment.systemPackages = with pkgs; [ git vim neovim ]; # This replaces the list from base
-
-  # Example: Override a specific system default for this machine
-  # system.defaults.dock.autohide = false; # Keep the dock visible on this machine
 }

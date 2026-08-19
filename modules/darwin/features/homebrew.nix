@@ -8,6 +8,8 @@
 }: let
   cfg = config.my.homebrew;
 in {
+  imports = [inputs.nix-homebrew.darwinModules.nix-homebrew];
+
   ##### 1. Options #############################################################
   options.my.homebrew = {
     enable = lib.mkEnableOption "Homebrew with curated casks and apps";
@@ -33,6 +35,17 @@ in {
 
   ##### 2. Implementation ######################################################
   config = lib.mkIf cfg.enable {
+    nix-homebrew = {
+      enable = true;
+      user = username;
+      autoMigrate = true;
+      mutableTaps = false;
+      taps = {
+        "homebrew/homebrew-core" = inputs.homebrew-core;
+        "homebrew/homebrew-cask" = inputs.homebrew-cask;
+      };
+    };
+
     homebrew = {
       enable = true;
 
