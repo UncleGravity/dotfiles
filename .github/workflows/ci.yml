@@ -27,8 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     name: "Flake Check"
     steps:
-      - uses: actions/checkout@v6
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
@@ -44,8 +46,10 @@ jobs:
       matrix: ${{ steps.discover.outputs.matrix }}
       count: ${{ steps.discover.outputs.count }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: ./.github/actions/discover-nix-configs
         id: discover
   # ---------------------------------------------------------------------------
@@ -60,11 +64,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: "Build ${{ matrix.type }}/${{ matrix.name }}"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/free-up-space
-      - uses: DeterminateSystems/nix-installer-action@main
-      - name: Check Determinate Nix features
-        run: determinate-nixd version || true
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
@@ -88,7 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     name: "Notify CI Failures"
     steps:
-      - uses: actions/checkout@v6
       - uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}

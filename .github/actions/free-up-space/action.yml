@@ -12,7 +12,7 @@ runs:
   steps:
     - name: Free up space (Linux)
       if: runner.os == 'Linux'
-      uses: wimpysworld/nothing-but-nix@main
+      uses: wimpysworld/nothing-but-nix@v10
       with:
         hatchet-protocol: ${{ inputs.hatchet-protocol }}
     - name: Reclaim space (Darwin)
