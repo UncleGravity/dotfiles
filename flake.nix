@@ -3,8 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
     multiverse.url = "github:fzakaria/nixpkgs-multiverse";
+
+    darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -19,25 +28,9 @@
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
         nix-darwin.follows = "darwin";
-        disko.follows = "disko";
         sops-nix.follows = "sops-nix";
         treefmt-nix.follows = "treefmt-nix";
       };
-    };
-
-    darwin = {
-      url = "github:LnL7/nix-darwin/master";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     copyparty = {
@@ -79,11 +72,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    virby = {
-      url = "github:quinneden/virby-nix-darwin";
-      # inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -91,15 +79,6 @@
 
     tmux-powerkit = {
       url = "github:fabioluciano/tmux-powerkit";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # ---------------------------------------------------------------------------------------------
-    # Overlay Inputs
-
-    # Zig nightly
-    zig = {
-      url = "github:mitchellh/zig-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

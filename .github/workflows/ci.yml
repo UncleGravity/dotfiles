@@ -63,10 +63,6 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/free-up-space
       - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: |
-            extra-substituters = https://virby-nix-darwin.cachix.org
-            extra-trusted-public-keys = virby-nix-darwin.cachix.org-1:z9GiEZeBU5bEeoDQjyfHPMGPBaIQJOOvYOOjGMKIlLo=
       - name: Check Determinate Nix features
         run: determinate-nixd version || true
       - uses: cachix/cachix-action@v17
