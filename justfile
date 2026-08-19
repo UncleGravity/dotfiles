@@ -27,7 +27,7 @@ sync: nixpkgs-status
     case "{{ system_type }}" in
         "nixos")
             HOSTNAME=$(hostname -s)
-            nh os switch . -H "$HOSTNAME" --builders ""
+            nh os switch . -H "$HOSTNAME"
             ;;
         "darwin")
             HOSTNAME=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
@@ -38,11 +38,11 @@ sync: nixpkgs-status
                 echo ""
             fi
 
-            nh darwin switch . -H "$HOSTNAME" --builders ""
+            nh darwin switch . -H "$HOSTNAME"
             ;;
         "home-manager")
             USERNAME=$(whoami)
-            nh home switch . -c "$USERNAME" --builders ""
+            nh home switch . -c "$USERNAME"
             ;;
         *)
             echo "❌ Unsupported system type. Supported types are NixOS, Darwin, and Home Manager."
@@ -63,11 +63,11 @@ update-sync: update sync
 
 # Format repository files
 fmt:
-    nix fmt --builders "" .
+    nix fmt .
 
 # Validate the flake
 check:
-    nix flake check --builders ""
+    nix flake check
 
 # Lint Nix files
 lint:
@@ -115,13 +115,13 @@ deploy host:
     set -euo pipefail
 
     echo "Deploying NixOS configuration to {{ host }}..."
-    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --builders "" --elevation-strategy passwordless --ask
+    nh os switch . -H "{{ host }}" --target-host "{{ host }}" --build-host "{{ host }}" --elevation-strategy passwordless --ask
     echo "Deployment for '{{ host }}' completed successfully!"
 
 # Manage Portal cloud resources with OpenTofu.
 # Usage: just infra init | plan | apply | output
 infra *args="plan":
-    sops exec-env infra/portal/secrets.env "nix develop --builders '' -c tofu -chdir=infra/portal {{ args }}"
+    sops exec-env infra/portal/secrets.env "nix develop -c tofu -chdir=infra/portal {{ args }}"
 
 # Synchronize every tracked SOPS file with the recipient policy in .sops.yaml.
 sops-update-keys:
@@ -152,10 +152,9 @@ spark-enroll node:
 
 # Deploy every Spark declared in the inventory concurrently.
 spark-deploy-all:
-    nix run --builders "" .#clan -- machines update \
+    nix run .#clan -- machines update \
         --tags spark \
-        --host-key-check strict \
-        --option builders ""
+        --host-key-check strict
 
 # Check nixpkgs version status
 nixpkgs-status:

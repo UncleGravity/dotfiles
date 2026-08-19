@@ -7,6 +7,8 @@
   nixbuildHost = "nixbuild-builder";
   nixbuildCache = "unclegravity-nix";
   nixbuildSshKey = config.clan.core.vars.generators.nixbuild.files.ssh-key.path;
+  nixbuildSystems = ["aarch64-linux" "x86_64-linux"];
+  nixbuildMachine = system: "ssh-ng://${nixbuildHost} ${system} ${nixbuildSshKey} 100 1 benchmark,big-parallel - -";
   nixbuildSubstituters = lib.concatStringsSep "," config.nix.settings.substituters;
   nixbuildTrustedPublicKeys = lib.concatStringsSep "," config.nix.settings.trusted-public-keys;
   nixbuildSshEnvironment = [
@@ -63,22 +65,16 @@ in {
 
   launchd.daemons.nix-daemon.serviceConfig.EnvironmentVariables.NIX_SSHOPTS = "-F ${config.sops.templates."nixbuild-ssh.conf".path}";
 
-  nix.buildMachines = [
-    {
-      hostName = nixbuildHost;
-      protocol = "ssh-ng";
-      system = "aarch64-linux";
-      sshKey = nixbuildSshKey;
-      maxJobs = 100;
-      supportedFeatures = ["benchmark" "big-parallel"];
-    }
-    {
-      hostName = nixbuildHost;
-      protocol = "ssh-ng";
-      system = "x86_64-linux";
-      sshKey = nixbuildSshKey;
-      maxJobs = 100;
-      supportedFeatures = ["benchmark" "big-parallel"];
-    }
+  environment.etc."nix/nixbuild-machines".text =
+    lib.concatMapStringsSep "\n" nixbuildMachine nixbuildSystems
+    + "\n";
+
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "nix-remote" ''
+      exec ${config.nix.package}/bin/nix \
+        --builders "@/etc/nix/nixbuild-machines" \
+        --builders-use-substitutes \
+        "$@"
+    '')
   ];
 }

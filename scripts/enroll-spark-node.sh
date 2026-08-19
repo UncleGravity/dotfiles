@@ -22,7 +22,7 @@ if ! git -C "$repo_root" ls-files --error-unmatch "$machine_module" >/dev/null 2
   exit 1
 fi
 
-if ! nix eval --builders "" --raw \
+if ! nix eval --raw \
   "$repo_root#lib.sparkCluster.nodes.$node.managementAddress" \
   >/dev/null 2>&1; then
   echo "Spark inventory does not contain '$node'." >&2
@@ -38,7 +38,7 @@ if [[ -e $repo_root/sops/machines/$node/key.json ||
 fi
 
 clan() {
-  CLAN_NO_COMMIT=1 nix run --builders "" "$repo_root#clan" -- "$@"
+  CLAN_NO_COMMIT=1 nix run "$repo_root#clan" -- "$@"
 }
 
 stage_generated_state() {
@@ -58,20 +58,17 @@ stage_generated_state() {
 # public key. Clan creates the machine Age identity as part of this operation.
 clan vars generate "$node" \
   --generator openssh \
-  --flake "$repo_root" \
-  --option builders ""
+  --flake "$repo_root"
 stage_generated_state
 
 clan vars generate "$node" \
-  --flake "$repo_root" \
-  --option builders ""
+  --flake "$repo_root"
 stage_generated_state
 
 clan vars check "$node" \
-  --flake "$repo_root" \
-  --option builders ""
+  --flake "$repo_root"
 
-nix eval --builders "" --raw \
+nix eval --raw \
   "$repo_root#nixosConfigurations.$node.config.system.build.toplevel.drvPath" \
   >/dev/null
 
