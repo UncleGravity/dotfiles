@@ -47,7 +47,7 @@
             "sisyphus-current" = {
               name = "Sisyphus Current";
               limit = {
-                context = 65536;
+                context = 131072;
                 output = 8192;
               };
             };

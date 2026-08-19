@@ -20,7 +20,7 @@
           {
             id = "sisyphus-current";
             name = "Sisyphus Current";
-            contextWindow = 65536;
+            contextWindow = 131072;
             maxTokens = 8192;
           }
           {

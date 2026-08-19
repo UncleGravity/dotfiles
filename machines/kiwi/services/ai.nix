@@ -101,7 +101,8 @@ in {
             model_name = "sisyphus-current";
             litellm_params = {
               # model = "openai/qwen3.6-27b-heretic";
-              model = "openai/qwen3.8-27b";
+              # model = "openai/qwen3.8-27b";
+              model = "openai/huihui-qwen3.8-27b";
               api_base = "http://192.168.1.139:8080/v1";
               api_key = "unused";
             };
