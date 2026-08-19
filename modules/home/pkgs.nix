@@ -84,7 +84,7 @@
     # --- Nix helpers -----------------------------------------------------------
     cachix
     # omnix
-    # statix
+    statix
     # nix-output-monitor
     devenv
     # nix-tree
@@ -183,6 +183,20 @@
     )
     ++ custom;
 in {
+
+  ###########################################################################
+  # 5. BONUS - MULTIVERSER                                                  #
+  # Search specific package versions on https://nixmultiverse.com/.         #
+  ###########################################################################
+  config.multiverse = {
+    enable = true;
+    pins = {
+      # python3 = "3.8.9";
+      # zig = "0.15.2";
+      # nodejs = "24.12.0";
+    };
+  };
+
   options.my.home = {
     development.enable =
       lib.mkEnableOption "language servers, toolchains, and development utilities";
