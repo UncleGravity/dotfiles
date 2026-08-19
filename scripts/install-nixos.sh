@@ -18,11 +18,10 @@ install_options=(
   --flake "$repo_root"
   --build-on remote
   --yes
-  --option builders ""
 )
 
 clan() {
-  nix run --builders "" "$repo_root#clan" -- "$@"
+  nix run "$repo_root#clan" -- "$@"
 }
 
 case $host in
@@ -30,8 +29,8 @@ portal | sisyphus)
   [[ -n $target ]] || usage
   ;;
 kiwi)
-  echo "Kiwi reinstall is intentionally not automated: its Disko graph includes the storage pool." >&2
-  echo "Stop and design a reviewed OS-disk-only recovery; see docs/reinstall.md." >&2
+  echo "Kiwi installation is intentionally blocked: its Disko graph includes the storage pool." >&2
+  echo "See docs/operations/install-nixos.md." >&2
   exit 1
   ;;
 spark-*)
@@ -40,7 +39,7 @@ spark-*)
     echo "Invalid Spark node name: $host" >&2
     exit 1
   fi
-  ip=$(nix eval --builders "" --raw \
+  ip=$(nix eval --raw \
     "$repo_root#lib.sparkCluster.nodes.$host.managementAddress" 2>/dev/null) || {
     echo "Unknown Spark node: $host" >&2
     exit 1
@@ -60,11 +59,10 @@ esac
 
 # Installs must consume enrolled identities, never generate replacements.
 clan vars check "$host" \
-  --flake "$repo_root" \
-  --option builders ""
+  --flake "$repo_root"
 
 # Force NixOS assertions and full configuration evaluation before erasing.
-nix eval --builders "" --raw \
+nix eval --raw \
   "$repo_root#nixosConfigurations.$host.config.system.build.toplevel.drvPath" \
   >/dev/null
 

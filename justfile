@@ -136,15 +136,15 @@ sops-update-keys:
             fi
         done
 
-# Wipe an enrolled machine and reinstall NixOS with its existing Clan identity.
-# Usage: just reinstall portal root@<ip>   (IP: just infra "output portal_ipv4")
-reinstall host target:
-    ./scripts/reinstall.sh "{{ host }}" "{{ target }}"
+# Install NixOS on an enrolled machine.
+# Usage: just install-nixos portal root@<ip>   (IP: just infra "output portal_ipv4")
+install-nixos host target:
+    ./scripts/install-nixos.sh "{{ host }}" "{{ target }}"
 
 # Partition the NVMe, install NixOS with the Clan machine identity, and reboot.
 # The node must be booted into the NixOS USB installer first (see its runbook).
 spark-install node:
-    ./scripts/reinstall.sh "{{ node }}"
+    ./scripts/install-nixos.sh "{{ node }}"
 
 # Generate Clan identity and vars for a newly declared Spark node.
 spark-enroll node:
