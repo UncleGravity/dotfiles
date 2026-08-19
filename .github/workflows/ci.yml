@@ -69,6 +69,11 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure nixbuild.net for Darwin builds
+        if: matrix.type == 'darwin'
+        uses: nixbuild/nixbuild-action@v26
+        with:
+          nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
       - uses: cachix/cachix-action@v17
         with:
           name: ${{ secrets.CACHIX_CACHE }}
