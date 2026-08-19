@@ -1,16 +1,13 @@
-{pkgs, ...}:
+{
+  clan,
+  pkgs,
+  ...
+}:
 pkgs.writeShellApplication {
   name = "bootstrap";
-  runtimeInputs = with pkgs; [nh nix jq];
+  runtimeInputs = with pkgs; [clan coreutils jq nh nix];
 
   text = ''
-    # --------------------------------------------------------------------
-    # Bootstrap script for Nix flakes
-    #  - Detects the host’s platform (darwin | nixos)
-    #  - Evaluates the flake once to obtain per-host binary-cache info
-    #  - Exports it via $NIX_CONFIG and calls `nh <platform> switch`
-    # --------------------------------------------------------------------
-    #
     # Get available hostnames from flake
     get_available_hosts() {
       local darwin_hosts nixos_hosts
@@ -56,13 +53,39 @@ pkgs.writeShellApplication {
     substituters=$(jq -r '.substituters | join(" ")' <<< "$host_json")
     trusted_keys=$(jq -r '."trusted-public-keys" | join(" ")' <<< "$host_json")
 
+    if [[ "$platform" == "darwin" ]]; then
+      staging=$(mktemp -d)
+      trap 'rm -rf "$staging"' EXIT
+
+      clan vars check "$hostname"
+      clan vars upload "$hostname" --directory "$staging"
+
+      if [[ ! -s "$staging/key.txt" ]]; then
+        echo "Missing Clan identity for $hostname" >&2
+        exit 1
+      fi
+
+      machine_key=/var/lib/sops-nix/key.txt
+      if sudo test -e "$machine_key" \
+        && ! sudo ${pkgs.diffutils}/bin/cmp -s "$staging/key.txt" "$machine_key"; then
+        echo "$machine_key belongs to another Clan machine" >&2
+        exit 1
+      fi
+
+      sudo ${pkgs.coreutils}/bin/install -d -m 0700 /var/lib/sops-nix
+      sudo ${pkgs.coreutils}/bin/install -m 0600 "$staging/key.txt" "$machine_key"
+
+      rm -rf "$staging"
+      trap - EXIT
+    fi
+
     export NIX_CONFIG="
       extra-substituters = $substituters
       extra-trusted-public-keys = $trusted_keys
     "
 
-    echo "🚀 Bootstrapping $hostname ($platform)..."
-    echo "✅ Cache configuration loaded"
+    echo "Bootstrapping $hostname ($platform)..."
+    echo "Cache configuration loaded"
     echo "With NIX_CONFIG = $NIX_CONFIG"
     echo
 
