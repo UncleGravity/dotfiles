@@ -1,4 +1,4 @@
-This shit is useful:
+# ast-grep
 
 ```sh
 ast-grep run -l nix -p 'lib.mkIf $C $B' machines/      # search

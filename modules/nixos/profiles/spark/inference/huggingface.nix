@@ -15,7 +15,7 @@
   tokenPath = config.clan.core.vars.generators."spark-huggingface-spark".files.token.path;
 in {
   # Downloads happen on the controller; workers receive replicas over the
-  # fabric as described in docs/spark/stage-models.md.
+  # fabric as described in docs/machines/spark/models.md.
 
   environment.systemPackages = [
     # `hf` CLI plus python3 with huggingface_hub for scripting.

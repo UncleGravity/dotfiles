@@ -1,4 +1,4 @@
-# portal
+# Portal
 
 [Pangolin](https://pangolin.net/) gateway for `angel.pizza`, hosted on Hetzner Cloud.
 
@@ -28,13 +28,11 @@ Install NixOS using the reported IPv4 address:
 
 ```sh
 PORTAL_IPV4=$(just infra "output -raw portal_ipv4") # retrieve server IP
-just reinstall portal "root@$PORTAL_IPV4" # install NixOS
+just install-nixos portal "root@$PORTAL_IPV4" # install NixOS
 ```
 
-Reinstallation erases the target disk. It injects the Clan machine Age identity,
-which decrypts the tracked runtime SSH host key as described in
-[`docs/reinstall.md`](../../docs/reinstall.md). The SSH fingerprint therefore
-survives replacement.
+Installation erases the target disk. It retains the Clan identity and SSH host
+key described in [Install NixOS](../operations/install-nixos.md).
 
 ## Bootstrap
 
@@ -53,7 +51,7 @@ just deploy portal
 Check the Pangolin and Newt vars before deploying:
 
 ```sh
-nix run --builders "" .#clan -- vars check portal kiwi
+nix run .#clan -- vars check portal kiwi
 ```
 
 ## Replace
@@ -63,7 +61,7 @@ Replace the VM while retaining its public IPv4 address:
 ```sh
 just infra apply -replace=hcloud_server.portal
 PORTAL_IPV4=$(just infra "output -raw portal_ipv4")
-just reinstall portal "root@$PORTAL_IPV4"
+just install-nixos portal "root@$PORTAL_IPV4"
 ```
 
 The public IPv4 address and stored SSH identity survive replacement.
