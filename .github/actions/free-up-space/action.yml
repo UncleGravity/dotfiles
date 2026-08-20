@@ -2,19 +2,52 @@
 # https://github.com/MattSturgeon/nixpkgs-review-gha/blob/cfe1d72456a33d226de4bc2830112109750941c3/.github/actions/setup-nix/action.yml
 name: "Free Up Space"
 description: "Free up disk space on GitHub Actions runners across different operating systems"
-inputs:
-  hatchet-protocol:
-    description: "Protocol for Linux space cleanup (holster, carve, cleave, rampage)"
-    required: false
-    default: "holster"
 runs:
   using: "composite"
   steps:
-    - name: Free up space (Linux)
+    - name: Use runner scratch disk for Nix (Linux)
       if: runner.os == 'Linux'
-      uses: wimpysworld/nothing-but-nix@v10
-      with:
-        hatchet-protocol: ${{ inputs.hatchet-protocol }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "::group::disk space (before)"
+        df -h / /mnt
+        echo "::endgroup::"
+
+        if ! mountpoint --quiet /mnt; then
+          echo "::error::Expected /mnt to be a separate runner scratch disk"
+          exit 1
+        fi
+
+        root_device=$(findmnt --noheadings --output SOURCE /)
+        mnt_device=$(findmnt --noheadings --output SOURCE /mnt)
+        if [[ "$root_device" == "$mnt_device" ]]; then
+          echo "::error::/mnt and / are on the same filesystem"
+          exit 1
+        fi
+
+        minimum_bytes=$((20 * 1024 * 1024 * 1024))
+        available_bytes=$(df --output=avail --block-size=1 /mnt | tail -n 1 | tr -d ' ')
+        if ((available_bytes < minimum_bytes)); then
+          echo "::error::/mnt has less than 20 GiB available"
+          exit 1
+        fi
+
+        if [[ -e /nix ]]; then
+          echo "::error::/nix already exists; storage must be prepared before installing Nix"
+          exit 1
+        fi
+
+        sudo mkdir -p /mnt/nix /nix
+        sudo mount --bind /mnt/nix /nix
+        sudo mkdir -p /nix/tmp
+        sudo chmod 1777 /nix/tmp
+        echo "TMPDIR=/nix/tmp" >> "$GITHUB_ENV"
+
+        echo "::group::disk space (after)"
+        df -h / /nix
+        echo "::endgroup::"
     - name: Reclaim space (Darwin)
       if: runner.os == 'macOS'
       shell: bash
