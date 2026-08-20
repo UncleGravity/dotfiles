@@ -26,11 +26,12 @@ runs:
         # Resolve flake path to absolute (getFlake requires a real path)
         FLAKE_PATH="$(cd "$FLAKE_INPUT" && pwd)"
 
-        # Single nix eval: discover.nix returns the full matrix in one pass.
+        # Single Nix evaluation: discover.nix returns the full matrix in one pass.
         # Each entry: { name, type, system, runner, attr }
         echo "::group::Evaluating flake configurations"
-        matrix=$(nix eval --json --impure \
-          --expr "import $GITHUB_ACTION_PATH/discover.nix { flakePath = \"$FLAKE_PATH\"; }")
+        matrix=$(nix-instantiate --eval --strict --json --impure \
+          "$GITHUB_ACTION_PATH/discover.nix" \
+          --argstr flakePath "$FLAKE_PATH")
         echo "::endgroup::"
 
         # Pretty-print summary using preinstalled jq (no nixpkgs#jq fetch)

@@ -1,6 +1,6 @@
 # Builds the GitHub Actions matrix for all flake configurations.
 # Invoked by action.yml via:
-#   nix eval --json --impure --file ./discover.nix --argstr flakePath "$PWD"
+#   nix-instantiate --eval --strict --json --impure ./discover.nix --argstr flakePath "$PWD"
 {flakePath}: let
   flake = builtins.getFlake flakePath;
 
@@ -13,7 +13,7 @@
       "x86_64-darwin" = "macos-13";
     }.${
       system
-    } or "ubuntu-latest";
+    } or (throw "Unsupported CI system: ${system}");
 
   # Collect a single config family (nixos/darwin/home) into matrix entries
   collect = {

@@ -60,4 +60,5 @@ runs:
         CURL_ARGS+=(-H "Actions: view, Open, $BUTTON_URL, clear=true")
         CURL_ARGS+=(-d "$NTFY_MESSAGE")
 
-        curl "${CURL_ARGS[@]}" "$NTFY_URL/$NTFY_TOPIC"
+        curl --fail --silent --show-error --output /dev/null \
+          "${CURL_ARGS[@]}" "$NTFY_URL/$NTFY_TOPIC"

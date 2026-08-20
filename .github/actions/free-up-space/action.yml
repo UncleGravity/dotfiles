@@ -29,7 +29,7 @@ runs:
           || echo "launchctl unload failed"
         echo "::endgroup::"
 
-        echo "Background space expansion started. /nix will grow as space becomes available."
+        echo "Reclaiming disk space before Nix setup."
         sudo rm -rf \
           /Applications/Xcode_* \
           /Library/Developer/CoreSimulator \
@@ -39,7 +39,7 @@ runs:
           /Users/runner/Library/Android \
           /Users/runner/Library/Caches \
           /Users/runner/Library/Developer/CoreSimulator \
-          /Users/runner/hostedtoolcache &
+          /Users/runner/hostedtoolcache
 
         echo "::group::disk space (after)"
         sudo df -h
