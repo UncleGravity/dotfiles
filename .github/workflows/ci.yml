@@ -86,10 +86,11 @@ jobs:
         with:
           nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
-        # --impure lets modules read $CI to gate cross-platform-only outputs
+        # nixbuild-action sets max-jobs=0. Re-enable local Darwin builds;
+        # Linux derivations still select the matching remote builders.
         run: |
           echo "Building ${{ matrix.attr }} on ${{ matrix.system }}"
-          nix build ${{ matrix.attr }} --impure --show-trace --max-jobs auto
+          nix build ${{ matrix.attr }} --show-trace --max-jobs auto
       - name: Push to Cachix
         run: |
           if [ -L result ]; then

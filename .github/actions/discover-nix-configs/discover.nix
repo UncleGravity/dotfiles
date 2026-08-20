@@ -25,8 +25,8 @@
   in
     builtins.attrValues (builtins.mapAttrs (name: cfg: {
         inherit name type;
-        system = cfg.pkgs.system;
-        runner = systemToRunner cfg.pkgs.system;
+        system = cfg.pkgs.stdenv.hostPlatform.system;
+        runner = systemToRunner cfg.pkgs.stdenv.hostPlatform.system;
         attr = ".#${configKey}.${name}.${attrSuffix}";
       })
       configs);
