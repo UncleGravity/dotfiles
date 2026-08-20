@@ -66,7 +66,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/free-up-space
-      - uses: nixbuild/nix-quick-install-action@v35
+      - name: Install Nix
+        if: ${{ !endsWith(matrix.system, '-darwin') }}
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install single-user Nix for Darwin builds
+        if: ${{ endsWith(matrix.system, '-darwin') }}
+        uses: nixbuild/nix-quick-install-action@v35
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@v17
@@ -74,7 +81,7 @@ jobs:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Configure nixbuild.net for Darwin builds
-        if: matrix.type == 'darwin'
+        if: ${{ endsWith(matrix.system, '-darwin') }}
         uses: nixbuild/nixbuild-action@v26
         with:
           nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
