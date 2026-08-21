@@ -1,7 +1,13 @@
-
-{config, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   authToken = config.clan.core.vars.generators.cachix.files.auth-token;
   deployCredentials = config.clan.core.vars.generators.cachix-deploy.files.credentials;
+  deployAgent = pkgs.cachix.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [./cachix-deploy-preserve-trusted-keys.patch];
+  });
 in {
   clan.core.vars.generators.cachix-deploy = {
     share = true;
@@ -38,6 +44,7 @@ in {
   # Pull Github CI deployments
   services.cachix-agent = {
     enable = true;
+    package = deployAgent;
     credentialsFile = deployCredentials.path;
   };
 

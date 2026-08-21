@@ -1,0 +1,11 @@
+diff --git a/src/Cachix/Deploy/Activate.hs b/src/Cachix/Deploy/Activate.hs
+index 9ada71e..5c977ad 100644
+--- a/src/Cachix/Deploy/Activate.hs
++++ b/src/Cachix/Deploy/Activate.hs
+@@ -208,5 +208,5 @@ withCacheArgs host agentInfo agentToken m =
+           officialCache = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+           substituters = ["--option", "extra-substituters", URI.serialize cacheURI]
+           noNegativeCaching = ["--option", "narinfo-cache-negative-ttl", "0"]
+-          sigs = ["--option", "trusted-public-keys", officialCache <> " " <> toS hostname <> "-1:" <> toS (WSS.publicKey cache)]
++          sigs = ["--option", "extra-trusted-public-keys", officialCache <> " " <> toS hostname <> "-1:" <> toS (WSS.publicKey cache)]
+        in substituters ++ sigs ++ noNegativeCaching
