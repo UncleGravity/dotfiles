@@ -90,7 +90,7 @@ jobs:
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
         id: build
         # nixbuild-action sets max-jobs=0. Re-enable local Darwin builds;
-        # Linux derivations still select the matching remote builders.
+        # cached Linux outputs should substitute before using remote builders.
         env:
           BUILD_ATTR: ${{ matrix.attr }}
           BUILD_SYSTEM: ${{ matrix.system }}
@@ -99,6 +99,7 @@ jobs:
           store_path="$(nix build "$BUILD_ATTR" \
             --show-trace \
             --max-jobs auto \
+            --option always-allow-substitutes true \
             --no-link \
             --print-out-paths)"
 
