@@ -210,7 +210,7 @@ jobs:
           priority: "3"
           tags: "white_check_mark"
           message: |
-            The weekly flake update passed all CI builds.
+            Merge to deploy, close to reject the update.
             Repo: ${{ github.repository }}
             Commit: ${{ github.event.pull_request.head.sha }}
           button_url: ${{ github.event.pull_request.html_url }}
