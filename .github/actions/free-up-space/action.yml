@@ -34,7 +34,8 @@ runs:
           /Users/runner/Library/Android \
           /Users/runner/Library/Caches \
           /Users/runner/Library/Developer/CoreSimulator \
-          /Users/runner/hostedtoolcache
+          /Users/runner/hostedtoolcache \
+          || echo "Some files could not be removed"
 
         echo "::group::disk space (after)"
         sudo df -h
