@@ -9,9 +9,6 @@ outputs:
   matrix:
     description: "JSON matrix for GitHub Actions strategy"
     value: ${{ steps.discover.outputs.matrix }}
-  count:
-    description: "Total number of configurations discovered"
-    value: ${{ steps.discover.outputs.count }}
 runs:
   using: "composite"
   steps:
@@ -27,7 +24,7 @@ runs:
         FLAKE_PATH="$(cd "$FLAKE_INPUT" && pwd)"
 
         # Single Nix evaluation: discover.nix returns the full matrix in one pass.
-        # Each entry: { name, type, system, runner, attr }
+        # Each entry: { name, agent, type, system, runner, attr, deploy }
         echo "::group::Evaluating flake configurations"
         matrix=$(nix-instantiate --eval --strict --json --impure \
           "$GITHUB_ACTION_PATH/discover.nix" \
@@ -36,11 +33,15 @@ runs:
 
         # Pretty-print summary using preinstalled jq (no nixpkgs#jq fetch)
         count=$(echo "$matrix" | jq 'length')
+        if [[ "$count" -eq 0 ]]; then
+          echo "::error::No Nix configurations discovered"
+          exit 1
+        fi
+
         echo "::group::Discovery summary"
         echo "Total configurations: $count"
         echo "$matrix" | jq .
         echo "::endgroup::"
 
-        # Emit outputs (compact JSON for matrix; raw int for count)
+        # Emit compact JSON for the build matrix
         echo "matrix={\"include\":$(echo "$matrix" | jq -c .)}" >> "$GITHUB_OUTPUT"
-        echo "count=$count" >> "$GITHUB_OUTPUT"

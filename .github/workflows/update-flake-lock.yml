@@ -4,9 +4,8 @@
 # Purpose
 #   • Runs `DeterminateSystems/update-flake-lock` to bump `flake.lock`
 #   • Opens/updates a PR when changes are found
-#   • Sends a ntfy notification when a PR is (re)created
 #
-# Heavy multi-platform builds are handled by the regular CI workflow.
+# Multi-platform validation and the ready-to-merge notification are handled by CI.
 # -----------------------------------------------------------------------------
 name: "Update flake.lock"
 on:
@@ -43,16 +42,3 @@ jobs:
             multi-platform build matrix will follow as standard PR checks.
           branch: ${{ env.PR_BRANCH }}
           token: ${{ secrets.BOT_PAT }}
-      # Notify (only when a PR is freshly created)
-      - name: Send pull-request notification
-        if: steps.update-flake.outputs.pull-request-operation == 'created' || steps.update-flake.outputs.pull-request-operation == 'updated'
-        uses: ./.github/actions/ntfy
-        with:
-          topic: ${{ secrets.NTFY_TOPIC }}
-          title: "[Github] PR Created"
-          priority: "3"
-          tags: "white_check_mark"
-          message: |
-            ${{ github.workflow }} - Pull request created
-            Repo: ${{ github.repository }}
-          button_url: ${{ steps.update-flake.outputs.pull-request-url }}

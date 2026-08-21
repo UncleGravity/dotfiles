@@ -3,6 +3,7 @@
 #   nix-instantiate --eval --strict --json --impure ./discover.nix --argstr flakePath "$PWD"
 {flakePath}: let
   flake = builtins.getFlake flakePath;
+  deploymentMachines = builtins.attrNames (flake.clan.inventory.machines or {});
 
   # Map nix systems to GitHub-hosted runner labels
   systemToRunner = system:
@@ -25,6 +26,8 @@
   in
     builtins.attrValues (builtins.mapAttrs (name: cfg: {
         inherit name type;
+        agent = cfg.config.services.cachix-agent.name or name;
+        deploy = type == "nixos" && builtins.elem name deploymentMachines;
         system = cfg.pkgs.stdenv.hostPlatform.system;
         runner = systemToRunner cfg.pkgs.stdenv.hostPlatform.system;
         attr = ".#${configKey}.${name}.${attrSuffix}";

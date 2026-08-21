@@ -4,6 +4,7 @@
 
 - [Install NixOS](operations/install-nixos.md)
 - [Install macOS](operations/install-macos.md)
+- [Deploy system updates](operations/deployments.md)
 
 ## Machines
 

@@ -5,20 +5,23 @@
 #   • Validates Nix flake configuration across multiple platforms
 #   • Dynamically discovers and builds all nixos, darwin, and home-manager configs
 #   • Saves build outputs to Cachix to avoid rebuilding on Nix hosts
-#   • Sends notifications on CI failures via ntfy
+#   • Deploys inventory-backed NixOS machines after successful main builds
+#   • Sends update, deployment, and failure notifications via ntfy
 #
-# Triggered on pull requests to ensure changes work across all supported systems.
+# Pull requests validate changes. Pushes to main additionally deploy NixOS hosts.
 # -----------------------------------------------------------------------------
 name: "CI"
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
-# Cancel in-progress runs when a PR is updated (force-push, new commit)
+# Cancel stale PR validation, but let main deployments finish in order.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   # ---------------------------------------------------------------------------
   # Job 1: Flake check (fast validation)
@@ -44,7 +47,6 @@ jobs:
     name: "Discover Configurations"
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
-      count: ${{ steps.discover.outputs.count }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
@@ -57,7 +59,6 @@ jobs:
   # ---------------------------------------------------------------------------
   build:
     needs: [flake-check, discover]
-    if: ${{ needs.discover.outputs.count > 0 }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
@@ -80,38 +81,179 @@ jobs:
         with:
           name: ${{ secrets.CACHIX_CACHE }}
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          skipPush: true
       - name: Configure nixbuild.net for Darwin builds
         if: ${{ endsWith(matrix.system, '-darwin') }}
         uses: nixbuild/nixbuild-action@v26
         with:
           nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
       - name: Build ${{ matrix.type }}/${{ matrix.name }}
+        id: build
         # nixbuild-action sets max-jobs=0. Re-enable local Darwin builds;
         # Linux derivations still select the matching remote builders.
+        env:
+          BUILD_ATTR: ${{ matrix.attr }}
+          BUILD_SYSTEM: ${{ matrix.system }}
         run: |
-          echo "Building ${{ matrix.attr }} on ${{ matrix.system }}"
-          nix build ${{ matrix.attr }} --show-trace --max-jobs auto
-      - name: Push to Cachix
-        run: |
-          if [ -L result ]; then
-            cachix push ${{ secrets.CACHIX_CACHE }} ./result
+          echo "Building $BUILD_ATTR on $BUILD_SYSTEM"
+          store_path="$(nix build "$BUILD_ATTR" \
+            --show-trace \
+            --max-jobs auto \
+            --no-link \
+            --print-out-paths)"
+
+          if [[ -z "$store_path" || "$store_path" == *$'\n'* ]]; then
+            echo "Expected exactly one build output, got: $store_path" >&2
+            exit 1
           fi
+
+          echo "store_path=$store_path" >> "$GITHUB_OUTPUT"
+      - name: Push to Cachix
+        env:
+          CACHIX_CACHE: ${{ secrets.CACHIX_CACHE }}
+          STORE_PATH: ${{ steps.build.outputs.store_path }}
+        run: cachix push "$CACHIX_CACHE" "$STORE_PATH"
+      - name: Create deployment fragment
+        if: ${{ github.event_name == 'push' && matrix.deploy }}
+        env:
+          AGENT: ${{ matrix.agent }}
+          FRAGMENT_PATH: deploy-${{ matrix.name }}.json
+          STORE_PATH: ${{ steps.build.outputs.store_path }}
+        run: |
+          jq -n \
+            --arg agent "$AGENT" \
+            --arg storePath "$STORE_PATH" \
+            '{agent: $agent, storePath: $storePath}' \
+            > "$FRAGMENT_PATH"
+      - name: Upload deployment fragment
+        if: ${{ github.event_name == 'push' && matrix.deploy }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: deploy-${{ matrix.name }}
+          path: deploy-${{ matrix.name }}.json
+          retention-days: 1
   # ---------------------------------------------------------------------------
-  # Job 4: Notify on failures
+  # Job 4: Deploy and activate on target NixOS hosts
   # ---------------------------------------------------------------------------
-  notify:
+  deploy:
     needs: [flake-check, discover, build]
-    if: always() && contains(needs.*.result, 'failure')
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CACHIX_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    name: "Notify CI Failures"
+    name: "Deploy NixOS Fleet"
     steps:
+      - name: Download deployment fragments
+        uses: actions/download-artifact@v8
+        with:
+          pattern: deploy-*
+          path: deploy-fragments
+          merge-multiple: true
+      - name: Create deploy.json
+        run: |
+          shopt -s nullglob
+          fragments=(deploy-fragments/*.json)
+          fragment_count="${#fragments[@]}"
+
+          if [[ "$fragment_count" -eq 0 ]]; then
+            echo "No deployment fragments found" >&2
+            exit 1
+          fi
+
+          jq -s '{agents: (map({(.agent): .storePath}) | add)}' \
+            "${fragments[@]}" > deploy.json
+
+          actual_agents="$(jq '.agents | length' deploy.json)"
+          if [[ "$actual_agents" -ne "$fragment_count" ]]; then
+            echo "Expected $fragment_count unique agents, found $actual_agents" >&2
+            exit 1
+          fi
+
+          jq . deploy.json
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v17
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
+          skipPush: true
+      - name: Activate NixOS fleet
+        timeout-minutes: 45
+        env:
+          CACHIX_ACTIVATE_TOKEN: ${{ secrets.CACHIX_ACTIVATE_TOKEN }}
+        run: |
+          if [[ -z "$CACHIX_ACTIVATE_TOKEN" ]]; then
+            echo "CACHIX_ACTIVATE_TOKEN is not configured" >&2
+            exit 1
+          fi
+
+          cachix deploy activate deploy.json
+  # ---------------------------------------------------------------------------
+  # Job 5: Notify when an automated update is ready to merge
+  # ---------------------------------------------------------------------------
+  notify-update-ready:
+    needs: [flake-check, discover, build]
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.head.ref == 'update-flake-lock' &&
+        needs.flake-check.result == 'success' &&
+        needs.discover.result == 'success' &&
+        needs.build.result == 'success'
+      }}
+    runs-on: ubuntu-latest
+    name: "Notify Update Ready"
+    steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/ntfy
         with:
           topic: ${{ secrets.NTFY_TOPIC }}
-          title: "[Github] CI Workflow Fail"
+          title: "[GitHub] Flake Update Ready"
+          priority: "3"
+          tags: "white_check_mark"
+          message: |
+            The weekly flake update passed all CI builds.
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.event.pull_request.head.sha }}
+          button_url: ${{ github.event.pull_request.html_url }}
+  # ---------------------------------------------------------------------------
+  # Job 6: Notify when the NixOS fleet was deployed
+  # ---------------------------------------------------------------------------
+  notify-deployed:
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' }}
+    runs-on: ubuntu-latest
+    name: "Notify Deployment Success"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/ntfy
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[GitHub] NixOS Fleet Deployed"
+          priority: "3"
+          tags: "white_check_mark"
+          message: |
+            All configured NixOS machines activated successfully.
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+
+            banana is built and cached; update it manually with:
+            git pull --ff-only && just sync
+  # ---------------------------------------------------------------------------
+  # Job 7: Notify on failures
+  # ---------------------------------------------------------------------------
+  notify:
+    needs: [flake-check, discover, build, deploy]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    name: "Notify CI or Deployment Failures"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/ntfy
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[GitHub] CI or Deployment Failed"
           priority: "5"
           tags: "x"
           message: |
-            CI build job failed
+            A CI build or NixOS deployment failed.
             Repo: ${{ github.repository }}
             Commit: ${{ github.sha }}
