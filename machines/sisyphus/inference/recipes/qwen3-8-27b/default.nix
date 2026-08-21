@@ -7,7 +7,7 @@ in {
   my.inference.recipes.qwen3-8-27b = {
     models.primary = {
       repo = "unsloth/Qwen3.8-27B-GGUF";
-      revision = "fe1e2a23d973adb629709749dc4f6756df66ef10";
+      revision = "313447f257f7ebde0b968e4778feef774546ed81";
       selection.include = [
         modelFile
         mmprojFile
@@ -30,7 +30,7 @@ in {
         "--port"
         (toString port)
         "--ctx-size"
-        "65536"
+        "131072"
         "--spec-type"
         "draft-mtp"
         "--spec-draft-n-max"
