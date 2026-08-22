@@ -7,6 +7,7 @@
     ../../modules/nixos
     inputs.self.nixosModules.inference
     inputs.copyparty.nixosModules.default
+    ./cron
     ./hardware
     ./networking
     ./services
