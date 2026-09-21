@@ -102,7 +102,6 @@
     binwalk
 
     # --- AI / chat -----------------------------------------------------------------------
-    codex
     claude-code
 
     # --- Backup / sync -------------------------------------------------------------------
@@ -165,7 +164,7 @@
       localPackages.nvim
       localPackages.helix
     ]
-    ++ lib.optionals pkgs.stdenv.isDarwin [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
       localPackages.decrypt
       localPackages.encrypt
     ];
@@ -177,13 +176,12 @@
     common
     ++ lib.optionals config.my.home.development.enable development
     ++ (
-      if pkgs.stdenv.isDarwin
+      if pkgs.stdenv.hostPlatform.isDarwin
       then darwinOnly
       else linuxOnly
     )
     ++ custom;
 in {
-
   ###########################################################################
   # 5. BONUS - MULTIVERSER                                                  #
   # Search specific package versions on https://nixmultiverse.com/.         #
@@ -209,7 +207,7 @@ in {
 
         • `development` – added when `my.home.development.enable` is true
         • `common`      – available on all platforms
-        • `darwinOnly`  – added only when `pkgs.stdenv.isDarwin` is true
+        • `darwinOnly`  – added only when `pkgs.stdenv.hostPlatform.isDarwin` is true
         • `linuxOnly`   – added only on Linux
 
         Host or user modules may extend or override this option.

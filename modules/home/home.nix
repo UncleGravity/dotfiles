@@ -20,7 +20,7 @@
     inherit username;
     inherit (config.my.home) packages; # Single source of truth for user-space packages
     homeDirectory =
-      if pkgs.stdenv.isDarwin
+      if pkgs.stdenv.hostPlatform.isDarwin
       then "/Users/${username}"
       else "/home/${username}";
   };

@@ -15,7 +15,7 @@ workload runs:
 
 ```nix
 my.inference.instances.qwen = {
-  recipe = "qwen3-6-heretic-27b";
+  recipe = "qwen3-8-27b";
   autoStart = true;
 };
 ```

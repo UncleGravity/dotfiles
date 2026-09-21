@@ -28,7 +28,7 @@ in {
         source = ./ghostty;
       };
 
-      "karabiner" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.isDarwin) {
+      "karabiner" = lib.mkIf (cfg.karabiner.enable && pkgs.stdenv.hostPlatform.isDarwin) {
         source = ./karabiner;
       };
 

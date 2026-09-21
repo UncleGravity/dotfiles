@@ -33,7 +33,7 @@ modules/nixos/profiles/spark/inference/recipes/
     `-- Containerfile
 
 machines/sisyphus/inference/recipes/
-`-- qwen3-6-heretic-27b/
+`-- qwen3-8-27b/
     |-- default.nix
     `-- Containerfile
 ```
@@ -62,7 +62,7 @@ Do not import a recipe from another machine directory.
 
 A deployment-local recipe remains self-contained. The current Sisyphus
 llama.cpp declaration lives in
-[`machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix`](../../../machines/sisyphus/inference/recipes/qwen3-6-heretic-27b/default.nix)
+[`machines/sisyphus/inference/recipes/qwen3-8-27b/default.nix`](../../../machines/sisyphus/inference/recipes/qwen3-8-27b/default.nix)
 and owns its model revision, image context, devices, server arguments, endpoint,
 and firewall rule.
 

@@ -22,7 +22,7 @@
   };
 in
   common
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     decrypt = pkgs.callPackage ./decrypt.nix {};
     encrypt = pkgs.callPackage ./encrypt.nix {};
   }

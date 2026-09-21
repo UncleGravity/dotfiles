@@ -5,6 +5,7 @@
 
     ./aichat.nix
     ./bat.nix
+    ./codex.nix
     ./direnv.nix
     ./dotfiles
     ./git

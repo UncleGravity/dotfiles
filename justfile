@@ -150,10 +150,12 @@ spark-install node:
 spark-enroll node:
     ./scripts/enroll-spark-node.sh "{{ node }}"
 
-# Deploy every Spark declared in the inventory concurrently.
+# Deploy Spark workers in parallel, then the head after all workers succeed.
+# Disable Clan's disk cache to avoid shared-cache races during parallel updates.
 spark-deploy-all:
-    nix run .#clan -- machines update \
-        --tags spark \
+    CLAN_NO_SELECT_DISK_CACHE=1 nix run .#clan -- machines update spark-02 spark-03 spark-04 \
+        --host-key-check strict
+    CLAN_NO_SELECT_DISK_CACHE=1 nix run .#clan -- machines update spark-01 \
         --host-key-check strict
 
 # Check nixpkgs version status
