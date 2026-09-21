@@ -30,6 +30,7 @@ in {
 
   microvm = {
     hypervisor = "vfkit";
+    vfkit.rosetta.enable = true;
     socket = "/tmp/vm-${hostname}.sock";
 
     # Enable Internet Access

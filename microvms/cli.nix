@@ -20,7 +20,6 @@
     name = "vm";
     runtimeInputs = with pkgs; [
       coreutils
-      openssh
       gawk
       curl
       util-linux # setsid (for `start -d`)
@@ -327,7 +326,8 @@
           exit 1
         fi
 
-        exec ssh \
+        # Use Apple's SSH for macOS local-network compatibility.
+        exec /usr/bin/ssh \
           -A \
           -o UserKnownHostsFile=/dev/null \
           -o StrictHostKeyChecking=no \
