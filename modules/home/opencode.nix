@@ -3,7 +3,7 @@
     enable = true;
 
     settings = {
-      # model = lib.mkDefault "litellm/sisyphus-current";
+      model = lib.mkDefault "litellm/spark-current";
       # model = lib.mkDefault "opencode/glm-5.2";
 
       # -----------------------------------------------
@@ -54,6 +54,25 @@
 
             "spark-current" = {
               name = "Spark Current";
+              attachment = true;
+              reasoning = true;
+              tool_call = true;
+              interleaved.field = "reasoning_content";
+              limit = {
+                context = 1048576;
+                output = 16384;
+              };
+              modalities = {
+                input = ["text" "image"];
+                output = ["text"];
+              };
+              options.chat_template_kwargs.reasoning_effort = "low";
+              variants = {
+                low.chat_template_kwargs.reasoning_effort = "low";
+                medium.disabled = true;
+                high.chat_template_kwargs.reasoning_effort = "high";
+                max.chat_template_kwargs.reasoning_effort = "max";
+              };
             };
           };
         };

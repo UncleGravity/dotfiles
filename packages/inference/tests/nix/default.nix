@@ -143,9 +143,15 @@
   assert builtins.hasAttr "infer-prepare-dual" worker.systemd.services;
   assert builtins.hasAttr "infer-node-quad" worker.systemd.services;
   assert builtins.hasAttr "infer-prepare-quad" worker.systemd.services;
+  assert controller.systemd.services.infer-single.serviceConfig.Group == "infer";
+  assert controller.systemd.services.infer-prepare-quad.serviceConfig.Group == "infer";
+  assert worker.systemd.services.infer-prepare-quad.serviceConfig.Group == "infer";
+  assert builtins.elem "Z /srv/models - - infer -" controller.systemd.tmpfiles.rules;
   assert !(builtins.hasAttr "infer-single" worker.systemd.services);
   assert !(builtins.hasAttr "infer-dual" worker.systemd.services);
   assert !(builtins.hasAttr "infer-quad" worker.systemd.services);
+  assert controller.services.rsyncd.settings.globalSection."max connections" == 4;
+  assert worker.services.rsyncd.settings.globalSection."max connections" == 4;
   assert rejects {my.inference.coordination.identityFile = lib.mkForce null;};
   assert rejects {my.inference.coordination.authorizedKeys = lib.mkForce [];};
   assert rejects {my.inference.nodes.node-b.sshHostKey = lib.mkForce null;};

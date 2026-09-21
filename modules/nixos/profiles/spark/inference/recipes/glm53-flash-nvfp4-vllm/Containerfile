@@ -1,0 +1,14 @@
+FROM docker.io/pilcothink/vllm_spark_glm53@sha256:09da6eb394216d174ab8692758d90f9f458398d9c8fbc11ba6f04e93d5cf6392
+
+LABEL org.opencontainers.image.title="GLM 5.3 Flash NVFP4 TP4 DFlash2 on DGX Spark"
+LABEL io.angel.infer.runtime-patch="glm53-dflash2-tp4-v2"
+LABEL org.opencontainers.image.source="https://github.com/gpdev-Pilcothink/DGX_Spark_vllm_Dockerfile/tree/main/0.28/GLM53-flash"
+
+COPY patch-dflash-tp4.py test-runtime.py /opt/glm53-runtime/
+RUN PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES="" python3 /opt/glm53-runtime/test-runtime.py \
+  && python3 /opt/glm53-runtime/patch-dflash-tp4.py
+
+COPY entrypoint.sh /usr/local/bin/infer-glm53-flash-nvfp4-vllm
+RUN chmod 0755 /usr/local/bin/infer-glm53-flash-nvfp4-vllm
+
+ENTRYPOINT ["/usr/local/bin/infer-glm53-flash-nvfp4-vllm"]

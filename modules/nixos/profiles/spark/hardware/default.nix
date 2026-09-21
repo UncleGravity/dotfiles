@@ -34,7 +34,7 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${config.hardware.nvidia.package.bin}/bin/nvidia-smi --lock-gpu-clocks=0,2300";
+      ExecStart = "${config.hardware.nvidia.package.bin}/bin/nvidia-smi --lock-gpu-clocks=0,2400";
       ExecStop = "${config.hardware.nvidia.package.bin}/bin/nvidia-smi --reset-gpu-clocks";
     };
   };

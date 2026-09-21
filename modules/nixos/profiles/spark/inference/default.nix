@@ -46,6 +46,12 @@ in {
         nodes = ["spark-01" "spark-02" "spark-03" "spark-04"];
         autoStart = false;
       };
+
+      glm53-flash-nvfp4-vllm = {
+        recipe = "glm53-flash-nvfp4-vllm";
+        nodes = ["spark-01" "spark-02" "spark-03" "spark-04"];
+        autoStart = false;
+      };
     };
   };
 

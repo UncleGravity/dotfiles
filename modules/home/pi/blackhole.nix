@@ -3,7 +3,8 @@
     compaction = "auto";
     compactionEngine = "blackhole";
     tailBehavior = "pi-default";
-    compactAfterTokens = 81000;
+    # Keep 37.5% of the context free for tool loops, memory, and output.
+    compactAfterTokens = 655360;
     memory = true;
     sessionFallback = false;
 
@@ -11,14 +12,14 @@
       provider = "litellm";
       id = "spark-current";
       thinking = "low";
-      contextWindow = 131072;
+      contextWindow = 1048576;
     };
   };
 in {
   programs.pi-coding-agent.settings = {
     compaction = {
       enabled = true;
-      reserveTokens = 8192;
+      reserveTokens = 16384;
       keepRecentTokens = 8000;
     };
 

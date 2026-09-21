@@ -116,6 +116,7 @@
       {
         Type = "notify";
         NotifyAccess = "all";
+        Group = "infer";
         ExecStartPre = ["-${pkgs.podman}/bin/podman rm --force --ignore infer-${instance.name}"];
         ExecStart = "${pkgs.util-linux}/bin/flock --exclusive --nonblock --no-fork /var/lib/infer/node.lock ${package}/bin/infer-instance ${instance.name}";
         ExecStop = "-${pkgs.podman}/bin/podman stop --ignore --time 30 infer-${instance.name}";
@@ -163,6 +164,7 @@
       path = [package pkgs.podman pkgs.systemd pkgs.util-linux];
       serviceConfig = {
         Type = "oneshot";
+        Group = "infer";
         ExecStart = "${package}/bin/infer-prepare ${instance.name}";
         TimeoutStartSec = "infinity";
         UMask = "0007";
@@ -401,6 +403,7 @@ in {
           "d ${cfg.modelStore.localRoot}/.staging 2770 root infer -"
           "d ${cfg.modelStore.localRoot}/.staging/hf 2770 root infer -"
           "d ${cfg.modelStore.localRoot}/hf 2770 root infer -"
+          "Z ${cfg.modelStore.localRoot} - - infer -"
         ]
         ++ lib.optional isRegistryHost "d ${registryDataDir} 0750 docker-registry docker-registry -";
 
@@ -464,7 +467,7 @@ in {
             uid = "root";
             gid = "infer";
             "use chroot" = true;
-            "max connections" = 1;
+            "max connections" = builtins.length (builtins.attrNames nodes);
             "read only" = true;
           };
           sections.models = {

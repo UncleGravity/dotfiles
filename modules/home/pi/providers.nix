@@ -3,6 +3,7 @@
     settings = {
       defaultProvider = "litellm";
       defaultModel = "spark-current";
+      defaultThinkingLevel = "low";
 
       # Cycle through these with Ctrl+P
       enabledModels = [
@@ -26,8 +27,25 @@
           {
             id = "spark-current";
             name = "Spark Current";
-            contextWindow = 131072;
+            reasoning = true;
+            input = ["text" "image"];
+            contextWindow = 1048576;
             maxTokens = 16384;
+            thinkingLevelMap = {
+              off = null;
+              minimal = null;
+              low = "low";
+              medium = null;
+              high = "high";
+              xhigh = null;
+              max = "max";
+            };
+            compat = {
+              supportsDeveloperRole = false;
+              supportsReasoningEffort = false;
+              thinkingFormat = "chat-template";
+              chatTemplateKwargs.reasoning_effort."$var" = "thinking.effort";
+            };
           }
         ];
       };
