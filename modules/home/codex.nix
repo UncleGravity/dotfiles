@@ -7,7 +7,7 @@
       model = "spark-current";
       model_provider = "litellm";
       model_context_window = 1048576;
-      model_reasoning_effort = lib.mkDefault "low";
+      model_reasoning_effort = lib.mkDefault "max";
       web_search = "disabled";
 
       model_providers.litellm = {
