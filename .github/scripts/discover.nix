@@ -1,6 +1,4 @@
 # Builds the GitHub Actions matrix for all flake configurations.
-# Invoked by action.yml via:
-#   nix-instantiate --eval --strict --json --impure ./discover.nix --argstr flakePath "$PWD"
 {flakePath}: let
   flake = builtins.getFlake flakePath;
   deploymentMachines = builtins.attrNames (flake.clan.inventory.machines or {});
@@ -11,7 +9,6 @@
       "x86_64-linux" = "ubuntu-latest";
       "aarch64-linux" = "ubuntu-24.04-arm";
       "aarch64-darwin" = "macos-latest";
-      "x86_64-darwin" = "macos-13";
     }.${
       system
     } or (throw "Unsupported CI system: ${system}");

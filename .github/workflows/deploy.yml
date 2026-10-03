@@ -1,0 +1,119 @@
+name: "Deploy"
+run-name: "Review deployment from CI #${{ github.event.workflow_run.run_number || inputs.build_run_id }}"
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: "Successful main CI run ID to deploy or roll back to"
+        required: true
+        type: string
+      machines:
+        description: "Comma-separated machines (empty selects all available machines)"
+        required: false
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  prepare:
+    if: >-
+      ${{
+
+        vars.CACHIX_DEPLOY_ENABLED == 'true' &&
+        github.ref == 'refs/heads/main' &&
+        (
+          github.event_name == 'workflow_dispatch' ||
+          (
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'push'
+          )
+        )
+      }}
+    runs-on: ubuntu-latest
+    name: "Prepare release"
+    outputs:
+      matrix: ${{ steps.release.outputs.matrix }}
+      commit: ${{ steps.release.outputs.commit }}
+      build_run_id: ${{ steps.release.outputs.build_run_id }}
+      hosts: ${{ steps.release.outputs.hosts }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - name: Prepare release and check approval gates
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.build_run_id }}
+          SOURCE_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          REQUESTED_MACHINES: ${{ inputs.machines }}
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/prepare-deployment.py \
+            --repository "$GH_REPO" \
+            --run-id "$SOURCE_RUN_ID" \
+            --attempt "$SOURCE_ATTEMPT" \
+            --hosts "$REQUESTED_MACHINES" > "$RUNNER_TEMP/release.json"
+          {
+            echo "matrix=$(jq -c '.matrix' "$RUNNER_TEMP/release.json")"
+            echo "commit=$(jq -r '.commit' "$RUNNER_TEMP/release.json")"
+            echo "build_run_id=$(jq -r '.buildRunId' "$RUNNER_TEMP/release.json")"
+            echo "hosts=$(jq -r '.hosts | join(", ")' "$RUNNER_TEMP/release.json")"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "## Release ready for approval"
+            echo "Commit: $(jq -r '.commit' "$RUNNER_TEMP/release.json")"
+            echo "Machines: $(jq -r '.hosts | join(", ")' "$RUNNER_TEMP/release.json")"
+            echo "Approve the machine environments you want to update. Reject the others."
+            echo "For Spark, approve workers first, then the head after the workers succeed."
+          } >> "$GITHUB_STEP_SUMMARY"
+  deploy:
+    needs: prepare
+    name: "Deploy ${{ matrix.host }}"
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    permissions:
+      contents: read
+      actions: read
+      deployments: write
+    uses: ./.github/workflows/deploy-host.yml
+    with:
+      host: ${{ matrix.host }}
+      agent: ${{ matrix.agent }}
+      store_path: ${{ matrix.storePath }}
+      commit: ${{ needs.prepare.outputs.commit }}
+      build_run_id: ${{ needs.prepare.outputs.build_run_id }}
+    secrets: inherit
+  notify:
+    needs: prepare
+    if: ${{ !cancelled() && needs.prepare.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    name: "Notify release status"
+    steps:
+      - uses: $/.github/actions/ntfy
+        if: ${{ needs.prepare.result == 'success' }}
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[GitHub] Ready to Deploy"
+          priority: "3"
+          tags: "package"
+          message: |
+            Open this run and select Review deployments.
+            Approve the machines you want to update. Reject the others.
+            Machines: ${{ needs.prepare.outputs.hosts }}
+            Commit: ${{ needs.prepare.outputs.commit }}
+            Build: ${{ needs.prepare.outputs.build_run_id }}
+      - uses: $/.github/actions/ntfy
+        if: ${{ needs.prepare.result == 'failure' }}
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[GitHub] Deployment Preparation Failed"
+          priority: "5"
+          tags: "x"
+          message: "Release validation failed. Open the run to inspect the logs."

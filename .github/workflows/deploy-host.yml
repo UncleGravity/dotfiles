@@ -1,0 +1,139 @@
+name: "Deploy one machine"
+on:
+  workflow_call:
+    inputs:
+      host:
+        required: true
+        type: string
+      agent:
+        required: true
+        type: string
+      store_path:
+        required: true
+        type: string
+      commit:
+        required: true
+        type: string
+      build_run_id:
+        required: true
+        type: string
+    secrets:
+      CACHIX_CACHE:
+        required: true
+      CACHIX_ACTIVATE_TOKEN:
+        required: true
+      NTFY_TOPIC:
+        required: true
+permissions:
+  contents: read
+  actions: read
+  deployments: write
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    name: "Approve ${{ inputs.host }}"
+    environment:
+      name: ${{ inputs.host }}
+      deployment: false
+    steps:
+      - name: Confirm the approval gate is configured
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HOST: ${{ inputs.host }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/environments/$HOST" | jq -e '
+            .can_admins_bypass == false and
+            any(.protection_rules[];
+              .type == "required_reviewers" and
+              (.reviewers | length) > 0)
+          '
+  activate:
+    needs: approve
+    runs-on: ubuntu-latest
+    name: "Activate ${{ inputs.host }}"
+    timeout-minutes: 60
+    concurrency:
+      group: cachix-activate-${{ inputs.host }}
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - name: Record the release commit in GitHub
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HOST: ${{ inputs.host }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+          STORE_PATH: ${{ inputs.store_path }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          deployment_id="$(jq -n \
+            --arg ref "$RELEASE_COMMIT" \
+            --arg environment "$HOST" \
+            --arg storePath "$STORE_PATH" \
+            --arg buildRunId "$BUILD_RUN_ID" \
+            '{ref: $ref, environment: $environment, auto_merge: false,
+              required_contexts: [], production_environment: false,
+              description: "Approved cached NixOS release",
+              payload: {storePath: $storePath, buildRunId: $buildRunId}}' | \
+            gh api --method POST "repos/$GH_REPO/deployments" --input - --jq '.id')"
+          [[ "$deployment_id" =~ ^[1-9][0-9]*$ ]]
+          echo "id=$deployment_id" >> "$GITHUB_OUTPUT"
+          gh api --method POST "repos/$GH_REPO/deployments/$deployment_id/statuses" \
+            -f state=in_progress -f log_url="$RUN_URL" > /dev/null
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v17
+        with:
+          name: ${{ secrets.CACHIX_CACHE }}
+          skipPush: true
+      - name: Activate the approved build
+        id: activation
+        timeout-minutes: 45
+        env:
+          CACHIX_ACTIVATE_TOKEN: ${{ secrets.CACHIX_ACTIVATE_TOKEN }}
+          AGENT: ${{ inputs.agent }}
+          STORE_PATH: ${{ inputs.store_path }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$CACHIX_ACTIVATE_TOKEN" ]]; then
+            echo "CACHIX_ACTIVATE_TOKEN is not configured" >&2
+            exit 1
+          fi
+          jq -n --arg agent "$AGENT" --arg storePath "$STORE_PATH" \
+            '{agents: {($agent): $storePath}}' > "$RUNNER_TEMP/deploy.json"
+          cachix deploy activate "$RUNNER_TEMP/deploy.json"
+      - name: Update GitHub deployment status
+        id: tracking
+        if: ${{ always() && steps.deployment.outputs.id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.id }}
+          DEPLOYMENT_STATE: ${{ steps.activation.outcome == 'success' && 'success' || (steps.activation.outcome == 'failure' && 'failure' || 'error') }}
+          DEPLOYMENT_DESCRIPTION: ${{ steps.activation.outcome == 'cancelled' && 'Activation cancelled; verify the machine state' || format('Activation {0}', steps.activation.outcome) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/$GH_REPO/deployments/$DEPLOYMENT_ID/statuses" \
+            -f state="$DEPLOYMENT_STATE" -f description="$DEPLOYMENT_DESCRIPTION" \
+            -f log_url="$RUN_URL" -F auto_inactive=true > /dev/null
+      - name: Notify activation result
+        if: ${{ always() }}
+        uses: $/.github/actions/ntfy
+        with:
+          topic: ${{ secrets.NTFY_TOPIC }}
+          title: "[GitHub] ${{ inputs.host }}: ${{ steps.activation.outcome }}"
+          priority: ${{ steps.activation.outcome == 'success' && '3' || '5' }}
+          tags: ${{ steps.activation.outcome == 'success' && 'white_check_mark' || 'x' }}
+          message: |
+            Machine: ${{ inputs.host }}
+            Activation: ${{ steps.activation.outcome }}
+            ${{ steps.activation.outcome == 'cancelled' && 'Verify the machine state.' || '' }}
+            Commit: ${{ inputs.commit }}
+            Build: ${{ inputs.build_run_id }}
+            ${{ steps.tracking.outcome == 'failure' && 'GitHub deployment tracking failed; inspect the run logs.' || '' }}

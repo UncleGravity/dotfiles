@@ -22,7 +22,6 @@ inputs:
   message:
     description: "Notification message"
     required: true
-    default: ""
   button_url:
     description: "Button URL (defaults to current workflow run)"
     required: false
@@ -57,8 +56,10 @@ runs:
           CURL_ARGS+=(-H "Tags: $NTFY_TAGS")
         fi
 
+        CURL_ARGS+=(-H "Click: $BUTTON_URL")
         CURL_ARGS+=(-H "Actions: view, Open, $BUTTON_URL, clear=true")
         CURL_ARGS+=(-d "$NTFY_MESSAGE")
 
         curl --fail --silent --show-error --output /dev/null \
+          --connect-timeout 10 --max-time 30 \
           "${CURL_ARGS[@]}" "$NTFY_URL/$NTFY_TOPIC"
