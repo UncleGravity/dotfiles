@@ -81,6 +81,7 @@ jobs:
             --show-trace \
             --max-jobs auto \
             --option always-allow-substitutes true \
+            --option http2 false \
             --no-link \
             --print-out-paths)"
 
